@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<Scene xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <BorderPane prefHeight="500.0" prefWidth="350.0">
+      <center>
+            <VBox alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="95.0" prefWidth="200.0">
+                <ProgressBar id="progress" maxWidth="1.7976931348623157E308" />
+                <Label id="text" alignment="CENTER" maxWidth="1.7976931348623157E308" text="Logging in...">
+                    <VBox.margin>
+                        <Insets top="15.0" />
+                    </VBox.margin>
+                </Label>
+                <Button id="cancel" mnemonicParsing="false" text="Cancel">
+                    <VBox.margin>
+                        <Insets top="20.0" />
+                    </VBox.margin>
+                </Button>
+            </VBox>
+      </center>
+      <padding>
+         <Insets bottom="60.0" left="60.0" right="60.0" top="60.0" />
+      </padding>
+   </BorderPane>
+</Scene>
