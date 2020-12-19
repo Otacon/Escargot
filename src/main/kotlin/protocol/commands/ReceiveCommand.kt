@@ -1,6 +1,6 @@
 package protocol.commands
 
-import ProtocolVersion
+import protocol.ProtocolVersion
 
 sealed class ReceiveCommand {
     data class VER(

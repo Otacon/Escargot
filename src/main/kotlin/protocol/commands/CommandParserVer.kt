@@ -1,6 +1,6 @@
 package protocol.commands
 
-import ProtocolVersion
+import protocol.ProtocolVersion
 
 class CommandParserVer : CommandParser {
     private val regex = Regex("""VER (\d+) (.*)""")
