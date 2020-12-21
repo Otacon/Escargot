@@ -40,6 +40,6 @@
          <TextField id="nickname" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
          <TextField id="status" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" />
       </GridPane>
-      <ListView maxWidth="1.7976931348623157E308" />
+      <ListView id="contactList" maxWidth="1.7976931348623157E308" />
    </VBox>
 </Scene>

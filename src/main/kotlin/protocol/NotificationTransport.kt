@@ -1,5 +1,6 @@
 package protocol
 
+import core.TokenHolder
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import protocol.commands.ParseResult
@@ -133,6 +134,7 @@ class NotificationTransport {
             mpopEnabled = keyValues["MPOPEnabled"] == "1"
         )
         println(profile)
+        TokenHolder.token = profile.mspAuth
     }
 
 }

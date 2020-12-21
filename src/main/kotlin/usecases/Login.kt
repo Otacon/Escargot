@@ -1,5 +1,6 @@
 package usecases
 
+import core.TokenHolder
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request

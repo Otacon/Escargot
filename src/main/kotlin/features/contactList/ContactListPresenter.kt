@@ -1,21 +1,25 @@
 package features.contactList
 
-import features.loginLoading.LoginLoadingModel
+import core.TokenHolder
 import kotlinx.coroutines.*
+import kotlinx.coroutines.javafx.JavaFx
 import usecases.ChangeStatus
+import usecases.GetContacts
+import usecases.GetContactsResult
 import usecases.Status
 import kotlin.coroutines.CoroutineContext
 
 class ContactListPresenter(
     private val view: ContactListContract.View,
-    private val changeStatus: ChangeStatus
+    private val changeStatus: ChangeStatus,
+    private val getContacts: GetContacts
 ) : ContactListContract.Presenter, CoroutineScope {
 
     private val job = Job()
     override val coroutineContext: CoroutineContext
-    get() = job + Dispatchers.Main
+        get() = job + Dispatchers.Main
 
-    var model = ContactListModel(profilePicture = "", nickname = "", status = "")
+    var model = ContactListModel(profilePicture = "", nickname = "", status = "", contacts = emptyList())
 
     override fun start() {
         model = model.copy(
@@ -23,17 +27,31 @@ class ContactListPresenter(
             nickname = "Cyanotic",
             status = "WLM is still alive!!!"
         )
-        launch(Dispatchers.IO){
+        launch(Dispatchers.IO) {
             delay(3000)
             changeStatus(Status.ONLINE)
+            val newModel = when (val contactResponse = getContacts(TokenHolder.token)) {
+                is GetContactsResult.Success -> {
+                    val contacts = contactResponse.contacts.map { ContactModel(it.nickname, it.email) }
+                    model.copy(contacts = contacts)
+                }
+                GetContactsResult.Failure -> {
+                    val contacts = emptyList<ContactModel>()
+                    model.copy(contacts = contacts)
+                }
+            }
+            launch(Dispatchers.JavaFx) {
+                model = newModel
+                updateUI()
+            }
         }
-        updateUI()
     }
 
     private fun updateUI() {
         view.setProfilePicture(model.profilePicture)
         view.setNickname(model.nickname)
         view.setStatus(model.status)
+        view.setContacts(model.contacts)
     }
 
 
