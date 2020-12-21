@@ -43,4 +43,11 @@ sealed class ReceiveCommand {
         val email: String,
         val length: Int
     ) : ReceiveCommand()
+
+    data class CHG(
+        val sequence: Int,
+        val status: String,
+        val capabilities: String,
+        val msnObj: String
+    ) : ReceiveCommand()
 }

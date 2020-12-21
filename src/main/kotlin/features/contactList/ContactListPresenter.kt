@@ -1,8 +1,19 @@
 package features.contactList
 
+import features.loginLoading.LoginLoadingModel
+import kotlinx.coroutines.*
+import usecases.ChangeStatus
+import usecases.Status
+import kotlin.coroutines.CoroutineContext
+
 class ContactListPresenter(
-    private val view: ContactListContract.View
-) : ContactListContract.Presenter {
+    private val view: ContactListContract.View,
+    private val changeStatus: ChangeStatus
+) : ContactListContract.Presenter, CoroutineScope {
+
+    private val job = Job()
+    override val coroutineContext: CoroutineContext
+    get() = job + Dispatchers.Main
 
     var model = ContactListModel(profilePicture = "", nickname = "", status = "")
 
@@ -12,6 +23,10 @@ class ContactListPresenter(
             nickname = "Cyanotic",
             status = "WLM is still alive!!!"
         )
+        launch(Dispatchers.IO){
+            delay(3000)
+            changeStatus(Status.ONLINE)
+        }
         updateUI()
     }
 

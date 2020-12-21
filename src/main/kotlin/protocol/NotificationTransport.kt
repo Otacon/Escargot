@@ -1,11 +1,18 @@
 package protocol
 
-import protocol.commands.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import protocol.commands.ParseResult
+import protocol.commands.ReceiveCommand
+import protocol.commands.ReceiveCommandParser
+import protocol.commands.SendCommand
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+
+object NotificationTransportManager {
+    val transport = NotificationTransport()
+}
 
 class NotificationTransport {
 
@@ -52,6 +59,12 @@ class NotificationTransport {
             sendMessage(message, cont)
         }
 
+    suspend fun sendChg(request: SendCommand.CHG): ReceiveCommand.CHG =
+        suspendCoroutine { cont ->
+            val message = "CHG $sequence ${request.status} 0 0"
+            sendMessage(message, cont)
+        }
+
     private fun sendMessage(message: String, continuation: Continuation<*>) {
         continuations[sequence] = continuation as Continuation<ReceiveCommand>
         socket.sendMessage(message)
@@ -74,6 +87,7 @@ class NotificationTransport {
                         parseProfileInfo(profileInfo)
                     }
                     is ReceiveCommand.UBX -> socket.readRaw(command.length)
+                    is ReceiveCommand.CHG -> continuations[command.sequence]!!.resume(command)
                 }
             }
         }
@@ -122,28 +136,29 @@ class NotificationTransport {
     }
 
 }
- data class ProfileInformation(
-     val MIMEVersion : String,
-     val contentType : String,
-     val loginTime : Long,
-     val emailEnabled : Boolean,
-     val memberHighId : Long,
-     val memberLowId : Long,
-     val langPreference : Int,
-     val preferredEmail :String?,
-     val country : String?,
-     val postalCode : String?,
-     val gender : String?,
-     val isKid : Boolean,
-     val age : String,
-     val birthDayPresent : String,
-     val birthday : String,
-     val wallet : String,
-     val flags : Int,
-     val sid : Int,
-     val mspAuth : String,
-     val clientIp : String,
-     val clientPort : Int,
-     val abchMigrated : Boolean,
-     val mpopEnabled : Boolean
- )
+
+data class ProfileInformation(
+    val MIMEVersion: String,
+    val contentType: String,
+    val loginTime: Long,
+    val emailEnabled: Boolean,
+    val memberHighId: Long,
+    val memberLowId: Long,
+    val langPreference: Int,
+    val preferredEmail: String?,
+    val country: String?,
+    val postalCode: String?,
+    val gender: String?,
+    val isKid: Boolean,
+    val age: String,
+    val birthDayPresent: String,
+    val birthday: String,
+    val wallet: String,
+    val flags: Int,
+    val sid: Int,
+    val mspAuth: String,
+    val clientIp: String,
+    val clientPort: Int,
+    val abchMigrated: Boolean,
+    val mpopEnabled: Boolean
+)

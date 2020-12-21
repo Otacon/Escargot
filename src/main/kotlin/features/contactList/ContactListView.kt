@@ -6,6 +6,8 @@ import javafx.scene.control.TextField
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.stage.Stage
+import protocol.NotificationTransportManager
+import usecases.ChangeStatus
 
 class ContactListView(
     private val stage: Stage
@@ -14,7 +16,7 @@ class ContactListView(
     private lateinit var profilePicture: ImageView
     private lateinit var nickname: TextField
     private lateinit var status: TextField
-    private val presenter = ContactListPresenter(this)
+    private val presenter = ContactListPresenter(this, ChangeStatus(NotificationTransportManager.transport))
 
     init {
         val resource = javaClass.getResource("/ContactList.fxml")

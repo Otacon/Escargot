@@ -8,6 +8,11 @@ import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.ProgressBar
 import javafx.stage.Stage
+import okhttp3.OkHttpClient
+import protocol.NotificationTransportManager
+import protocol.soap.RequestSecurityTokenParser
+import usecases.Login
+import kotlin.time.ExperimentalTime
 
 class LoginLoadingView(
     private val stage: Stage,
@@ -18,7 +23,12 @@ class LoginLoadingView(
     private lateinit var buttonCancel: Button
     private lateinit var progressBar: ProgressBar
     private lateinit var progressText: Label
-    private val presenter = LoginLoadingPresenter(this)
+    private val presenter = LoginLoadingPresenter(
+        this, Login(
+            NotificationTransportManager.transport,
+            OkHttpClient.Builder().build(), RequestSecurityTokenParser()
+        )
+    )
 
     init {
         val resource = javaClass.getResource("/LoginLoading.fxml")

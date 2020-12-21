@@ -2,10 +2,14 @@ package features.loginLoading
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.javafx.JavaFx
+import usecases.Login
+import usecases.LoginResult
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.ExperimentalTime
 
-class LoginLoadingPresenter(
-    private val view: LoginLoadingContract.View
+class LoginLoadingPresenter constructor(
+    private val view: LoginLoadingContract.View,
+    private val login: Login
 ) : LoginLoadingContract.Presenter, CoroutineScope {
 
     private var model = LoginLoadingModel(
@@ -22,19 +26,12 @@ class LoginLoadingPresenter(
         model = model.copy(username = username, password = password, text = "Protocol handshake...")
         updateUI()
         launch(Dispatchers.IO) {
-            delay(2000)
+            val result =login(username, password)
             launch(Dispatchers.JavaFx) {
-                model = model.copy(text = "Sending client specification...")
-                updateUI()
-            }
-            delay(2000)
-            launch(Dispatchers.JavaFx) {
-                model = model.copy(text = "Authenticating...")
-                updateUI()
-            }
-            delay(2000)
-            launch(Dispatchers.JavaFx) {
-                view.goToContactList()
+                when (result) {
+                    LoginResult.Success -> view.goToContactList()
+                    LoginResult.Failure -> view.goToLogin()
+                }
             }
         }
     }

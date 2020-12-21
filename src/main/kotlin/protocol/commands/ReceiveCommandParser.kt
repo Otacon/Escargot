@@ -8,7 +8,8 @@ class ReceiveCommandParser : CommandParser {
         CommandParserUserSSOStatus(),
         CommandParserUserSSOAck(),
         CommandParserMsg(),
-        CommandParserUbx()
+        CommandParserUbx(),
+        CommandParserChg()
     )
 
     override fun parse(command: String): ParseResult {
