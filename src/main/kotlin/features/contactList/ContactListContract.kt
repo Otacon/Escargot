@@ -8,7 +8,7 @@ interface ContactListContract {
         fun setNickname(text: String)
         fun setStatus(text: String)
         fun setContacts(contacts: List<ContactModel>)
-        fun openConversation(contactId: String)
+        fun openConversation(passport: String)
 
     }
 

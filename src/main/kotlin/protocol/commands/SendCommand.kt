@@ -16,4 +16,6 @@ sealed class SendCommand {
         val clientVersion: String,
         val passport: String
     ) : SendCommand()
+
+    data class CAL(val recipient: String) : SendCommand()
 }

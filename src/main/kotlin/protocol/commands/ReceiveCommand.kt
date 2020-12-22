@@ -50,4 +50,13 @@ sealed class ReceiveCommand {
         val capabilities: String,
         val msnObj: String
     ) : ReceiveCommand()
+
+    data class RNG(
+        val sessionId: String,
+        val address: String,
+        val authType: String,
+        val ticket: String,
+        val passport: String,
+        val inviteName: String
+    ) : ReceiveCommand()
 }

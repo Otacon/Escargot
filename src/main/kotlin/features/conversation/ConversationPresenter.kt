@@ -19,15 +19,15 @@ class ConversationPresenter(
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.Main
 
-    override fun start() {
-        //getHistory...
-        //Do something?!
+    override fun start(recipient: String) {
+        model = model.copy(recipient = recipient)
+        updateUi()
     }
 
     override fun onSendMessage(message: String) {
         view.clearMessageInput()
         launch(Dispatchers.IO) {
-            model = when (sendMessage(message, "recipient")) {
+            model = when (sendMessage(message, model.recipient)) {
                 SendMessageResult.Success -> {
                     val ownMessage = ConversationMessageModel.OwnMessage(System.currentTimeMillis(), message)
                     model.copy(messages = model.messages + ownMessage)

@@ -75,7 +75,7 @@ class ContactListView(
         contactList.items.addAll(elements)
     }
 
-    override fun openConversation(contactId: String) {
-        ConversationView()
+    override fun openConversation(passport: String) {
+        ConversationView("orfeo18@hotmail.it")
     }
 }

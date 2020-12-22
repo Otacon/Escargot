@@ -62,9 +62,17 @@ class NotificationTransport {
 
     suspend fun sendChg(request: SendCommand.CHG): ReceiveCommand.CHG =
         suspendCoroutine { cont ->
+            //TODO set the client's capabilities
             val message = "CHG $sequence ${request.status} 0 0"
             sendMessage(message, cont)
         }
+
+    suspend fun sendCal(request: SendCommand.CAL): ReceiveCommand.RNG =
+        suspendCoroutine { cont ->
+            val message = "CAL $sequence ${request.recipient}"
+            sendMessage(message, cont)
+        }
+
 
     private fun sendMessage(message: String, continuation: Continuation<*>) {
         continuations[sequence] = continuation as Continuation<ReceiveCommand>
@@ -89,6 +97,10 @@ class NotificationTransport {
                     }
                     is ReceiveCommand.UBX -> socket.readRaw(command.length)
                     is ReceiveCommand.CHG -> continuations[command.sequence]!!.resume(command)
+                    is ReceiveCommand.RNG -> {
+                        //TODO add ANS response here to accept a the switchboard invitation.
+                        println("Received a new chat: $result")
+                    }
                 }
             }
         }

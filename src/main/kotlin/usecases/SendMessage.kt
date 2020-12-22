@@ -1,13 +1,14 @@
 package usecases
 
-import kotlinx.coroutines.delay
+import protocol.NotificationTransport
+import protocol.commands.SendCommand
 
-class SendMessage {
+class SendMessage(
+    private val transport: NotificationTransport
+) {
 
     suspend operator fun invoke(text: String, recipient: String): SendMessageResult {
-        delay(1000)
-
-        //TODO hook this shit to the socket
+        transport.sendCal(SendCommand.CAL(recipient))
         return SendMessageResult.Success
     }
 }

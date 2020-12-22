@@ -6,18 +6,21 @@ import javafx.scene.control.ListView
 import javafx.scene.control.TextArea
 import javafx.scene.input.KeyCode
 import javafx.stage.Stage
+import protocol.NotificationTransportManager
 import usecases.SendMessage
 
-class ConversationView : ConversationContract.View {
+class ConversationView(
+    recipient: String
+) : ConversationContract.View {
 
     private val presenter = ConversationPresenter(
         this,
-        SendMessage()
+        SendMessage(NotificationTransportManager.transport)
     )
 
     private lateinit var messageHistory: ListView<String>
     private lateinit var chatInput: TextArea
-    private lateinit var window: Stage
+    private val window: Stage
 
     init {
         val resource = javaClass.getResource("/Conversation.fxml")
@@ -27,6 +30,7 @@ class ConversationView : ConversationContract.View {
         bindViews(root)
         setupListeners()
         window.show()
+        presenter.start(recipient)
     }
 
     override fun setWindowTitle(title: String) {
