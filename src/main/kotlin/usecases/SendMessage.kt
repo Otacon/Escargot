@@ -1,13 +1,15 @@
 package usecases
 
-import core.SwitchBoard
+import core.SwitchBoardManager
+import protocol.switchboard.SwitchBoardSendCommand
 
 class SendMessage(
-    private val switchBoard: SwitchBoard
+    private val switchBoard: SwitchBoardManager
 ) {
 
     suspend operator fun invoke(text: String, recipient: String): SendMessageResult {
-        switchBoard.transfer(recipient)
+        val switchBoard = switchBoard.getSwitchBoard(recipient)
+        switchBoard.sendMsg(SwitchBoardSendCommand.MSG(text))
         return SendMessageResult.Success
     }
 }

@@ -1,0 +1,71 @@
+package protocol
+
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import protocol.switchboard.SwitchBoardCommandParser
+import protocol.switchboard.SwitchBoardParseResult
+import protocol.switchboard.SwitchBoardReceiveCommand
+import protocol.switchboard.SwitchBoardSendCommand
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
+
+class SwitchBoardTransport {
+
+    private val socket: SwitchBoardSocket = SwitchBoardSocket()
+    private val continuations: MutableMap<Int, Continuation<SwitchBoardReceiveCommand>> = mutableMapOf()
+    private val parser = SwitchBoardCommandParser()
+    private var sequence: Int = 1
+
+    fun connect(address: String, port: Int) {
+        socket.connect(address, port)
+        GlobalScope.launch {
+            while (true) {
+                readNext()
+            }
+        }
+    }
+
+    suspend fun sendUsr(command: SwitchBoardSendCommand.USR): SwitchBoardReceiveCommand.Usr =
+        suspendCoroutine { cont ->
+            val message = "USR $sequence ${command.passport} ${command.auth}"
+            sendMessage(message, cont)
+        }
+
+    suspend fun sendCal(command: SwitchBoardSendCommand.CAL): SwitchBoardReceiveCommand.Cal =
+        suspendCoroutine { cont ->
+            val message = "CAL $sequence ${command.passport}"
+            sendMessage(message, cont)
+        }
+
+    suspend fun sendMsg(command: SwitchBoardSendCommand.MSG): SwitchBoardReceiveCommand.Msg =
+        suspendCoroutine { cont ->
+            val body = "MIME-Version: 1.0\r\n" +
+                    "Content-Type: text/plain; charset=UTF-8\r\n" +
+                    "X-MMS-IM-Format: FN=MS%20Sans%20Serif; EF=; CO=0; CS=0; PF=0\r\n\r\n" +
+                    command.message
+            val message = "MSG $sequence N ${body.length}\r\n$body"
+            sendMessage(message, cont)
+        }
+
+    private fun sendMessage(message: String, continuation: Continuation<*>) {
+        continuations[sequence] = continuation as Continuation<SwitchBoardReceiveCommand>
+        socket.sendMessage(message)
+        sequence++
+    }
+
+    private fun readNext() {
+        val message = socket.readMessage()
+        when (val result = parser.parse(message)) {
+            SwitchBoardParseResult.Failed -> println("UnknownCommand")
+            is SwitchBoardParseResult.Success -> {
+                when (val command = result.command) {
+                    is SwitchBoardReceiveCommand.Usr -> continuations[command.sequence]!!.resume(command)
+                    is SwitchBoardReceiveCommand.Cal -> continuations[command.sequence]!!.resume(command)
+                    is SwitchBoardReceiveCommand.Joi -> {//TODO}
+                    }
+                }
+            }
+        }
+    }
+}
