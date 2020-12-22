@@ -1,5 +1,6 @@
 package features.contactList
 
+import features.conversation.ConversationView
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
 import javafx.scene.control.ListView
@@ -20,6 +21,7 @@ class ContactListView(
     private lateinit var profilePicture: ImageView
     private lateinit var nickname: TextField
     private lateinit var status: TextField
+    //ListView<String> yeah, why not!?
     private lateinit var contactList: ListView<String>
     private val presenter = ContactListPresenter(
         this,
@@ -35,6 +37,7 @@ class ContactListView(
         stage.scene = root
         stage.isResizable = true
         bindViews(root)
+        setupListeners()
         stage.show()
         presenter.start()
     }
@@ -44,6 +47,15 @@ class ContactListView(
         nickname = root.lookup("#nickname") as TextField
         status = root.lookup("#status") as TextField
         contactList = root.lookup("#contactList") as ListView<String>
+    }
+
+    private fun setupListeners() {
+        contactList.setOnMouseClicked { event ->
+            if (event.clickCount == 2) {
+                val selectedItem = contactList.selectionModel.selectedItem
+                presenter.onContactClick(selectedItem)
+            }
+        }
     }
 
     override fun setProfilePicture(picture: String) {
@@ -61,5 +73,9 @@ class ContactListView(
     override fun setContacts(contacts: List<ContactModel>) {
         val elements = contacts.map { it.nickname }
         contactList.items.addAll(elements)
+    }
+
+    override fun openConversation(contactId: String) {
+        ConversationView()
     }
 }

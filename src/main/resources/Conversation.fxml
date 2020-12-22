@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.Scene?>
+<Scene xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+    <VBox minHeight="512.0" minWidth="512.0">
+        <ListView id="history" prefHeight="200.0" prefWidth="200.0"/>
+        <TextArea id="chatInput" prefHeight="200.0" prefWidth="200.0"/>
+    </VBox>
+</Scene>

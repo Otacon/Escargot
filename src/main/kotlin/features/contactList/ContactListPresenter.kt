@@ -30,7 +30,7 @@ class ContactListPresenter(
         launch(Dispatchers.IO) {
             delay(3000)
             changeStatus(Status.ONLINE)
-            val newModel = when (val contactResponse = getContacts(TokenHolder.token)) {
+            model = when (val contactResponse = getContacts(TokenHolder.token)) {
                 is GetContactsResult.Success -> {
                     val contacts = contactResponse.contacts.map { ContactModel(it.nickname, it.email) }
                     model.copy(contacts = contacts)
@@ -40,14 +40,15 @@ class ContactListPresenter(
                     model.copy(contacts = contacts)
                 }
             }
-            launch(Dispatchers.JavaFx) {
-                model = newModel
-                updateUI()
-            }
+            updateUI()
         }
     }
 
-    private fun updateUI() {
+    override fun onContactClick(contactId: String) {
+        view.openConversation(contactId)
+    }
+
+    private fun updateUI() = launch(Dispatchers.JavaFx) {
         view.setProfilePicture(model.profilePicture)
         view.setNickname(model.nickname)
         view.setStatus(model.status)
