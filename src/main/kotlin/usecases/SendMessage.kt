@@ -1,14 +1,13 @@
 package usecases
 
-import protocol.NotificationTransport
-import protocol.commands.SendCommand
+import core.SwitchBoard
 
 class SendMessage(
-    private val transport: NotificationTransport
+    private val switchBoard: SwitchBoard
 ) {
 
     suspend operator fun invoke(text: String, recipient: String): SendMessageResult {
-        transport.sendCal(SendCommand.CAL(recipient))
+        switchBoard.transfer(recipient)
         return SendMessageResult.Success
     }
 }

@@ -1,5 +1,6 @@
 package features.conversation
 
+import core.SwitchBoard
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
 import javafx.scene.control.ListView
@@ -15,7 +16,7 @@ class ConversationView(
 
     private val presenter = ConversationPresenter(
         this,
-        SendMessage(NotificationTransportManager.transport)
+        SendMessage(SwitchBoard)
     )
 
     private lateinit var messageHistory: ListView<String>

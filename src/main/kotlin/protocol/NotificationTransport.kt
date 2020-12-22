@@ -73,6 +73,11 @@ class NotificationTransport {
             sendMessage(message, cont)
         }
 
+    suspend fun sendXfr(): ReceiveCommand.XFR =
+        suspendCoroutine { cont ->
+            val message = "XFR $sequence SB"
+            sendMessage(message, cont)
+        }
 
     private fun sendMessage(message: String, continuation: Continuation<*>) {
         continuations[sequence] = continuation as Continuation<ReceiveCommand>
@@ -101,6 +106,7 @@ class NotificationTransport {
                         //TODO add ANS response here to accept a the switchboard invitation.
                         println("Received a new chat: $result")
                     }
+                    is ReceiveCommand.XFR -> continuations[command.sequence]!!.resume(command)
                 }
             }
         }

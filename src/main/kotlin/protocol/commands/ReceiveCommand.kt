@@ -59,4 +59,11 @@ sealed class ReceiveCommand {
         val passport: String,
         val inviteName: String
     ) : ReceiveCommand()
+
+    data class XFR(
+        val sequence: Int,
+        val address: String,
+        val port: Int,
+        val auth: String
+    ) : ReceiveCommand()
 }
