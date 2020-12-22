@@ -13,16 +13,17 @@ import okhttp3.logging.HttpLoggingInterceptor
 import protocol.NotificationTransportManager
 import usecases.ChangeStatus
 import usecases.GetContacts
+import javafx.scene.control.ListCell
+
 
 class ContactListView(
-    private val stage: Stage
+    stage: Stage
 ) : ContactListContract.View {
 
     private lateinit var profilePicture: ImageView
     private lateinit var nickname: TextField
     private lateinit var status: TextField
-    //ListView<String> yeah, why not!?
-    private lateinit var contactList: ListView<String>
+    private lateinit var contactList: ListView<ContactModel>
     private val presenter = ContactListPresenter(
         this,
         ChangeStatus(NotificationTransportManager.transport),
@@ -38,6 +39,15 @@ class ContactListView(
         stage.isResizable = true
         bindViews(root)
         setupListeners()
+        contactList.setCellFactory {
+            object : ListCell<ContactModel?>() {
+                override fun updateItem(item: ContactModel?, empty: Boolean) {
+                    super.updateItem(item, empty)
+                    val label = item?.let { "${item.nickname} (${item.label})" }.orEmpty()
+                    text = label
+                }
+            }
+        }
         stage.show()
         presenter.start()
     }
@@ -46,7 +56,7 @@ class ContactListView(
         profilePicture = root.lookup("#profile_picture") as ImageView
         nickname = root.lookup("#nickname") as TextField
         status = root.lookup("#status") as TextField
-        contactList = root.lookup("#contactList") as ListView<String>
+        contactList = root.lookup("#contactList") as ListView<ContactModel>
     }
 
     private fun setupListeners() {
@@ -72,7 +82,7 @@ class ContactListView(
 
     override fun setContacts(contacts: List<ContactModel>) {
         val elements = contacts.map { it.nickname }
-        contactList.items.addAll(elements)
+        contactList.items.addAll(contacts)
     }
 
     override fun openConversation(passport: String) {

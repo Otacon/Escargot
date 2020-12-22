@@ -44,8 +44,8 @@ class ContactListPresenter(
         }
     }
 
-    override fun onContactClick(contactId: String) {
-        view.openConversation(contactId)
+    override fun onContactClick(selectedContact: ContactModel) {
+        view.openConversation(selectedContact.label)
     }
 
     private fun updateUI() = launch(Dispatchers.JavaFx) {

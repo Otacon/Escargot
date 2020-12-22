@@ -15,7 +15,7 @@ interface ContactListContract {
     interface Presenter {
 
         fun start()
-        fun onContactClick(contactId: String)
+        fun onContactClick(selectedContact: ContactModel)
 
     }
 
