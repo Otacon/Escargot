@@ -16,6 +16,7 @@ class SwitchBoardTransport {
     private val continuations: MutableMap<Int, Continuation<SwitchBoardReceiveCommand>> = mutableMapOf()
     private val parser = SwitchBoardCommandParser()
     private var sequence: Int = 1
+    var isOpen = false
 
     fun connect(address: String, port: Int) {
         socket.connect(address, port)
@@ -44,8 +45,11 @@ class SwitchBoardTransport {
                     "Content-Type: text/plain; charset=UTF-8\r\n" +
                     "X-MMS-IM-Format: FN=MS%20Sans%20Serif; EF=; CO=0; CS=0; PF=0\r\n\r\n" +
                     command.message
-            val message = "MSG $sequence N ${body.length}\r\n$body"
-            sendMessage(message, cont)
+            val length = body.length
+            val message = "MSG $sequence U $length\r\n$body"
+            continuations[sequence] = cont as Continuation<SwitchBoardReceiveCommand>
+            socket.sendMessage(message, sendNewLine = false)
+            sequence++
         }
 
     private fun sendMessage(message: String, continuation: Continuation<*>) {
@@ -62,7 +66,13 @@ class SwitchBoardTransport {
                 when (val command = result.command) {
                     is SwitchBoardReceiveCommand.Usr -> continuations[command.sequence]!!.resume(command)
                     is SwitchBoardReceiveCommand.Cal -> continuations[command.sequence]!!.resume(command)
-                    is SwitchBoardReceiveCommand.Joi -> {//TODO}
+                    is SwitchBoardReceiveCommand.Joi -> isOpen = true
+                    is SwitchBoardReceiveCommand.Msg -> {
+                        //TODO
+                    }
+                    is SwitchBoardReceiveCommand.Bye -> {
+                        socket.close()
+                        isOpen = false
                     }
                 }
             }

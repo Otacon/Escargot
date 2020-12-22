@@ -19,9 +19,12 @@ class SwitchBoardSocket {
         println("Done!")
     }
 
-    fun sendMessage(message: String) {
+    fun sendMessage(message: String, sendNewLine: Boolean = true) {
         print(">> ")
-        writer.write("$message\r\n")
+        writer.write(message)
+        if (sendNewLine) {
+            writer.write("\r\n")
+        }
         writer.flush()
         println(message)
     }

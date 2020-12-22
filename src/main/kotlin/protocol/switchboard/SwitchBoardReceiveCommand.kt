@@ -23,4 +23,8 @@ sealed class SwitchBoardReceiveCommand {
         val recipientNick: String,
         val capabilities: String
     ) : SwitchBoardReceiveCommand()
+
+    data class Bye(
+        val passport: String
+    ) : SwitchBoardReceiveCommand()
 }

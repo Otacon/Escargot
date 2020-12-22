@@ -11,6 +11,10 @@ object SwitchBoardManager {
     private val switchBoards = mutableMapOf<String, SwitchBoardTransport>()
 
     suspend fun getSwitchBoard(passport: String): SwitchBoardTransport {
+        if (switchBoards.contains(passport) && switchBoards[passport]!!.isOpen.not()) {
+            switchBoards.remove(passport)
+        }
+
         if (!switchBoards.contains(passport)) {
             val result = transport.sendXfr()
             val switchboard = SwitchBoardTransport()

@@ -9,7 +9,7 @@ class SendMessage(
 
     suspend operator fun invoke(text: String, recipient: String): SendMessageResult {
         val switchBoard = switchBoard.getSwitchBoard(recipient)
-        switchBoard.sendMsg(SwitchBoardSendCommand.MSG(text))
+        switchBoard.sendMsg(SwitchBoardSendCommand.MSG(text.trimEnd()))
         return SendMessageResult.Success
     }
 }

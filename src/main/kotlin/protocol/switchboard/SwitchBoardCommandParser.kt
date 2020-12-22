@@ -4,7 +4,8 @@ class SwitchBoardCommandParser : SwitchBoardParser {
     private val parsers = listOf(
         CommandParserUsr(),
         CommandParserCal(),
-        CommandParserJoi()
+        CommandParserJoi(),
+        CommandParserBye()
     )
 
     override fun parse(command: String): SwitchBoardParseResult {
@@ -69,6 +70,19 @@ class CommandParserJoi : SwitchBoardParser {
                     capabilities = it.groupValues[3]
                 )
             )
+        } ?: SwitchBoardParseResult.Failed
+    }
+
+}
+
+class CommandParserBye : SwitchBoardParser {
+
+    private val regex = Regex("""BYE (\S+)""")
+
+    override fun parse(command: String): SwitchBoardParseResult {
+        val match = regex.find(command)
+        return match?.let {
+            SwitchBoardParseResult.Success(SwitchBoardReceiveCommand.Bye(passport = it.groupValues[1]))
         } ?: SwitchBoardParseResult.Failed
     }
 
