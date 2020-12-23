@@ -16,6 +16,7 @@ class SwitchBoardTransport {
     private val continuations: MutableMap<Int, Continuation<SwitchBoardReceiveCommand>> = mutableMapOf()
     private val parser = SwitchBoardCommandParser()
     private var sequence: Int = 1
+    private var joinContinuation: Continuation<Unit>? = null
     var isOpen = false
 
     fun connect(address: String, port: Int) {
@@ -38,6 +39,8 @@ class SwitchBoardTransport {
             val message = "CAL $sequence ${command.passport}"
             sendMessage(message, cont)
         }
+
+    suspend fun waitToJoin() = suspendCoroutine<Unit> { cont -> joinContinuation = cont }
 
     suspend fun sendMsg(command: SwitchBoardSendCommand.MSG): SwitchBoardReceiveCommand.Msg =
         suspendCoroutine { cont ->
@@ -66,12 +69,17 @@ class SwitchBoardTransport {
                 when (val command = result.command) {
                     is SwitchBoardReceiveCommand.Usr -> continuations[command.sequence]!!.resume(command)
                     is SwitchBoardReceiveCommand.Cal -> continuations[command.sequence]!!.resume(command)
-                    is SwitchBoardReceiveCommand.Joi -> isOpen = true
+                    is SwitchBoardReceiveCommand.Joi -> {
+                        isOpen = true
+                        joinContinuation?.resume(Unit)
+                        joinContinuation = null
+                    }
                     is SwitchBoardReceiveCommand.Msg -> {
-                        //TODO
+
                     }
                     is SwitchBoardReceiveCommand.Bye -> {
                         socket.close()
+                        joinContinuation = null
                         isOpen = false
                     }
                 }

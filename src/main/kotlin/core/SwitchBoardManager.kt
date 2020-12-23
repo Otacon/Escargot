@@ -1,6 +1,5 @@
 package core
 
-import kotlinx.coroutines.delay
 import protocol.NotificationTransport
 import protocol.NotificationTransportManager
 import protocol.SwitchBoardTransport
@@ -21,7 +20,7 @@ object SwitchBoardManager {
             switchboard.connect(result.address, result.port)
             switchboard.sendUsr(SwitchBoardSendCommand.USR("orfeo.ciano@gmail.com", result.auth))
             switchboard.sendCal(SwitchBoardSendCommand.CAL(passport))
-            delay(5000)
+            switchboard.waitToJoin()
             switchBoards[passport] = switchboard
         }
         return switchBoards[passport]!!
