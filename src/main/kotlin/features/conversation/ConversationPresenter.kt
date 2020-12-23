@@ -1,5 +1,6 @@
 package features.conversation
 
+import core.SwitchBoardManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -11,16 +12,21 @@ import kotlin.coroutines.CoroutineContext
 
 class ConversationPresenter(
     private val view: ConversationContract.View,
-    private val sendMessage: SendMessage
+    private val sendMessage: SendMessage,
+    private val switchBoard: SwitchBoardManager
 ) : ConversationContract.Presenter, CoroutineScope {
 
     private val job = Job()
-    private var model = ConversationModel(recipient = "", messages = emptyList())
+    private var model = ConversationModel(recipient = "", messages = emptyList(), isOtherTyping = false)
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.Main
 
     override fun start(recipient: String) {
         model = model.copy(recipient = recipient)
+        launch(Dispatchers.IO) {
+            switchBoard.getSwitchBoard(recipient).messageListener = ::onMessageReceived
+            switchBoard.getSwitchBoard(recipient).typingListener = ::onUserTyping
+        }
         updateUi()
     }
 
@@ -46,12 +52,23 @@ class ConversationPresenter(
         view.setHistory(model.messages)
     }
 
+    private fun onMessageReceived(text: String) {
+        val newHistory = model.messages + ConversationMessageModel.OtherMessage(System.currentTimeMillis(), text)
+        model = model.copy(messages = newHistory)
+        updateUi()
+    }
+
+    private fun onUserTyping() {
+        model = model.copy(isOtherTyping = true)
+    }
+
 
 }
 
 data class ConversationModel(
     val recipient: String,
-    val messages: List<ConversationMessageModel>
+    val messages: List<ConversationMessageModel>,
+    val isOtherTyping: Boolean
 )
 
 sealed class ConversationMessageModel {

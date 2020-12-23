@@ -2,10 +2,7 @@ package protocol
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import protocol.switchboard.SwitchBoardCommandParser
-import protocol.switchboard.SwitchBoardParseResult
-import protocol.switchboard.SwitchBoardReceiveCommand
-import protocol.switchboard.SwitchBoardSendCommand
+import protocol.switchboard.*
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -17,6 +14,9 @@ class SwitchBoardTransport {
     private val parser = SwitchBoardCommandParser()
     private var sequence: Int = 1
     private var joinContinuation: Continuation<Unit>? = null
+
+    var messageListener: ((String) -> Unit)? = null
+    var typingListener: (() -> Unit)? = null
     var isOpen = false
 
     fun connect(address: String, port: Int) {
@@ -42,18 +42,16 @@ class SwitchBoardTransport {
 
     suspend fun waitToJoin() = suspendCoroutine<Unit> { cont -> joinContinuation = cont }
 
-    suspend fun sendMsg(command: SwitchBoardSendCommand.MSG): SwitchBoardReceiveCommand.Msg =
-        suspendCoroutine { cont ->
-            val body = "MIME-Version: 1.0\r\n" +
-                    "Content-Type: text/plain; charset=UTF-8\r\n" +
-                    "X-MMS-IM-Format: FN=MS%20Sans%20Serif; EF=; CO=0; CS=0; PF=0\r\n\r\n" +
-                    command.message
-            val length = body.length
-            val message = "MSG $sequence U $length\r\n$body"
-            continuations[sequence] = cont as Continuation<SwitchBoardReceiveCommand>
-            socket.sendMessage(message, sendNewLine = false)
-            sequence++
-        }
+    suspend fun sendMsg(command: SwitchBoardSendCommand.MSG) {
+        val body = "MIME-Version: 1.0\r\n" +
+                "Content-Type: text/plain; charset=UTF-8\r\n" +
+                "X-MMS-IM-Format: FN=MS%20Sans%20Serif; EF=; CO=0; CS=0; PF=0\r\n\r\n" +
+                command.message
+        val length = body.length
+        val message = "MSG $sequence U $length\r\n$body"
+        socket.sendMessage(message, sendNewLine = false)
+        sequence++
+    }
 
     private fun sendMessage(message: String, continuation: Continuation<*>) {
         continuations[sequence] = continuation as Continuation<SwitchBoardReceiveCommand>
@@ -75,7 +73,12 @@ class SwitchBoardTransport {
                         joinContinuation = null
                     }
                     is SwitchBoardReceiveCommand.Msg -> {
-
+                        val body = socket.readRaw(command.length)
+                        when (val msg = MsgBodyParser().parse(body)) {
+                            is MsgBody.Message -> messageListener?.invoke(msg.text)
+                            is MsgBody.Typing -> typingListener?.invoke()
+                            MsgBody.Unknown -> println("No idea!")
+                        }
                     }
                     is SwitchBoardReceiveCommand.Bye -> {
                         socket.close()

@@ -15,7 +15,8 @@ class ConversationView(
 
     private val presenter = ConversationPresenter(
         this,
-        SendMessage(SwitchBoardManager)
+        SendMessage(SwitchBoardManager),
+        SwitchBoardManager
     )
 
     private lateinit var messageHistory: ListView<String>
