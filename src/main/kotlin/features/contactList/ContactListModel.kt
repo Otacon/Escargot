@@ -9,5 +9,5 @@ data class ContactListModel(
 
 data class ContactModel(
     val nickname: String,
-    val label: String
+    val passport: String
 )

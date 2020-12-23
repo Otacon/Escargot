@@ -67,12 +67,6 @@ class NotificationTransport {
             sendMessage(message, cont)
         }
 
-    suspend fun sendCal(request: SendCommand.CAL): ReceiveCommand.RNG =
-        suspendCoroutine { cont ->
-            val message = "CAL $sequence ${request.recipient}"
-            sendMessage(message, cont)
-        }
-
     suspend fun sendXfr(): ReceiveCommand.XFR =
         suspendCoroutine { cont ->
             val message = "XFR $sequence SB"

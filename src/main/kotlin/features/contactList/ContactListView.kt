@@ -3,6 +3,7 @@ package features.contactList
 import features.conversation.ConversationView
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
+import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
 import javafx.scene.control.TextField
 import javafx.scene.image.Image
@@ -13,7 +14,6 @@ import okhttp3.logging.HttpLoggingInterceptor
 import protocol.NotificationTransportManager
 import usecases.ChangeStatus
 import usecases.GetContacts
-import javafx.scene.control.ListCell
 
 
 class ContactListView(
@@ -43,7 +43,7 @@ class ContactListView(
             object : ListCell<ContactModel?>() {
                 override fun updateItem(item: ContactModel?, empty: Boolean) {
                     super.updateItem(item, empty)
-                    val label = item?.let { "${item.nickname} (${item.label})" }.orEmpty()
+                    val label = item?.let { "${item.nickname} (${item.passport})" }.orEmpty()
                     text = label
                 }
             }
@@ -69,7 +69,9 @@ class ContactListView(
     }
 
     override fun setProfilePicture(picture: String) {
-        profilePicture.image = Image(picture)
+        if (picture.isNotBlank()) {
+            profilePicture.image = Image(picture)
+        }
     }
 
     override fun setNickname(text: String) {
@@ -81,11 +83,10 @@ class ContactListView(
     }
 
     override fun setContacts(contacts: List<ContactModel>) {
-        val elements = contacts.map { it.nickname }
         contactList.items.addAll(contacts)
     }
 
     override fun openConversation(passport: String) {
-        ConversationView("orfeo18@hotmail.it")
+        ConversationView(passport)
     }
 }

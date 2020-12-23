@@ -53,7 +53,8 @@ class GetContacts(
             val mappedContacts = contacts.body.findAllResponse.findAllResponse.findAllResponse.map {
                 Contact(
                     it.contactInfo.passportName,
-                    it.contactInfo.displayName
+                    it.contactInfo.displayName,
+                    it.contactInfo.contactType
                 )
             }
             GetContactsResult.Success(mappedContacts)
@@ -75,7 +76,8 @@ sealed class GetContactsResult {
 
 data class Contact(
     val email: String,
-    val nickname: String
+    val nickname: String,
+    val contactType: String
 )
 
 
@@ -195,7 +197,11 @@ data class AbFindAllContactInfo(
 
     @field:Element(name = "displayName")
     @param:Element(name = "displayName")
-    val displayName: String
+    val displayName: String,
+
+    @field:Element(name = "contactType")
+    @param:Element(name = "contactType")
+    val contactType: String
 )
 
 

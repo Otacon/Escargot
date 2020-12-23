@@ -22,18 +22,16 @@ class ContactListPresenter(
     var model = ContactListModel(profilePicture = "", nickname = "", status = "", contacts = emptyList())
 
     override fun start() {
-        model = model.copy(
-            profilePicture = "https://scontent.flhr2-2.fna.fbcdn.net/v/t1.0-9/72196114_121124492622480_4683215129624444928_o.png?_nc_cat=111&ccb=2&_nc_sid=09cbfe&_nc_ohc=SefS3xA8pegAX_y_Cfv&_nc_ht=scontent.flhr2-2.fna&oh=984d0cb929d525cdabd183b6ec35733d&oe=5FEBFE36",
-            nickname = "Cyanotic",
-            status = "WLM is still alive!!!"
-        )
         launch(Dispatchers.IO) {
             delay(3000)
             changeStatus(Status.ONLINE)
             model = when (val contactResponse = getContacts(TokenHolder.token)) {
                 is GetContactsResult.Success -> {
-                    val contacts = contactResponse.contacts.map { ContactModel(it.nickname, it.email) }
-                    model.copy(contacts = contacts)
+                    val me = contactResponse.contacts.firstOrNull { it.contactType == "Me" }
+                    val contacts = contactResponse.contacts
+                        .filter { it.contactType == "Regular" }
+                        .map { ContactModel(it.nickname, it.email) }
+                    model.copy(contacts = contacts, nickname = me?.nickname ?: "")
                 }
                 GetContactsResult.Failure -> {
                     val contacts = emptyList<ContactModel>()
@@ -45,7 +43,7 @@ class ContactListPresenter(
     }
 
     override fun onContactClick(selectedContact: ContactModel) {
-        view.openConversation(selectedContact.label)
+        view.openConversation(selectedContact.passport)
     }
 
     private fun updateUI() = launch(Dispatchers.JavaFx) {
