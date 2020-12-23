@@ -23,7 +23,6 @@ class ContactListPresenter(
 
     override fun start() {
         launch(Dispatchers.IO) {
-            delay(3000)
             changeStatus(Status.ONLINE)
             model = when (val contactResponse = getContacts(TokenHolder.token)) {
                 is GetContactsResult.Success -> {

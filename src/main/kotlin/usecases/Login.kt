@@ -1,6 +1,5 @@
 package usecases
 
-import core.TokenHolder
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -54,6 +53,7 @@ class Login(
                     UUID.randomUUID().toString()
                 )
             )
+            transport.waitForMsgHotmail()
             LoginResult.Success
         } else {
             LoginResult.Failure

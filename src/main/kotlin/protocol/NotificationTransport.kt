@@ -20,6 +20,7 @@ class NotificationTransport {
     private val socket: NotificationSocket = NotificationSocket()
     private val parser = ReceiveCommandParser()
     private val continuations: MutableMap<Int, Continuation<ReceiveCommand>> = mutableMapOf()
+    private var continuationMsgHotmail: Continuation<Unit>? = null
     private var sequence: Int = 1
 
     fun connect() {
@@ -71,6 +72,11 @@ class NotificationTransport {
         suspendCoroutine { cont ->
             val message = "XFR $sequence SB"
             sendMessage(message, cont)
+        }
+
+    suspend fun waitForMsgHotmail(): Unit =
+        suspendCoroutine { cont ->
+            continuationMsgHotmail = cont
         }
 
     private fun sendMessage(message: String, continuation: Continuation<*>) {
@@ -147,6 +153,8 @@ class NotificationTransport {
         )
         println(profile)
         TokenHolder.token = profile.mspAuth
+        continuationMsgHotmail?.resume(Unit)
+        continuationMsgHotmail = null
     }
 
 }
