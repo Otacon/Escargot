@@ -1,26 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.Scene?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.Menu?>
-<?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.RowConstraints?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
 
 <Scene xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <VBox alignment="CENTER" maxWidth="1.7976931348623157E308" minWidth="350.0">
-      <MenuBar maxWidth="1.7976931348623157E308">
+      <MenuBar maxWidth="1.7976931348623157E308" VBox.vgrow="NEVER">
          <Menu mnemonicParsing="false" text="File">
             <MenuItem mnemonicParsing="false" text="Action 1" />
          </Menu>
       </MenuBar>
-      <GridPane hgap="10.0" vgap="10.0" VBox.vgrow="ALWAYS">
+      <GridPane hgap="10.0" vgap="10.0" VBox.vgrow="NEVER">
          <columnConstraints>
             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -33,9 +26,6 @@
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
          </VBox.margin>
          <ImageView id="profile_picture" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.rowSpan="2" GridPane.valignment="CENTER">
-            <GridPane.margin>
-               <Insets />
-            </GridPane.margin>
          </ImageView>
          <TextField id="nickname" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
          <TextField id="status" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" />
