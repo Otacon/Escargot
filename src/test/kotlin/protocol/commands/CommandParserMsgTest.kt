@@ -11,7 +11,7 @@ class CommandParserMsgTest {
     @Test
     fun parse() {
         val actual = parser.parse("MSG Hotmail Hotmail 1444")
-        val expected = ParseResult.Success(ReceiveCommand.MSG("Hotmail", "Hotmail", 1444))
+        val expected = ReceiveCommand.MSG("Hotmail", "Hotmail", 1444)
 
         assertEquals(expected, actual)
     }

@@ -11,8 +11,7 @@ class CommandParserVerTest {
     @Test
     fun parse() {
         val actual = parser.parse("VER 1 MSNP18 blah")
-        val expected =
-            ParseResult.Success(ReceiveCommand.VER(1, listOf(ProtocolVersion.MSNP18, ProtocolVersion.UNKNOWN)))
+        val expected = ReceiveCommand.VER(1, listOf(ProtocolVersion.MSNP18, ProtocolVersion.UNKNOWN))
 
         assertEquals(expected, actual)
     }

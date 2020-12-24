@@ -3,7 +3,6 @@ package protocol
 import core.TokenHolder
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import protocol.commands.ParseResult
 import protocol.commands.ReceiveCommand
 import protocol.commands.ReceiveCommandParser
 import protocol.commands.SendCommand
@@ -87,28 +86,24 @@ class NotificationTransport {
 
     private fun readNext() {
         val message = socket.readMessage()
-        when (val result = parser.parse(message)) {
-            ParseResult.Failed -> println("UnknownCommand")
-            is ParseResult.Success -> {
-                when (val command = result.command) {
-                    is ReceiveCommand.VER -> continuations[command.sequence]!!.resume(command)
-                    is ReceiveCommand.USRSSOStatus -> continuations[command.sequence]!!.resume(command)
-                    is ReceiveCommand.CVR -> continuations[command.sequence]!!.resume(command)
-                    is ReceiveCommand.GCF -> socket.readRaw(command.length)
-                    is ReceiveCommand.USRSSOAck -> continuations[command.sequence]!!.resume(command)
-                    is ReceiveCommand.MSG -> {
-                        val profileInfo = socket.readRaw(command.length)
-                        parseProfileInfo(profileInfo)
-                    }
-                    is ReceiveCommand.UBX -> socket.readRaw(command.length)
-                    is ReceiveCommand.CHG -> continuations[command.sequence]!!.resume(command)
-                    is ReceiveCommand.RNG -> {
-                        //TODO add ANS response here to accept a the switchboard invitation.
-                        println("Received a new chat: $result")
-                    }
-                    is ReceiveCommand.XFR -> continuations[command.sequence]!!.resume(command)
-                }
+        when (val command = parser.parse(message)) {
+            is ReceiveCommand.VER -> continuations[command.sequence]!!.resume(command)
+            is ReceiveCommand.USRSSOStatus -> continuations[command.sequence]!!.resume(command)
+            is ReceiveCommand.CVR -> continuations[command.sequence]!!.resume(command)
+            is ReceiveCommand.GCF -> socket.readRaw(command.length)
+            is ReceiveCommand.USRSSOAck -> continuations[command.sequence]!!.resume(command)
+            is ReceiveCommand.MSG -> {
+                val profileInfo = socket.readRaw(command.length)
+                parseProfileInfo(profileInfo)
             }
+            is ReceiveCommand.UBX -> socket.readRaw(command.length)
+            is ReceiveCommand.CHG -> continuations[command.sequence]!!.resume(command)
+            is ReceiveCommand.RNG -> {
+                //TODO add ANS response here to accept a the switchboard invitation.
+                println("Received a new chat: $command")
+            }
+            is ReceiveCommand.XFR -> continuations[command.sequence]!!.resume(command)
+            is ReceiveCommand.Unknown -> println("Unknown Command : $message")
         }
     }
 

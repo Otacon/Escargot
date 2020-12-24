@@ -14,13 +14,13 @@ class ReceiveCommandParser : CommandParser {
         CommandParserXfr()
     )
 
-    override fun parse(command: String): ParseResult {
-        for (parser in parsers) {
-            val result = parser.parse(command)
-            if (result is ParseResult.Success) {
+    override fun parse(command: String): ReceiveCommand {
+        parsers.forEach {
+            val result = it.parse(command)
+            if (result !is ReceiveCommand.Unknown) {
                 return result
             }
         }
-        return ParseResult.Failed
+        return ReceiveCommand.Unknown
     }
 }

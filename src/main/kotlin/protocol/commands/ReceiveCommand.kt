@@ -3,6 +3,7 @@ package protocol.commands
 import protocol.ProtocolVersion
 
 sealed class ReceiveCommand {
+
     data class VER(
         val sequence: Int,
         val protocols: List<ProtocolVersion>
@@ -66,4 +67,6 @@ sealed class ReceiveCommand {
         val port: Int,
         val auth: String
     ) : ReceiveCommand()
+
+    object Unknown: ReceiveCommand()
 }
