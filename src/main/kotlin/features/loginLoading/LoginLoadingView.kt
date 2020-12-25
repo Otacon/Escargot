@@ -1,5 +1,6 @@
 package features.loginLoading
 
+import core.ProfileManager
 import features.contactList.ContactListView
 import features.login.LoginView
 import javafx.fxml.FXMLLoader
@@ -25,7 +26,9 @@ class LoginLoadingView(
     private val presenter = LoginLoadingPresenter(
         this, Login(
             NotificationTransportManager.transport,
-            OkHttpClient.Builder().build(), RequestSecurityTokenParser()
+            OkHttpClient.Builder().build(),
+            RequestSecurityTokenParser(),
+            ProfileManager
         )
     )
 

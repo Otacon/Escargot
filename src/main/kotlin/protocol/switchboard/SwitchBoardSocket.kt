@@ -12,7 +12,7 @@ class SwitchBoardSocket {
     private lateinit var reader: BufferedReader
 
     fun connect(endpoint: String, port: Int) {
-        print("Connecting to $endpoint:$port...")
+        print("SB Connecting to $endpoint:$port...")
         socket = Socket(endpoint, port)
         writer = PrintWriter(socket.outputStream)
         reader = BufferedReader(InputStreamReader(socket.inputStream))
@@ -20,7 +20,7 @@ class SwitchBoardSocket {
     }
 
     fun sendMessage(message: String, sendNewLine: Boolean = true) {
-        print(">> ")
+        print("SB >> ")
         writer.write(message)
         if (sendNewLine) {
             writer.write("\r\n")
@@ -31,12 +31,12 @@ class SwitchBoardSocket {
 
     fun readMessage(): String {
         val response = reader.readLine()
-        println("<< $response")
+        println("SB << $response")
         return response
     }
 
     fun readRaw(length: Int): String {
-        print("<< ")
+        print("SB << ")
         var output = ""
         var remaining = length
         while (remaining > 0) {
@@ -49,7 +49,7 @@ class SwitchBoardSocket {
     }
 
     fun close() {
-        print("Closing connection...")
+        print("SB Closing connection...")
         writer.close()
         reader.close()
         socket.close()

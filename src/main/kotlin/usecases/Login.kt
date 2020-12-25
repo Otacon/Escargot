@@ -1,20 +1,22 @@
 package usecases
 
+import core.ProfileManager
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import protocol.notification.NotificationTransport
 import protocol.ProtocolVersion
 import protocol.notification.NotificationSendCommand
+import protocol.notification.NotificationTransport
 import protocol.security.TicketEncoder
 import protocol.soap.RequestSecurityTokenParser
 import java.util.*
 
 class Login(
-    val transport: NotificationTransport,
-    val httpClient: OkHttpClient,
-    val xmlParser: RequestSecurityTokenParser
+    private val transport: NotificationTransport,
+    private val httpClient: OkHttpClient,
+    private val xmlParser: RequestSecurityTokenParser,
+    private val profileManager: ProfileManager
 ) {
 
     suspend operator fun invoke(username: String, password: String): LoginResult {
@@ -28,7 +30,7 @@ class Login(
                 "i386",
                 "CyanoMSGR",
                 "1.0.0",
-                "orfeo18@hotmail.it"
+                username
             )
         )
         val usrResponse = transport.sendUsrSSOInit(NotificationSendCommand.USRSSOInit("orfeo18@hotmail.it"))
@@ -54,6 +56,7 @@ class Login(
                 )
             )
             transport.waitForMsgHotmail()
+            profileManager.passport = username
             LoginResult.Success
         } else {
             LoginResult.Failure

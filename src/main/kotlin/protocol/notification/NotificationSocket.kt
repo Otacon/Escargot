@@ -12,7 +12,7 @@ class NotificationSocket {
     private lateinit var reader: BufferedReader
 
     fun connect(endpoint: String = "35.185.200.209", port: Int = 1863) {
-        print("Connecting to $endpoint:$port...")
+        print("NT: Connecting to $endpoint:$port...")
         socket = Socket(endpoint, port)
         writer = PrintWriter(socket.outputStream)
         reader = BufferedReader(InputStreamReader(socket.inputStream))
@@ -20,7 +20,7 @@ class NotificationSocket {
     }
 
     fun sendMessage(message: String) {
-        print(">> ")
+        print("NT >> ")
         writer.write("$message\r\n")
         writer.flush()
         println(message)
@@ -28,12 +28,12 @@ class NotificationSocket {
 
     fun readMessage(): String {
         val response = reader.readLine()
-        println("<< $response")
+        println("NT << $response")
         return response
     }
 
     fun readRaw(length: Int): String {
-        print("<< ")
+        print("NT << ")
         var output = ""
         var remaining = length
         while (remaining > 0) {
@@ -46,7 +46,7 @@ class NotificationSocket {
     }
 
     fun close() {
-        print("Closing connection...")
+        print("NT Closing connection...")
         writer.close()
         reader.close()
         socket.close()

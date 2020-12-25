@@ -2,12 +2,13 @@ package core
 
 import protocol.notification.NotificationTransport
 import protocol.notification.NotificationTransportManager
-import protocol.switchboard.SwitchBoardTransport
 import protocol.switchboard.SwitchBoardSendCommand
+import protocol.switchboard.SwitchBoardTransport
 
 object SwitchBoardManager {
     private val transport: NotificationTransport = NotificationTransportManager.transport
     private val switchBoards = mutableMapOf<String, SwitchBoardTransport>()
+    private val profileManager = ProfileManager
 
     suspend fun getSwitchBoard(passport: String): SwitchBoardTransport {
         if (switchBoards.contains(passport) && switchBoards[passport]!!.isOpen.not()) {
@@ -18,7 +19,7 @@ object SwitchBoardManager {
             val result = transport.sendXfr()
             val switchboard = SwitchBoardTransport()
             switchboard.connect(result.address, result.port)
-            switchboard.sendUsr(SwitchBoardSendCommand.USR("orfeo.ciano@gmail.com", result.auth))
+            switchboard.sendUsr(SwitchBoardSendCommand.USR(profileManager.passport, result.auth))
             switchboard.sendCal(SwitchBoardSendCommand.CAL(passport))
             switchboard.waitToJoin()
             switchBoards[passport] = switchboard
