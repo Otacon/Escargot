@@ -1,11 +1,9 @@
-package protocol
+package protocol.notification
 
 import core.TokenHolder
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import protocol.commands.ReceiveCommand
-import protocol.commands.ReceiveCommandParser
-import protocol.commands.SendCommand
+import protocol.ProtocolVersion
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -18,7 +16,7 @@ class NotificationTransport {
 
     private val socket: NotificationSocket = NotificationSocket()
     private val parser = ReceiveCommandParser()
-    private val continuations: MutableMap<Int, Continuation<ReceiveCommand>> = mutableMapOf()
+    private val continuations: MutableMap<Int, Continuation<NotificationReceiveCommand>> = mutableMapOf()
     private var continuationMsgHotmail: Continuation<Unit>? = null
     private var sequence: Int = 1
 
@@ -31,7 +29,7 @@ class NotificationTransport {
         }
     }
 
-    suspend fun sendVer(request: SendCommand.VER): ReceiveCommand.VER = suspendCoroutine { cont ->
+    suspend fun sendVer(request: NotificationSendCommand.VER): NotificationReceiveCommand.VER = suspendCoroutine { cont ->
         val protocols = request.protocols.joinToString(" ") {
             when (it) {
                 ProtocolVersion.MSNP18 -> "MSNP18"
@@ -41,33 +39,33 @@ class NotificationTransport {
         sendMessage("VER $sequence $protocols", cont)
     }
 
-    suspend fun sendCvr(request: SendCommand.CVR): ReceiveCommand.CVR = suspendCoroutine { cont ->
+    suspend fun sendCvr(request: NotificationSendCommand.CVR): NotificationReceiveCommand.CVR = suspendCoroutine { cont ->
         val message = "CVR $sequence ${request.language} ${request.osType} " +
                 "${request.osVersion} ${request.arch} ${request.clientName} " +
                 "${request.clientVersion} msmgs ${request.passport}"
         sendMessage(message, cont)
     }
 
-    suspend fun sendUsrSSOInit(request: SendCommand.USRSSOInit): ReceiveCommand.USRSSOStatus =
+    suspend fun sendUsrSSOInit(request: NotificationSendCommand.USRSSOInit): NotificationReceiveCommand.USRSSOStatus =
         suspendCoroutine { cont ->
             val message = "USR $sequence SSO I ${request.passport}"
             sendMessage(message, cont)
         }
 
-    suspend fun sendUsrSSOStatus(request: SendCommand.USRSSOStatus): ReceiveCommand.USRSSOAck =
+    suspend fun sendUsrSSOStatus(request: NotificationSendCommand.USRSSOStatus): NotificationReceiveCommand.USRSSOAck =
         suspendCoroutine { cont ->
             val message = "USR $sequence SSO S t=${request.nonce} ${request.encryptedToken} {${request.machineGuid}}"
             sendMessage(message, cont)
         }
 
-    suspend fun sendChg(request: SendCommand.CHG): ReceiveCommand.CHG =
+    suspend fun sendChg(request: NotificationSendCommand.CHG): NotificationReceiveCommand.CHG =
         suspendCoroutine { cont ->
             //TODO set the client's capabilities
             val message = "CHG $sequence ${request.status} 0 0"
             sendMessage(message, cont)
         }
 
-    suspend fun sendXfr(): ReceiveCommand.XFR =
+    suspend fun sendXfr(): NotificationReceiveCommand.XFR =
         suspendCoroutine { cont ->
             val message = "XFR $sequence SB"
             sendMessage(message, cont)
@@ -79,7 +77,7 @@ class NotificationTransport {
         }
 
     private fun sendMessage(message: String, continuation: Continuation<*>) {
-        continuations[sequence] = continuation as Continuation<ReceiveCommand>
+        continuations[sequence] = continuation as Continuation<NotificationReceiveCommand>
         socket.sendMessage(message)
         sequence++
     }
@@ -87,23 +85,23 @@ class NotificationTransport {
     private fun readNext() {
         val message = socket.readMessage()
         when (val command = parser.parse(message)) {
-            is ReceiveCommand.VER -> continuations[command.sequence]!!.resume(command)
-            is ReceiveCommand.USRSSOStatus -> continuations[command.sequence]!!.resume(command)
-            is ReceiveCommand.CVR -> continuations[command.sequence]!!.resume(command)
-            is ReceiveCommand.GCF -> socket.readRaw(command.length)
-            is ReceiveCommand.USRSSOAck -> continuations[command.sequence]!!.resume(command)
-            is ReceiveCommand.MSG -> {
+            is NotificationReceiveCommand.VER -> continuations[command.sequence]!!.resume(command)
+            is NotificationReceiveCommand.USRSSOStatus -> continuations[command.sequence]!!.resume(command)
+            is NotificationReceiveCommand.CVR -> continuations[command.sequence]!!.resume(command)
+            is NotificationReceiveCommand.GCF -> socket.readRaw(command.length)
+            is NotificationReceiveCommand.USRSSOAck -> continuations[command.sequence]!!.resume(command)
+            is NotificationReceiveCommand.MSG -> {
                 val profileInfo = socket.readRaw(command.length)
                 parseProfileInfo(profileInfo)
             }
-            is ReceiveCommand.UBX -> socket.readRaw(command.length)
-            is ReceiveCommand.CHG -> continuations[command.sequence]!!.resume(command)
-            is ReceiveCommand.RNG -> {
+            is NotificationReceiveCommand.UBX -> socket.readRaw(command.length)
+            is NotificationReceiveCommand.CHG -> continuations[command.sequence]!!.resume(command)
+            is NotificationReceiveCommand.RNG -> {
                 //TODO add ANS response here to accept a the switchboard invitation.
                 println("Received a new chat: $command")
             }
-            is ReceiveCommand.XFR -> continuations[command.sequence]!!.resume(command)
-            is ReceiveCommand.Unknown -> println("Unknown Command : $message")
+            is NotificationReceiveCommand.XFR -> continuations[command.sequence]!!.resume(command)
+            is NotificationReceiveCommand.Unknown -> println("Unknown Command : $message")
         }
     }
 

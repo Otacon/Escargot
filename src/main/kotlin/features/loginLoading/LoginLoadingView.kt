@@ -9,10 +9,9 @@ import javafx.scene.control.Label
 import javafx.scene.control.ProgressBar
 import javafx.stage.Stage
 import okhttp3.OkHttpClient
-import protocol.NotificationTransportManager
+import protocol.notification.NotificationTransportManager
 import protocol.soap.RequestSecurityTokenParser
 import usecases.Login
-import kotlin.time.ExperimentalTime
 
 class LoginLoadingView(
     private val stage: Stage,

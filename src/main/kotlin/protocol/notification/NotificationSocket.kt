@@ -1,4 +1,4 @@
-package protocol
+package protocol.notification
 
 import java.io.BufferedReader
 import java.io.InputStreamReader

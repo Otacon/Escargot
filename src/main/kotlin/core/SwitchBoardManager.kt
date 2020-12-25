@@ -1,8 +1,8 @@
 package core
 
-import protocol.NotificationTransport
-import protocol.NotificationTransportManager
-import protocol.SwitchBoardTransport
+import protocol.notification.NotificationTransport
+import protocol.notification.NotificationTransportManager
+import protocol.switchboard.SwitchBoardTransport
 import protocol.switchboard.SwitchBoardSendCommand
 
 object SwitchBoardManager {

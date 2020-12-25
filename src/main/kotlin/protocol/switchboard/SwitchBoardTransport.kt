@@ -1,8 +1,7 @@
-package protocol
+package protocol.switchboard
 
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import protocol.switchboard.*
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine

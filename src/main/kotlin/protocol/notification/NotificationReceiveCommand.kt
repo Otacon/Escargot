@@ -1,25 +1,25 @@
-package protocol.commands
+package protocol.notification
 
 import protocol.ProtocolVersion
 
-sealed class ReceiveCommand {
+sealed class NotificationReceiveCommand {
 
     data class VER(
         val sequence: Int,
         val protocols: List<ProtocolVersion>
-    ) : ReceiveCommand()
+    ) : NotificationReceiveCommand()
 
     data class USRSSOStatus(
         val sequence: Int,
         val nonce: String
-    ) : ReceiveCommand()
+    ) : NotificationReceiveCommand()
 
     data class USRSSOAck(
         val sequence: Int,
         val email: String,
         val isVerified: Boolean,
         val isKid: Boolean
-    ) : ReceiveCommand()
+    ) : NotificationReceiveCommand()
 
     data class CVR(
         val sequence: Int,
@@ -27,30 +27,30 @@ sealed class ReceiveCommand {
         val recommendedVersion: String,
         val downloadUrl: String,
         val infoUrl: String
-    ) : ReceiveCommand()
+    ) : NotificationReceiveCommand()
 
     data class GCF(
         val length: Int
-    ) : ReceiveCommand()
+    ) : NotificationReceiveCommand()
 
     data class MSG(
         val email: String,
         val nick: String,
         val length: Int
-    ) : ReceiveCommand()
+    ) : NotificationReceiveCommand()
 
     data class UBX(
         val networkId: Int,
         val email: String,
         val length: Int
-    ) : ReceiveCommand()
+    ) : NotificationReceiveCommand()
 
     data class CHG(
         val sequence: Int,
         val status: String,
         val capabilities: String,
         val msnObj: String
-    ) : ReceiveCommand()
+    ) : NotificationReceiveCommand()
 
     data class RNG(
         val sessionId: String,
@@ -59,14 +59,14 @@ sealed class ReceiveCommand {
         val ticket: String,
         val passport: String,
         val inviteName: String
-    ) : ReceiveCommand()
+    ) : NotificationReceiveCommand()
 
     data class XFR(
         val sequence: Int,
         val address: String,
         val port: Int,
         val auth: String
-    ) : ReceiveCommand()
+    ) : NotificationReceiveCommand()
 
-    object Unknown: ReceiveCommand()
+    object Unknown: NotificationReceiveCommand()
 }

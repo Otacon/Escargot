@@ -11,7 +11,7 @@ import javafx.scene.image.ImageView
 import javafx.stage.Stage
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import protocol.NotificationTransportManager
+import protocol.notification.NotificationTransportManager
 import usecases.ChangeStatus
 import usecases.GetContacts
 

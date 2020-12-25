@@ -1,7 +1,7 @@
 package usecases
 
-import protocol.NotificationTransport
-import protocol.commands.SendCommand
+import protocol.notification.NotificationTransport
+import protocol.notification.NotificationSendCommand
 
 class ChangeStatus(
     private val transport: NotificationTransport
@@ -19,7 +19,7 @@ class ChangeStatus(
             Status.OFFLINE -> "FLN"
             Status.HIDDEN -> "HDN"
         }
-        transport.sendChg(SendCommand.CHG(literalStatus))
+        transport.sendChg(NotificationSendCommand.CHG(literalStatus))
         return ChangeStatusResult.Success
     }
 }

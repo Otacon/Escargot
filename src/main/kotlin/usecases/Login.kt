@@ -4,9 +4,9 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import protocol.NotificationTransport
+import protocol.notification.NotificationTransport
 import protocol.ProtocolVersion
-import protocol.commands.SendCommand
+import protocol.notification.NotificationSendCommand
 import protocol.security.TicketEncoder
 import protocol.soap.RequestSecurityTokenParser
 import java.util.*
@@ -19,9 +19,9 @@ class Login(
 
     suspend operator fun invoke(username: String, password: String): LoginResult {
         transport.connect()
-        val verResponse = transport.sendVer(SendCommand.VER(listOf(ProtocolVersion.MSNP18)))
+        val verResponse = transport.sendVer(NotificationSendCommand.VER(listOf(ProtocolVersion.MSNP18)))
         val cvrResponse = transport.sendCvr(
-            SendCommand.CVR(
+            NotificationSendCommand.CVR(
                 "0x0809",
                 "WINNT",
                 "6.2.0",
@@ -31,7 +31,7 @@ class Login(
                 "orfeo18@hotmail.it"
             )
         )
-        val usrResponse = transport.sendUsrSSOInit(SendCommand.USRSSOInit("orfeo18@hotmail.it"))
+        val usrResponse = transport.sendUsrSSOInit(NotificationSendCommand.USRSSOInit("orfeo18@hotmail.it"))
         val requestBody = DOC.replace("!username", username)
             .replace("!password", password)
             .toRequestBody("application/xml".toMediaType())
@@ -47,7 +47,7 @@ class Login(
             println("Token: $token")
             val decodedToken = TicketEncoder().encode(token!!.secret, usrResponse.nonce)
             val authResponse = transport.sendUsrSSOStatus(
-                SendCommand.USRSSOStatus(
+                NotificationSendCommand.USRSSOStatus(
                     token.nonce,
                     decodedToken,
                     UUID.randomUUID().toString()

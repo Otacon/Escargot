@@ -1,4 +1,4 @@
-package protocol.commands
+package protocol.notification
 
 class ReceiveCommandParser : CommandParser {
     private val parsers = listOf(
@@ -14,13 +14,13 @@ class ReceiveCommandParser : CommandParser {
         CommandParserXfr()
     )
 
-    override fun parse(command: String): ReceiveCommand {
+    override fun parse(command: String): NotificationReceiveCommand {
         parsers.forEach {
             val result = it.parse(command)
-            if (result !is ReceiveCommand.Unknown) {
+            if (result !is NotificationReceiveCommand.Unknown) {
                 return result
             }
         }
-        return ReceiveCommand.Unknown
+        return NotificationReceiveCommand.Unknown
     }
 }

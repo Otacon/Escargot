@@ -1,4 +1,4 @@
-package protocol.commands
+package protocol.notification
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -10,7 +10,7 @@ class CommandParserUserSSOStatusTest {
     @Test
     fun parse() {
         val actual = parser.parse("USR 4 SSO S MBI_KEY_OLD NONCE")
-        val expected = ReceiveCommand.USRSSOStatus(4, "NONCE")
+        val expected = NotificationReceiveCommand.USRSSOStatus(4, "NONCE")
         assertEquals(expected, actual)
     }
 }
