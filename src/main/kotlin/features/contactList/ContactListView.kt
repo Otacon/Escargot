@@ -9,11 +9,6 @@ import javafx.scene.control.TextField
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.stage.Stage
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import protocol.notification.NotificationTransportManager
-import usecases.ChangeStatus
-import usecases.GetContacts
 
 
 class ContactListView(
@@ -24,13 +19,7 @@ class ContactListView(
     private lateinit var nickname: TextField
     private lateinit var status: TextField
     private lateinit var contactList: ListView<ContactModel>
-    private val presenter = ContactListPresenter(
-        this,
-        ChangeStatus(NotificationTransportManager.transport),
-        GetContacts(OkHttpClient.Builder().addInterceptor(HttpLoggingInterceptor().also {
-            it.level = HttpLoggingInterceptor.Level.BODY
-        }).build())
-    )
+    private val presenter = ContactListPresenter(this,)
 
     init {
         val resource = javaClass.getResource("/ContactList.fxml")
@@ -83,6 +72,7 @@ class ContactListView(
     }
 
     override fun setContacts(contacts: List<ContactModel>) {
+        contactList.items.clear()
         contactList.items.addAll(contacts)
     }
 

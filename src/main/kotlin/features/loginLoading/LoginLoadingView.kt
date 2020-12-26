@@ -1,6 +1,5 @@
 package features.loginLoading
 
-import core.ProfileManager
 import features.contactList.ContactListView
 import features.login.LoginView
 import javafx.fxml.FXMLLoader
@@ -9,10 +8,6 @@ import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.ProgressBar
 import javafx.stage.Stage
-import okhttp3.OkHttpClient
-import protocol.notification.NotificationTransportManager
-import protocol.soap.RequestSecurityTokenParser
-import usecases.Login
 
 class LoginLoadingView(
     private val stage: Stage,
@@ -24,12 +19,8 @@ class LoginLoadingView(
     private lateinit var progressBar: ProgressBar
     private lateinit var progressText: Label
     private val presenter = LoginLoadingPresenter(
-        this, Login(
-            NotificationTransportManager.transport,
-            OkHttpClient.Builder().build(),
-            RequestSecurityTokenParser(),
-            ProfileManager
-        )
+        this,
+        core_new.ProfileManager
     )
 
     init {

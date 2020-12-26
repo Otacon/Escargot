@@ -1,6 +1,6 @@
 package protocol.notification
 
-import core.TokenHolder
+import core_new.ProfileManager
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import protocol.ProtocolVersion
@@ -145,7 +145,7 @@ class NotificationTransport {
             mpopEnabled = keyValues["MPOPEnabled"] == "1"
         )
         println(profile)
-        TokenHolder.token = profile.mspAuth
+        ProfileManager.token = profile.mspAuth
         continuationMsgHotmail?.resume(Unit)
         continuationMsgHotmail = null
     }

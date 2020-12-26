@@ -1,5 +1,6 @@
 package core
 
+import core_new.ProfileManager
 import protocol.notification.NotificationTransport
 import protocol.notification.NotificationTransportManager
 import protocol.switchboard.SwitchBoardSendCommand

@@ -1,19 +1,20 @@
-package usecases
+package core_new
 
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.logging.HttpLoggingInterceptor
 import org.simpleframework.xml.*
 import org.simpleframework.xml.core.Persister
 import java.io.StringWriter
 
+object ContactManager {
 
-class GetContacts(
-    private val client: OkHttpClient
-) {
+    var onContactListChanged: (() -> Unit)? = null
+    var contacts: MutableList<Contact> = mutableListOf()
 
-    suspend operator fun invoke(token: String): GetContactsResult {
+    suspend fun refreshContactList() {
         val persister: Serializer = Persister()
         val example = ABFindAllEnvelope(
             ABFindAllHeader(
@@ -36,49 +37,53 @@ class GetContacts(
             )
         )
         val writer = StringWriter()
+        val client = OkHttpClient.Builder().addInterceptor(HttpLoggingInterceptor().also {
+            it.level = HttpLoggingInterceptor.Level.BODY
+        }).build()
         writer.write("<?xml version=\"1.0\"?>\n")
         persister.write(example, writer)
-        val body = writer.buffer.toString()
+        val soapRequestBody = writer.buffer.toString()
         val request = Request.Builder()
             .url("https://m1.escargot.log1p.xyz/abservice/abservice.asmx")
-            .post(body = body.toRequestBody("text/xml".toMediaType()))
+            .post(body = soapRequestBody.toRequestBody("text/xml".toMediaType()))
             .addHeader("SOAPAction", "http://www.msn.com/webservices/AddressBook/ABFindAll")
-            .addHeader("Cookie", "MSPAuth=$token")
+            .addHeader("Cookie", "MSPAuth=${ProfileManager.token}")
             .build()
         val response = client.newCall(request).execute()
-        return if (response.isSuccessful) {
-            val serializer: Serializer = Persister()
-            val body = response.body!!.string()
-            val contacts = serializer.read(AbFindAllResponseEnvelope::class.java, body)
-            val mappedContacts = contacts.body.findAllResponse.findAllResponse.findAllResponse.map {
+
+        val serializer: Serializer = Persister()
+        val soapResponseBody = response.body!!.string()
+        val contacts = serializer.read(AbFindAllResponseEnvelope::class.java, soapResponseBody)
+        val newContacts = contacts.body.findAllResponse.findAllResponse.findAllResponse
+        val me = newContacts.firstOrNull { it.contactInfo.contactType == "Me" }
+        val others = newContacts
+            .filter { it.contactInfo.contactType == "Regular" }
+            .map {
                 Contact(
-                    it.contactInfo.passportName,
-                    it.contactInfo.displayName,
-                    it.contactInfo.contactType
+                    passport = it.contactInfo.passportName,
+                    nickname = it.contactInfo.displayName,
+                    status = Status.OFFLINE,
+                    personalMessage = ""
                 )
             }
-            GetContactsResult.Success(mappedContacts)
-        } else {
-            GetContactsResult.Failure
+        me?.let {
+            ProfileManager.nickname = me.contactInfo.displayName
+            ProfileManager.passport = me.contactInfo.passportName
+            ProfileManager.onUserInfoChanged?.invoke()
         }
+        this.contacts.clear()
+        this.contacts.addAll(others)
+        onContactListChanged?.invoke()
+    }
+
+    suspend fun addContact(passport: String) {
+
+    }
+
+    suspend fun removeContact(passport: String) {
+
     }
 }
-
-sealed class GetContactsResult {
-
-    data class Success(
-        val contacts: List<Contact>
-    ) : GetContactsResult()
-
-    object Failure : GetContactsResult()
-
-}
-
-data class Contact(
-    val email: String,
-    val nickname: String,
-    val contactType: String
-)
 
 
 //REQUEST
@@ -228,4 +233,11 @@ data class AbFindAllResponseServiceHeader(
     @param:Element(name = "SessionId")
     val sessionId: String
 
+)
+
+data class Contact(
+    var passport: String,
+    var nickname: String,
+    var status: Status,
+    var personalMessage: String
 )

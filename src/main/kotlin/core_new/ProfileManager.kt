@@ -1,25 +1,29 @@
-package usecases
+package core_new
 
-import core.ProfileManager
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import protocol.ProtocolVersion
 import protocol.notification.NotificationSendCommand
-import protocol.notification.NotificationTransport
+import protocol.notification.NotificationTransportManager
 import protocol.security.TicketEncoder
 import protocol.soap.RequestSecurityTokenParser
 import java.util.*
 
-class Login(
-    private val transport: NotificationTransport,
-    private val httpClient: OkHttpClient,
-    private val xmlParser: RequestSecurityTokenParser,
-    private val profileManager: ProfileManager
-) {
+object ProfileManager {
 
-    suspend operator fun invoke(username: String, password: String): LoginResult {
+    var onStatusChanged: (() -> Unit)? = null
+    var onUserInfoChanged: (() -> Unit)? = null
+
+    var passport: String = ""
+    var nickname: String = ""
+    var token: String = ""
+    var status: Status = Status.OFFLINE
+    var personalMessage: String = ""
+
+    suspend fun login(username: String, password: String) {
+        val transport = NotificationTransportManager.transport
         transport.connect()
         val verResponse = transport.sendVer(NotificationSendCommand.VER(listOf(ProtocolVersion.MSNP18)))
         val cvrResponse = transport.sendCvr(
@@ -41,34 +45,53 @@ class Login(
             .url("https://m1.escargot.log1p.xyz/RST.srf")
             .post(requestBody)
             .build()
+        val httpClient = OkHttpClient.Builder().build()
         val response = httpClient.newCall(request).execute()
-        return if (response.isSuccessful) {
-            val xml = response.body!!.string()
-            println("XML: $xml")
-            val token = xmlParser.parse(xml)
-            println("Token: $token")
-            val decodedToken = TicketEncoder().encode(token!!.secret, usrResponse.nonce)
-            val authResponse = transport.sendUsrSSOStatus(
-                NotificationSendCommand.USRSSOStatus(
-                    token.nonce,
-                    decodedToken,
-                    UUID.randomUUID().toString()
-                )
+        val xml = response.body!!.string()
+        println("XML: $xml")
+        val token = RequestSecurityTokenParser().parse(xml)
+        println("Token: $token")
+        val decodedToken = TicketEncoder().encode(token!!.secret, usrResponse.nonce)
+        val authResponse = transport.sendUsrSSOStatus(
+            NotificationSendCommand.USRSSOStatus(
+                token.nonce,
+                decodedToken,
+                UUID.randomUUID().toString()
             )
-            transport.waitForMsgHotmail()
-            profileManager.passport = username
-            LoginResult.Success
-        } else {
-            LoginResult.Failure
-        }
+        )
+        transport.waitForMsgHotmail()
+        changeStatus(Status.ONLINE)
+        passport = username
+        onUserInfoChanged?.invoke()
     }
-}
 
-sealed class LoginResult {
-    object Success : LoginResult()
-    object Failure : LoginResult()
-}
+    suspend fun changeStatus(status: Status) {
+        val literalStatus = when (status) {
+            Status.ONLINE -> "NLN"
+            Status.AWAY -> "AWY"
+            Status.BE_RIGHT_BACK -> "BRB"
+            Status.IDLE -> "IDL"
+            Status.OUT_TO_LUNCH -> "LUN"
+            Status.ON_THE_PHONE -> "PHN"
+            Status.BUSY -> "BSY"
+            Status.OFFLINE -> "FLN"
+            Status.HIDDEN -> "HDN"
+        }
+        val transport = NotificationTransportManager.transport
+        transport.sendChg(NotificationSendCommand.CHG(literalStatus))
+        this.status = status
+        onStatusChanged?.invoke()
+    }
 
+    suspend fun changeNick(nick: String) {
+
+    }
+
+    suspend fun changePersonalMessage(personalMessage: String) {
+
+    }
+
+}
 
 val DOC = """
     <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"
@@ -121,3 +144,18 @@ val DOC = """
        </Body>
     </Envelope>
 """.trimIndent()
+
+enum class Status {
+    ONLINE,
+    AWAY,
+    BE_RIGHT_BACK,
+    IDLE,
+    OUT_TO_LUNCH,
+    ON_THE_PHONE,
+    BUSY,
+    OFFLINE,
+    HIDDEN
+}
+
+
+

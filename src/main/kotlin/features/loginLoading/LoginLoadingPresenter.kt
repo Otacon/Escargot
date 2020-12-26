@@ -1,15 +1,17 @@
 package features.loginLoading
 
-import kotlinx.coroutines.*
+import core_new.ProfileManager
+import core_new.Status
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.javafx.JavaFx
-import usecases.Login
-import usecases.LoginResult
+import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.ExperimentalTime
 
 class LoginLoadingPresenter constructor(
     private val view: LoginLoadingContract.View,
-    private val login: Login
+    private val profileManager: ProfileManager
 ) : LoginLoadingContract.Presenter, CoroutineScope {
 
     private var model = LoginLoadingModel(
@@ -25,14 +27,15 @@ class LoginLoadingPresenter constructor(
     override fun start(username: String, password: String) {
         model = model.copy(username = username, password = password, text = "Protocol handshake...")
         updateUI()
-        launch(Dispatchers.IO) {
-            val result =login(username, password)
+        profileManager.onStatusChanged = {
             launch(Dispatchers.JavaFx) {
-                when (result) {
-                    LoginResult.Success -> view.goToContactList()
-                    LoginResult.Failure -> view.goToLogin()
+                if (profileManager.status != Status.OFFLINE) {
+                    view.goToContactList()
                 }
             }
+        }
+        launch(Dispatchers.IO) {
+            profileManager.login(username, password)
         }
     }
 
