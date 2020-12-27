@@ -1,5 +1,7 @@
 package protocol.switchboard
 
+import core_new.ConversationManager
+import core_new.Message
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlin.coroutines.Continuation
@@ -14,8 +16,6 @@ class SwitchBoardTransport {
     private var sequence: Int = 1
     private var joinContinuation: Continuation<Unit>? = null
 
-    var messageListener: ((String) -> Unit)? = null
-    var typingListener: (() -> Unit)? = null
     var isOpen = false
 
     fun connect(address: String, port: Int) {
@@ -36,6 +36,12 @@ class SwitchBoardTransport {
     suspend fun sendCal(command: SwitchBoardSendCommand.CAL): SwitchBoardReceiveCommand.Cal =
         suspendCoroutine { cont ->
             val message = "CAL $sequence ${command.passport}"
+            sendMessage(message, cont)
+        }
+
+    suspend fun sendAns(command: SwitchBoardSendCommand.ANS): SwitchBoardReceiveCommand.Ans =
+        suspendCoroutine { cont ->
+            val message = "ANS $sequence ${command.passport} ${command.auth} ${command.sessionId}"
             sendMessage(message, cont)
         }
 
@@ -74,8 +80,12 @@ class SwitchBoardTransport {
                     is SwitchBoardReceiveCommand.Msg -> {
                         val body = socket.readRaw(command.length)
                         when (val msg = MsgBodyParser().parse(body)) {
-                            is MsgBody.Message -> messageListener?.invoke(msg.text)
-                            is MsgBody.Typing -> typingListener?.invoke()
+                            is MsgBody.Message -> {
+                                val conversation = ConversationManager.getConversation(command.passport)
+                                conversation.messageHistory.add(Message(command.passport, msg.text))
+                                conversation.conversationChanged?.invoke()
+                            }
+                            is MsgBody.Typing -> println("Typing")
                             MsgBody.Unknown -> println("No idea!")
                         }
                     }
@@ -83,6 +93,12 @@ class SwitchBoardTransport {
                         socket.close()
                         joinContinuation = null
                         isOpen = false
+                    }
+                    is SwitchBoardReceiveCommand.Ans -> {
+                        println("Completed ANS.")
+                        continuations[command.sequence]?.resume(command)
+                    }
+                    is SwitchBoardReceiveCommand.Iro -> {
                     }
                 }
             }

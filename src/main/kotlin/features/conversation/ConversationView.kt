@@ -1,13 +1,12 @@
 package features.conversation
 
-import core.SwitchBoardManager
+import core_new.ConversationManager
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
 import javafx.scene.control.ListView
 import javafx.scene.control.TextArea
 import javafx.scene.input.KeyCode
 import javafx.stage.Stage
-import usecases.SendMessage
 
 class ConversationView(
     recipient: String
@@ -15,8 +14,7 @@ class ConversationView(
 
     private val presenter = ConversationPresenter(
         this,
-        SendMessage(SwitchBoardManager),
-        SwitchBoardManager
+        ConversationManager.getConversation(recipient)
     )
 
     private lateinit var messageHistory: ListView<String>
@@ -31,7 +29,7 @@ class ConversationView(
         bindViews(root)
         setupListeners()
         window.show()
-        presenter.start(recipient)
+        presenter.start()
     }
 
     override fun setWindowTitle(title: String) {

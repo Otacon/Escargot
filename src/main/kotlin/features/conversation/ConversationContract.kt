@@ -9,7 +9,7 @@ interface ConversationContract {
     }
 
     interface Presenter {
-        fun start(recipient: String)
+        fun start()
         fun onSendMessage(message: String)
     }
 

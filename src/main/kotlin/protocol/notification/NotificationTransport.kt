@@ -1,5 +1,6 @@
 package protocol.notification
 
+import core.SwitchBoardManager
 import core_new.ProfileManager
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -29,22 +30,24 @@ class NotificationTransport {
         }
     }
 
-    suspend fun sendVer(request: NotificationSendCommand.VER): NotificationReceiveCommand.VER = suspendCoroutine { cont ->
-        val protocols = request.protocols.joinToString(" ") {
-            when (it) {
-                ProtocolVersion.MSNP18 -> "MSNP18"
-                ProtocolVersion.UNKNOWN -> ""
+    suspend fun sendVer(request: NotificationSendCommand.VER): NotificationReceiveCommand.VER =
+        suspendCoroutine { cont ->
+            val protocols = request.protocols.joinToString(" ") {
+                when (it) {
+                    ProtocolVersion.MSNP18 -> "MSNP18"
+                    ProtocolVersion.UNKNOWN -> ""
+                }
             }
+            sendMessage("VER $sequence $protocols", cont)
         }
-        sendMessage("VER $sequence $protocols", cont)
-    }
 
-    suspend fun sendCvr(request: NotificationSendCommand.CVR): NotificationReceiveCommand.CVR = suspendCoroutine { cont ->
-        val message = "CVR $sequence ${request.language} ${request.osType} " +
-                "${request.osVersion} ${request.arch} ${request.clientName} " +
-                "${request.clientVersion} msmgs ${request.passport}"
-        sendMessage(message, cont)
-    }
+    suspend fun sendCvr(request: NotificationSendCommand.CVR): NotificationReceiveCommand.CVR =
+        suspendCoroutine { cont ->
+            val message = "CVR $sequence ${request.language} ${request.osType} " +
+                    "${request.osVersion} ${request.arch} ${request.clientName} " +
+                    "${request.clientVersion} msmgs ${request.passport}"
+            sendMessage(message, cont)
+        }
 
     suspend fun sendUsrSSOInit(request: NotificationSendCommand.USRSSOInit): NotificationReceiveCommand.USRSSOStatus =
         suspendCoroutine { cont ->
@@ -82,7 +85,7 @@ class NotificationTransport {
         sequence++
     }
 
-    private fun readNext() {
+    private suspend fun readNext() {
         val message = socket.readMessage()
         when (val command = parser.parse(message)) {
             is NotificationReceiveCommand.VER -> continuations[command.sequence]!!.resume(command)
@@ -97,10 +100,12 @@ class NotificationTransport {
             is NotificationReceiveCommand.UBX -> socket.readRaw(command.length)
             is NotificationReceiveCommand.CHG -> continuations[command.sequence]!!.resume(command)
             is NotificationReceiveCommand.RNG -> {
-                //TODO add ANS response here to accept a the switchboard invitation.
-                println("Received a new chat: $command")
+                SwitchBoardManager.inviteReceived(command.sessionId, command.address, command.port, command.passport, command.auth)
             }
-            is NotificationReceiveCommand.XFR -> continuations[command.sequence]!!.resume(command)
+            is NotificationReceiveCommand.XFR -> {
+                SwitchBoardManager.inviteSent(command.address, command.port, command.auth)
+                continuations[command.sequence]!!.resume(command)
+            }
             is NotificationReceiveCommand.Unknown -> println("Unknown Command : $message")
         }
     }

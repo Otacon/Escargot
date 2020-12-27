@@ -6,7 +6,9 @@ class SwitchBoardCommandParser : SwitchBoardParser {
         CommandParserCal(),
         CommandParserJoi(),
         CommandParserBye(),
-        CommandParserMsg()
+        CommandParserMsg(),
+        CommandParserIro(),
+        CommandParserAns()
     )
 
     override fun parse(command: String): SwitchBoardParseResult {
@@ -106,4 +108,39 @@ class CommandParserMsg : SwitchBoardParser {
         } ?: SwitchBoardParseResult.Failed
     }
 
+}
+
+class CommandParserIro : SwitchBoardParser {
+
+    private val regex = Regex("""IRO (\d+) (\d+) (\d+) (\S+) (\S+) (\S+)""")
+
+    override fun parse(command: String): SwitchBoardParseResult {
+        val match = regex.find(command)
+        return match?.let {
+            SwitchBoardParseResult.Success(
+                SwitchBoardReceiveCommand.Iro(
+                    sequence = it.groupValues[1].toInt(),
+                    index = it.groupValues[2].toInt(),
+                    rosterCount = it.groupValues[3].toInt(),
+                    passport = it.groupValues[4],
+                    nickname = it.groupValues[5],
+                    clientId = it.groupValues[6]
+                )
+            )
+        } ?: SwitchBoardParseResult.Failed
+    }
+}
+
+class CommandParserAns : SwitchBoardParser {
+
+    private val regex = Regex("""ANS (\d+) OK""")
+
+    override fun parse(command: String): SwitchBoardParseResult {
+        val match = regex.find(command)
+        return match?.let {
+            SwitchBoardParseResult.Success(
+                SwitchBoardReceiveCommand.Ans(sequence = it.groupValues[1].toInt())
+            )
+        } ?: SwitchBoardParseResult.Failed
+    }
 }

@@ -1,31 +1,27 @@
 package core
 
 import core_new.ProfileManager
-import protocol.notification.NotificationTransport
-import protocol.notification.NotificationTransportManager
 import protocol.switchboard.SwitchBoardSendCommand
 import protocol.switchboard.SwitchBoardTransport
 
 object SwitchBoardManager {
-    private val transport: NotificationTransport = NotificationTransportManager.transport
-    private val switchBoards = mutableMapOf<String, SwitchBoardTransport>()
-    private val profileManager = ProfileManager
+    val switchBoards = mutableMapOf<String, SwitchBoardTransport>()
+    val profileManager = ProfileManager
 
-    suspend fun getSwitchBoard(passport: String): SwitchBoardTransport {
-        if (switchBoards.contains(passport) && switchBoards[passport]!!.isOpen.not()) {
-            switchBoards.remove(passport)
-        }
+    suspend fun inviteReceived(sessionId: String, address: String, port: Int, passport: String, auth: String) {
+        val switchboard = SwitchBoardTransport()
+        switchboard.connect(address, port)
+        switchboard.sendAns(SwitchBoardSendCommand.ANS(profileManager.passport, auth, sessionId))
+        switchBoards[passport] = switchboard
+    }
 
-        if (!switchBoards.contains(passport)) {
-            val result = transport.sendXfr()
-            val switchboard = SwitchBoardTransport()
-            switchboard.connect(result.address, result.port)
-            switchboard.sendUsr(SwitchBoardSendCommand.USR(profileManager.passport, result.auth))
-            switchboard.sendCal(SwitchBoardSendCommand.CAL(passport))
-            switchboard.waitToJoin()
-            switchBoards[passport] = switchboard
-        }
-        return switchBoards[passport]!!
+    suspend fun inviteSent(address: String, port: Int, auth: String) {
+        val switchboard = SwitchBoardTransport()
+        switchboard.connect(address, port)
+        switchboard.sendUsr(SwitchBoardSendCommand.USR(profileManager.passport, auth))
+        switchboard.sendCal(SwitchBoardSendCommand.CAL("orfeo18@hotmail.it"))
+        switchboard.waitToJoin()
+        switchBoards["orfeo18@hotmail.it"] = switchboard
     }
 
 }

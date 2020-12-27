@@ -71,17 +71,18 @@ class CommandParserMsg : CommandParser {
 
 class CommandParserRng : CommandParser {
 
-    private val regex = Regex("""RNG (\S+) (\S+) CKI (\S+) (\S+) (\S+) U messenger.hotmail.com 1""")
+    private val regex = Regex("""RNG (\S+) (\S+):(\d+) CKI (\S+) (\S+) (\S+) U messenger.hotmail.com 1""")
 
     override fun parse(command: String): NotificationReceiveCommand {
         return regex.find(command)?.let {
             NotificationReceiveCommand.RNG(
                 sessionId = it.groupValues[1],
                 address = it.groupValues[2],
+                port = it.groupValues[3].toInt(),
                 authType = "CKI",
-                ticket = it.groupValues[3],
-                passport = it.groupValues[4],
-                inviteName = it.groupValues[5]
+                auth = it.groupValues[4],
+                passport = it.groupValues[5],
+                inviteName = it.groupValues[6]
             )
         } ?: NotificationReceiveCommand.Unknown
     }

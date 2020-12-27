@@ -27,4 +27,17 @@ sealed class SwitchBoardReceiveCommand {
         val nick: String,
         val length: Int
     ) : SwitchBoardReceiveCommand()
+
+    data class Ans(
+        val sequence: Int
+    ) : SwitchBoardReceiveCommand()
+
+    data class Iro(
+        val sequence: Int,
+        val index: Int,
+        val rosterCount: Int,
+        val passport: String,
+        val nickname: String,
+        val clientId: String
+    ) : SwitchBoardReceiveCommand()
 }

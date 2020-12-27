@@ -1,19 +1,17 @@
 package features.conversation
 
-import core.SwitchBoardManager
+import core_new.Conversation
+import core_new.Message
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
-import usecases.SendMessage
-import usecases.SendMessageResult
 import kotlin.coroutines.CoroutineContext
 
 class ConversationPresenter(
     private val view: ConversationContract.View,
-    private val sendMessage: SendMessage,
-    private val switchBoard: SwitchBoardManager
+    private val conversation: Conversation
 ) : ConversationContract.Presenter, CoroutineScope {
 
     private val job = Job()
@@ -21,28 +19,16 @@ class ConversationPresenter(
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.Main
 
-    override fun start(recipient: String) {
-        model = model.copy(recipient = recipient)
-        launch(Dispatchers.IO) {
-            switchBoard.getSwitchBoard(recipient).messageListener = ::onMessageReceived
-            switchBoard.getSwitchBoard(recipient).typingListener = ::onUserTyping
-        }
+    override fun start() {
+        model = model.copy(recipient = conversation.recipient)
+        conversation.conversationChanged = ::onMessageReceived
         updateUi()
     }
 
     override fun onSendMessage(message: String) {
         view.clearMessageInput()
         launch(Dispatchers.IO) {
-            model = when (sendMessage(message, model.recipient)) {
-                SendMessageResult.Success -> {
-                    val ownMessage = ConversationMessageModel.OwnMessage(System.currentTimeMillis(), message)
-                    model.copy(messages = model.messages + ownMessage)
-                }
-                SendMessageResult.Failure -> {
-                    val errorMessage = ConversationMessageModel.Error("Failed delivering the message: $message")
-                    model.copy(messages = model.messages + errorMessage)
-                }
-            }
+            conversation.sendMessage(Message("You", message))
             updateUi()
         }
     }
@@ -52,8 +38,13 @@ class ConversationPresenter(
         view.setHistory(model.messages)
     }
 
-    private fun onMessageReceived(text: String) {
-        val newHistory = model.messages + ConversationMessageModel.OtherMessage(System.currentTimeMillis(), text)
+    private fun onMessageReceived() {
+        val newHistory = conversation.messageHistory.map {
+            ConversationMessageModel.OwnMessage(
+                System.currentTimeMillis(),
+                it.content
+            )
+        }
         model = model.copy(messages = newHistory)
         updateUi()
     }

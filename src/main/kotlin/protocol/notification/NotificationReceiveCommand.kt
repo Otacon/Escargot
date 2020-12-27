@@ -55,8 +55,9 @@ sealed class NotificationReceiveCommand {
     data class RNG(
         val sessionId: String,
         val address: String,
+        val port: Int,
         val authType: String,
-        val ticket: String,
+        val auth: String,
         val passport: String,
         val inviteName: String
     ) : NotificationReceiveCommand()
