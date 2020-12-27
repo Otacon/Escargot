@@ -1,6 +1,6 @@
 package features.conversation
 
-import core_new.ConversationManager
+import core.ConversationManager
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
 import javafx.scene.control.ListView
@@ -40,7 +40,7 @@ class ConversationView(
         val messagesStr = messages.map {
             when (it) {
                 is ConversationMessageModel.OwnMessage -> "You:\n${it.message}"
-                is ConversationMessageModel.OtherMessage -> "Other:\n${it.message}"
+                is ConversationMessageModel.OtherMessage -> "${it.nickname}:\n${it.message}"
                 is ConversationMessageModel.Error -> "Error:\n${it.text}"
             }
         }

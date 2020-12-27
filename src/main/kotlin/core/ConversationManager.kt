@@ -1,11 +1,9 @@
-package core_new
+package core
 
-import core.SwitchBoardManager
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import protocol.notification.NotificationTransportManager
 import protocol.switchboard.SwitchBoardSendCommand
 
 object ConversationManager {
@@ -40,7 +38,7 @@ class Conversation(
             for (message in messageQueue) {
                 var switchBoard = SwitchBoardManager.switchBoards[recipient]
                 if (switchBoard == null || !switchBoard.isOpen) {
-                    NotificationTransportManager.transport.sendXfr()
+                    SwitchBoardManager.sendInvite(recipient)
                     switchBoard = SwitchBoardManager.switchBoards[recipient]!!
                 }
                 switchBoard.sendMsg(SwitchBoardSendCommand.MSG(message.content))
@@ -59,4 +57,6 @@ class Conversation(
 data class Message(
     val sender: String,
     val content: String
-)
+) {
+    val timestamp = System.currentTimeMillis()
+}

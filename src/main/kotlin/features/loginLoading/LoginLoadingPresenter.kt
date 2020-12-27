@@ -1,7 +1,7 @@
 package features.loginLoading
 
-import core_new.ProfileManager
-import core_new.Status
+import core.ProfileManager
+import core.Status
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

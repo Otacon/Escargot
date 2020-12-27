@@ -1,6 +1,6 @@
 package core
 
-import core_new.ProfileManager
+import protocol.notification.NotificationTransportManager
 import protocol.switchboard.SwitchBoardSendCommand
 import protocol.switchboard.SwitchBoardTransport
 
@@ -15,13 +15,14 @@ object SwitchBoardManager {
         switchBoards[passport] = switchboard
     }
 
-    suspend fun inviteSent(address: String, port: Int, auth: String) {
+    suspend fun sendInvite(passport: String) {
+        val xfr = NotificationTransportManager.transport.sendXfr()
         val switchboard = SwitchBoardTransport()
-        switchboard.connect(address, port)
-        switchboard.sendUsr(SwitchBoardSendCommand.USR(profileManager.passport, auth))
-        switchboard.sendCal(SwitchBoardSendCommand.CAL("orfeo18@hotmail.it"))
+        switchboard.connect(xfr.address, xfr.port)
+        switchboard.sendUsr(SwitchBoardSendCommand.USR(profileManager.passport, xfr.auth))
+        switchboard.sendCal(SwitchBoardSendCommand.CAL(passport))
         switchboard.waitToJoin()
-        switchBoards["orfeo18@hotmail.it"] = switchboard
+        switchBoards[passport] = switchboard
     }
 
 }

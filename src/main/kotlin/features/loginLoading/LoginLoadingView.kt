@@ -20,7 +20,7 @@ class LoginLoadingView(
     private lateinit var progressText: Label
     private val presenter = LoginLoadingPresenter(
         this,
-        core_new.ProfileManager
+        core.ProfileManager
     )
 
     init {

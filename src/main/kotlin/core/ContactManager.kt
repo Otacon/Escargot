@@ -1,4 +1,4 @@
-package core_new
+package core
 
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient

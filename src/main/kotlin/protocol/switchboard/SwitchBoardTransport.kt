@@ -1,7 +1,7 @@
 package protocol.switchboard
 
-import core_new.ConversationManager
-import core_new.Message
+import core.ConversationManager
+import core.Message
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlin.coroutines.Continuation

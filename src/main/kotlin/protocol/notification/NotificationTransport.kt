@@ -1,7 +1,7 @@
 package protocol.notification
 
+import core.ProfileManager
 import core.SwitchBoardManager
-import core_new.ProfileManager
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import protocol.ProtocolVersion
@@ -99,13 +99,14 @@ class NotificationTransport {
             }
             is NotificationReceiveCommand.UBX -> socket.readRaw(command.length)
             is NotificationReceiveCommand.CHG -> continuations[command.sequence]!!.resume(command)
-            is NotificationReceiveCommand.RNG -> {
-                SwitchBoardManager.inviteReceived(command.sessionId, command.address, command.port, command.passport, command.auth)
-            }
-            is NotificationReceiveCommand.XFR -> {
-                SwitchBoardManager.inviteSent(command.address, command.port, command.auth)
-                continuations[command.sequence]!!.resume(command)
-            }
+            is NotificationReceiveCommand.RNG -> SwitchBoardManager.inviteReceived(
+                command.sessionId,
+                command.address,
+                command.port,
+                command.passport,
+                command.auth
+            )
+            is NotificationReceiveCommand.XFR -> continuations[command.sequence]!!.resume(command)
             is NotificationReceiveCommand.Unknown -> println("Unknown Command : $message")
         }
     }

@@ -1,7 +1,7 @@
 package features.contactList
 
-import core_new.ContactManager
-import core_new.ProfileManager
+import core.ContactManager
+import core.ProfileManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
