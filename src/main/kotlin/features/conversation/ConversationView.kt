@@ -26,9 +26,9 @@ class ConversationView(
         val root = FXMLLoader.load<Scene>(resource)
         window = Stage()
         window.scene = root
+        window.show()
         bindViews(root)
         setupListeners()
-        window.show()
         presenter.start()
     }
 
