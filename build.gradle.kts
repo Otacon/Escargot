@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
+    id("java")
     kotlin("jvm") version "1.4.20"
     id("org.openjfx.javafxplugin") version "0.0.9"
     application
@@ -27,11 +28,12 @@ javafx {
     modules = listOf("javafx.controls", "javafx.fxml")
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
 }
 
 tasks.withType<KotlinCompile>().configureEach {
+    kotlinOptions.jvmTarget = "11"
     kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.time.ExperimentalTime"
 }
 
