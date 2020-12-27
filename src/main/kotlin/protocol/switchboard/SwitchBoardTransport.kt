@@ -22,7 +22,12 @@ class SwitchBoardTransport {
         socket.connect(address, port)
         GlobalScope.launch {
             while (true) {
-                readNext()
+                try {
+                    readNext()
+                } catch (e: Exception) {
+                    println("SB: Connection closed. Freeing thread.")
+                    break
+                }
             }
         }
     }
