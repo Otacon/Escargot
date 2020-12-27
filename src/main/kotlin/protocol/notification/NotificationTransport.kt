@@ -107,7 +107,7 @@ class NotificationTransport {
                 command.auth
             )
             is NotificationReceiveCommand.XFR -> continuations[command.sequence]!!.resume(command)
-            is NotificationReceiveCommand.Unknown -> println("Unknown Command : $message")
+            is NotificationReceiveCommand.Unknown -> println("NT - Unknown Command : $message")
         }
     }
 
