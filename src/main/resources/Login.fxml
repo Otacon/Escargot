@@ -24,7 +24,7 @@
                 <Insets bottom="40.0" />
             </VBox.margin>
             <ImageView fitHeight="120.0" fitWidth="120.0" pickOnBounds="true">
-                <Image url="@e-logo.png" />
+                <Image url="@blank-profile.png" />
             </ImageView>
         </Pane>
         <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="E-mail address:" />
