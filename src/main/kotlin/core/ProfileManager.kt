@@ -37,7 +37,7 @@ object ProfileManager {
                 username
             )
         )
-        val usrResponse = transport.sendUsrSSOInit(NotificationSendCommand.USRSSOInit("orfeo18@hotmail.it"))
+        val usrResponse = transport.sendUsrSSOInit(NotificationSendCommand.USRSSOInit(username))
         val requestBody = DOC.replace("!username", username)
             .replace("!password", password)
             .toRequestBody("application/xml".toMediaType())
