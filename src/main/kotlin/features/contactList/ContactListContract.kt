@@ -16,6 +16,7 @@ interface ContactListContract {
 
         fun start()
         fun onContactClick(selectedContact: ContactModel)
+        fun onContactFilterChanged(filter: String)
 
     }
 

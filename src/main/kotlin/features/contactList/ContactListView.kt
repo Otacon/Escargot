@@ -18,14 +18,16 @@ class ContactListView(
     private lateinit var profilePicture: ImageView
     private lateinit var nickname: TextField
     private lateinit var status: TextField
+    private lateinit var contactsFilter: TextField
     private lateinit var contactList: ListView<ContactModel>
-    private val presenter = ContactListPresenter(this,)
+    private val presenter = ContactListPresenter(this)
 
     init {
         val resource = javaClass.getResource("/ContactList.fxml")
         val root = FXMLLoader.load<Scene>(resource)
         stage.scene = root
         stage.isResizable = true
+        stage.show()
         bindViews(root)
         setupListeners()
         contactList.setCellFactory {
@@ -37,7 +39,6 @@ class ContactListView(
                 }
             }
         }
-        stage.show()
         presenter.start()
     }
 
@@ -45,6 +46,7 @@ class ContactListView(
         profilePicture = root.lookup("#profile_picture") as ImageView
         nickname = root.lookup("#nickname") as TextField
         status = root.lookup("#status") as TextField
+        contactsFilter = root.lookup("#contacts_filter") as TextField
         contactList = root.lookup("#contactList") as ListView<ContactModel>
     }
 
@@ -53,6 +55,12 @@ class ContactListView(
             if (event.clickCount == 2) {
                 val selectedItem = contactList.selectionModel.selectedItem
                 presenter.onContactClick(selectedItem)
+            }
+        }
+
+        contactsFilter.textProperty().addListener { _, old, new ->
+            if (old != new) {
+                presenter.onContactFilterChanged(new)
             }
         }
     }

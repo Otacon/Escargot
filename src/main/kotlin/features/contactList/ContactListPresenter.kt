@@ -17,7 +17,7 @@ class ContactListPresenter(
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.Main
 
-    var model = ContactListModel(profilePicture = "", nickname = "", status = "", contacts = emptyList())
+    var model = ContactListModel(profilePicture = "", nickname = "", status = "", filter = "", contacts = emptyList())
 
     override fun start() {
         ContactManager.onContactListChanged = {
@@ -39,11 +39,21 @@ class ContactListPresenter(
         view.openConversation(selectedContact.passport)
     }
 
+    override fun onContactFilterChanged(filter: String) {
+        model = model.copy(filter = filter)
+        updateUI()
+    }
+
     private fun updateUI() = launch(Dispatchers.JavaFx) {
         view.setProfilePicture(model.profilePicture)
         view.setNickname(model.nickname)
         view.setStatus(model.status)
-        view.setContacts(model.contacts)
+        view.setContacts(model.contacts.filter {
+            "${it.nickname} ${it.passport}".contains(
+                model.filter,
+                ignoreCase = true
+            )
+        })
     }
 
 

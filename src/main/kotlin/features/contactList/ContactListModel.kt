@@ -4,6 +4,7 @@ data class ContactListModel(
     val profilePicture: String,
     val nickname: String,
     val status: String,
+    val filter: String,
     val contacts : List<ContactModel>
 )
 
