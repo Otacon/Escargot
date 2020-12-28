@@ -7,11 +7,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
+import protocol.authentication.Authenticator
 import kotlin.coroutines.CoroutineContext
 
 class LoginLoadingPresenter constructor(
     private val view: LoginLoadingContract.View,
-    private val profileManager: ProfileManager
+    private val authenticator: Authenticator
 ) : LoginLoadingContract.Presenter, CoroutineScope {
 
     private var model = LoginLoadingModel(
@@ -27,15 +28,15 @@ class LoginLoadingPresenter constructor(
     override fun start(username: String, password: String) {
         model = model.copy(username = username, password = password, text = "Protocol handshake...")
         updateUI()
-        profileManager.onStatusChanged = {
-            launch(Dispatchers.JavaFx) {
-                if (profileManager.status != Status.OFFLINE) {
-                    view.goToContactList()
-                }
-            }
-        }
+//        profileManager.onStatusChanged = {
+//            launch(Dispatchers.JavaFx) {
+//                if (profileManager.status != Status.OFFLINE) {
+//                    view.goToContactList()
+//                }
+//            }
+//        }
         launch(Dispatchers.IO) {
-            profileManager.login(username, password)
+            authenticator.authenticate(username, password)
         }
     }
 

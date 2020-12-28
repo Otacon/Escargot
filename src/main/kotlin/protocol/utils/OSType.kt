@@ -1,4 +1,4 @@
-package protocol
+package protocol.utils
 
 enum class OSType {
     WINNT,

@@ -1,4 +1,4 @@
-package protocol
+package protocol.utils
 
 enum class LocaleId(val microsoftValue: String) {
     SaudiArabia("0x0401"),

@@ -8,6 +8,14 @@ import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.ProgressBar
 import javafx.stage.Stage
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import protocol.authentication.Authenticator
+import protocol.authentication.RequestMultipleSecurityTokensRequestFactory
+import protocol.notification.NotificationTransportManager
+import protocol.security.TicketEncoder
+import protocol.soap.RequestSecurityTokenParser
+import protocol.utils.SystemInfoRetrieverDesktop
 
 class LoginLoadingView(
     private val stage: Stage,
@@ -20,7 +28,15 @@ class LoginLoadingView(
     private lateinit var progressText: Label
     private val presenter = LoginLoadingPresenter(
         this,
-        core.ProfileManager
+        Authenticator(
+            SystemInfoRetrieverDesktop(),
+            NotificationTransportManager.transport,
+            OkHttpClient.Builder()
+                .addInterceptor(HttpLoggingInterceptor().also { it.level = HttpLoggingInterceptor.Level.BODY }).build(),
+            TicketEncoder(),
+            RequestMultipleSecurityTokensRequestFactory(),
+            RequestSecurityTokenParser()
+        )
     )
 
     init {

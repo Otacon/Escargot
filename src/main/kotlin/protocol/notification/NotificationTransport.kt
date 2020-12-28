@@ -6,6 +6,10 @@ import core.SwitchBoardManager
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import protocol.ProtocolVersion
+import protocol.utils.Arch
+import protocol.utils.LocaleId
+import protocol.utils.OSType
+import java.util.*
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -31,34 +35,51 @@ class NotificationTransport {
         }
     }
 
-    suspend fun sendVer(request: NotificationSendCommand.VER): NotificationReceiveCommand.VER =
+    suspend fun sendVer(protocols: List<ProtocolVersion>): NotificationReceiveCommand.VER =
         suspendCoroutine { cont ->
-            val protocols = request.protocols.joinToString(" ") {
+            val protocolsStr = protocols.joinToString(" ") {
                 when (it) {
                     ProtocolVersion.MSNP18 -> "MSNP18"
                     ProtocolVersion.UNKNOWN -> ""
                 }
             }
-            sendMessage("VER $sequence $protocols", cont)
+            sendMessage("VER $sequence $protocolsStr", cont)
         }
 
-    suspend fun sendCvr(request: NotificationSendCommand.CVR): NotificationReceiveCommand.CVR =
+    suspend fun sendCvr(
+        locale: LocaleId,
+        osType: OSType,
+        osVersion: String,
+        arch: Arch,
+        clientName: String,
+        clientVersion: String,
+        passport: String
+    ): NotificationReceiveCommand.CVR =
         suspendCoroutine { cont ->
-            val message = "CVR $sequence ${request.language} ${request.osType} " +
-                    "${request.osVersion} ${request.arch} ${request.clientName} " +
-                    "${request.clientVersion} msmgs ${request.passport}"
+            val language = locale.microsoftValue
+            val osTypeStr = when (osType) {
+                OSType.WINNT -> "win"
+                OSType.MACOSX -> "macos"
+                OSType.LINUX -> "linux"
+            }
+            val archStr = when (arch) {
+                Arch.I386 -> "i386"
+                Arch.AMD64 -> "amd64"
+            }
+            val message =
+                "CVR $sequence $language $osTypeStr $osVersion $archStr $clientName $clientVersion msmgs $passport"
             sendMessage(message, cont)
         }
 
-    suspend fun sendUsrSSOInit(request: NotificationSendCommand.USRSSOInit): NotificationReceiveCommand.USRSSOStatus =
+    suspend fun sendUsrSSOInit(passport: String): NotificationReceiveCommand.USRSSOStatus =
         suspendCoroutine { cont ->
-            val message = "USR $sequence SSO I ${request.passport}"
+            val message = "USR $sequence SSO I $passport"
             sendMessage(message, cont)
         }
 
-    suspend fun sendUsrSSOStatus(request: NotificationSendCommand.USRSSOStatus): NotificationReceiveCommand.USRSSOAck =
+    suspend fun sendUsrSSOStatus(nonce: String, encryptedToken: String, machineGuid: UUID): NotificationReceiveCommand.USRSSOAck =
         suspendCoroutine { cont ->
-            val message = "USR $sequence SSO S t=${request.nonce} ${request.encryptedToken} {${request.machineGuid}}"
+            val message = "USR $sequence SSO S t=$nonce $encryptedToken {$machineGuid}"
             sendMessage(message, cont)
         }
 
