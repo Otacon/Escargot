@@ -1,21 +1,21 @@
 package protocol.notification
 
-import java.io.BufferedReader
-import java.io.InputStreamReader
+import java.io.BufferedInputStream
 import java.io.PrintWriter
 import java.net.Socket
+import java.nio.charset.StandardCharsets
 
 class NotificationSocket {
 
     private lateinit var socket: Socket
     private lateinit var writer: PrintWriter
-    private lateinit var reader: BufferedReader
+    private lateinit var reader: BufferedInputStream
 
     fun connect(endpoint: String = "35.185.200.209", port: Int = 1863) {
         print("NT: Connecting to $endpoint:$port...")
         socket = Socket(endpoint, port)
         writer = PrintWriter(socket.outputStream)
-        reader = BufferedReader(InputStreamReader(socket.inputStream))
+        reader = BufferedInputStream(socket.inputStream)
         println("Done!")
     }
 
@@ -34,25 +34,7 @@ class NotificationSocket {
 
     fun readRaw(length: Int): String {
         print("NT << ")
-        var output = ""
-        var remaining = length
-        while (remaining > 0) {
-            val buffer = CharArray(remaining)
-            remaining -= reader.read(buffer)
-            output += String(buffer)
-        }
-        println(output)
-        return output
-    }
-
-    @Deprecated("For some reasons the server returns the wrong length.")
-    fun readUBXBody(): String {
-        print("NT << ")
-        var output = ""
-        while (!output.endsWith("</Data>")) {
-            val char = reader.read().toChar()
-            output += char
-        }
+        val output = String(reader.readNBytes(length), StandardCharsets.UTF_8)
         println(output)
         return output
     }
@@ -64,4 +46,13 @@ class NotificationSocket {
         socket.close()
         println("Done!")
     }
+}
+
+private fun BufferedInputStream.readLine(): String {
+    var output = ""
+    while (!output.endsWith("\r\n")) {
+        val char = this.read().toChar()
+        output += char
+    }
+    return output.trim()
 }

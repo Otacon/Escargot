@@ -101,7 +101,7 @@ class NotificationTransport {
             is NotificationReceiveCommand.UBX -> {
                 //val body = socket.readRaw(command.length)
                 if (command.length > 0) {
-                    val body = socket.readUBXBody()
+                    val body = socket.readRaw(command.length)
                     val data = UbxBodyParser().parse(body)
                     ContactManager.update(
                         passport = command.email,

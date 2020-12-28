@@ -33,7 +33,7 @@ class ConversationPresenter(
     override fun onSendMessage(message: String) {
         view.clearMessageInput()
         launch(Dispatchers.IO) {
-            conversation.sendMessage(Message(ProfileManager.passport, message))
+            conversation.sendMessage(Message(ProfileManager.passport, message.trim()))
             updateUi()
         }
     }
