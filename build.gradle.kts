@@ -4,7 +4,6 @@ plugins {
     id("java")
     kotlin("jvm") version "1.4.20"
     id("org.openjfx.javafxplugin") version "0.0.9"
-    id("com.palantir.graal") version "0.6.0"
     application
 }
 group = "me.orfeo"
@@ -36,11 +35,6 @@ java {
 tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions.jvmTarget = "11"
     kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.time.ExperimentalTime"
-}
-
-graal {
-    mainClass("MainKt")
-    outputName("Escargot")
 }
 
 application {
