@@ -2,6 +2,7 @@ package features.contactList
 
 import core.ContactManager
 import core.ProfileManager
+import core.Status
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -21,7 +22,8 @@ class ContactListPresenter(
 
     override fun start() {
         ContactManager.onContactListChanged = {
-            val contacts = ContactManager.contacts.map { ContactModel(it.nickname, it.passport, it.status) }
+            val contacts =
+                ContactManager.contacts.map { ContactModel(it.nickname, it.passport, it.personalMessage, it.status) }
             model = model.copy(contacts = contacts)
             updateUI()
         }
@@ -36,7 +38,9 @@ class ContactListPresenter(
     }
 
     override fun onContactClick(selectedContact: ContactModel) {
-        view.openConversation(selectedContact.passport)
+        if (selectedContact.status != Status.OFFLINE) {
+            view.openConversation(selectedContact.passport)
+        }
     }
 
     override fun onContactFilterChanged(filter: String) {
@@ -48,12 +52,10 @@ class ContactListPresenter(
         view.setProfilePicture(model.profilePicture)
         view.setNickname(model.nickname)
         view.setStatus(model.status)
-        view.setContacts(model.contacts.filter {
-            "${it.nickname} ${it.passport}".contains(
-                model.filter,
-                ignoreCase = true
-            )
-        })
+        val sortedList = model.contacts.filter {
+            "${it.nickname} ${it.passport}".contains(model.filter, ignoreCase = true)
+        }.sortedWith(compareBy({ it.status }, { it.nickname }, { it.passport }))
+        view.setContacts(sortedList)
     }
 
 

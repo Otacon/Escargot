@@ -2,6 +2,7 @@ package protocol.notification
 
 import core.Status
 import protocol.ProtocolVersion
+import java.net.URLDecoder
 
 interface CommandParser {
     fun parse(command: String): NotificationReceiveCommand
@@ -174,8 +175,8 @@ class CommandParserXfr : CommandParser {
 
 }
 
-class CommandParserNLN : CommandParser {
-    //NLN NLN 1:orfeo.ciano@gmail.com Cyanotic%20Test 0:0 %3Cmsnobj%2F%3E
+class CommandParserNln : CommandParser {
+
     private val regex = Regex("""NLN (\S+) 1:(\S+) (\S+) (\S+) (\S+)""")
 
     override fun parse(command: String): NotificationReceiveCommand {
@@ -192,11 +193,10 @@ class CommandParserNLN : CommandParser {
             }
             NotificationReceiveCommand.NLN(
                 status = status,
-                passport = group
-                        sequence = it . groupValues [1].toInt(),
-                address = it.groupValues[2],
-                port = it.groupValues[3].toInt(),
-                auth = it.groupValues[4]
+                passport = it.groupValues[2],
+                displayName = URLDecoder.decode(it.groupValues[3], "UTF-8"),
+                networkId = it.groupValues[4],
+                msnObj = URLDecoder.decode(it.groupValues[5], "UTF-8")
             )
         } ?: NotificationReceiveCommand.Unknown
     }

@@ -4,7 +4,7 @@ import core.Status.*
 import javafx.fxml.FXMLLoader
 import javafx.scene.control.Label
 import javafx.scene.control.ListCell
-import javafx.scene.control.TextField
+import javafx.scene.control.Tooltip
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.layout.HBox
@@ -50,7 +50,8 @@ class ContactListCell : ListCell<ContactModel>() {
 
         status.image = Image(javaClass.getResourceAsStream(icon))
         nick.text = item.nickname
-        personalMessage.text = item.passport
+        personalMessage.text = item.personalMessage
+        tooltip = Tooltip(item.passport)
     }
 
 }

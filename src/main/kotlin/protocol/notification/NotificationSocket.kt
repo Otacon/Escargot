@@ -45,6 +45,18 @@ class NotificationSocket {
         return output
     }
 
+    @Deprecated("For some reasons the server returns the wrong length.")
+    fun readUBXBody(): String {
+        print("NT << ")
+        var output = ""
+        while (!output.endsWith("</Data>")) {
+            val char = reader.read().toChar()
+            output += char
+        }
+        println(output)
+        return output
+    }
+
     fun close() {
         print("NT Closing connection...")
         writer.close()

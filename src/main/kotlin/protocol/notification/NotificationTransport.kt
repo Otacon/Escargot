@@ -1,5 +1,6 @@
 package protocol.notification
 
+import core.ContactManager
 import core.ProfileManager
 import core.SwitchBoardManager
 import kotlinx.coroutines.GlobalScope
@@ -97,7 +98,17 @@ class NotificationTransport {
                 val profileInfo = socket.readRaw(command.length)
                 parseProfileInfo(profileInfo)
             }
-            is NotificationReceiveCommand.UBX -> socket.readRaw(command.length)
+            is NotificationReceiveCommand.UBX -> {
+                //val body = socket.readRaw(command.length)
+                if (command.length > 0) {
+                    val body = socket.readUBXBody()
+                    val data = UbxBodyParser().parse(body)
+                    ContactManager.update(
+                        passport = command.email,
+                        personalMessage = data.personalMessage
+                    )
+                }
+            }
             is NotificationReceiveCommand.CHG -> continuations[command.sequence]!!.resume(command)
             is NotificationReceiveCommand.RNG -> SwitchBoardManager.inviteReceived(
                 command.sessionId,
@@ -107,6 +118,13 @@ class NotificationTransport {
                 command.auth
             )
             is NotificationReceiveCommand.XFR -> continuations[command.sequence]!!.resume(command)
+            is NotificationReceiveCommand.NLN -> {
+                ContactManager.update(
+                    passport = command.passport,
+                    nickname = command.displayName,
+                    status = command.status
+                )
+            }
             is NotificationReceiveCommand.Unknown -> println("NT - Unknown Command : $message")
         }
     }

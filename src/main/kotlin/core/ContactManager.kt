@@ -56,14 +56,12 @@ object ContactManager {
         val contacts = serializer.read(AbFindAllResponseEnvelope::class.java, soapResponseBody)
         val newContacts = contacts.body.findAllResponse.findAllResponse.findAllResponse
         val me = newContacts.firstOrNull { it.contactInfo.contactType == "Me" }
-        val others = newContacts
+        newContacts
             .filter { it.contactInfo.contactType == "Regular" }
             .map {
-                Contact(
+                update(
                     passport = it.contactInfo.passportName,
-                    nickname = it.contactInfo.displayName,
-                    status = Status.OFFLINE,
-                    personalMessage = ""
+                    nickname = it.contactInfo.displayName
                 )
             }
         me?.let {
@@ -71,9 +69,27 @@ object ContactManager {
             ProfileManager.passport = me.contactInfo.passportName
             ProfileManager.onUserInfoChanged?.invoke()
         }
-        this.contacts.clear()
-        this.contacts.addAll(others)
-        onContactListChanged?.invoke()
+    }
+
+    fun update(passport: String, nickname: String? = null, status: Status? = null, personalMessage: String? = null) {
+        if (passport != ProfileManager.passport) {
+            val originalContact = contacts.firstOrNull { it.passport == passport }
+            val updatedContact = originalContact?.let {
+                contacts.remove(it)
+                it.copy(
+                    nickname = nickname ?: it.nickname,
+                    status = status ?: it.status,
+                    personalMessage = personalMessage ?: it.personalMessage
+                )
+            } ?: Contact(
+                passport = passport,
+                nickname = nickname ?: "",
+                status = status ?: Status.OFFLINE,
+                personalMessage = personalMessage ?: ""
+            )
+            contacts.add(updatedContact)
+            onContactListChanged?.invoke()
+        }
     }
 
     suspend fun addContact(passport: String) {

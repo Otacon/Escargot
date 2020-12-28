@@ -13,5 +13,6 @@ data class ContactListModel(
 data class ContactModel(
     val nickname: String,
     val passport: String,
+    val personalMessage: String,
     val status: Status
 )
