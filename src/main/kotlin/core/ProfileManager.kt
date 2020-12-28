@@ -48,9 +48,7 @@ object ProfileManager {
         val httpClient = OkHttpClient.Builder().build()
         val response = httpClient.newCall(request).execute()
         val xml = response.body!!.string()
-        println("XML: $xml")
         val token = RequestSecurityTokenParser().parse(xml)
-        println("Token: $token")
         val decodedToken = TicketEncoder().encode(token!!.secret, usrResponse.nonce)
         val authResponse = transport.sendUsrSSOStatus(
             NotificationSendCommand.USRSSOStatus(

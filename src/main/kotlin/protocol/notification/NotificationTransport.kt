@@ -125,42 +125,42 @@ class NotificationTransport {
                 }
             }
         }.toMap()
-        val profile = ProfileInformation(
-            MIMEVersion = keyValues["MIME-Version"].orEmpty(),
-            contentType = keyValues["Content-Type"].orEmpty(),
-            loginTime = keyValues["LoginTime"]?.toLong() ?: -1,
-            emailEnabled = keyValues["EmailEnabled"] == "1",
-            memberHighId = keyValues["MemberIdHigh"]?.toLong() ?: -1,
-            memberLowId = keyValues["MemberIdLow"]?.toLong() ?: -1,
-            langPreference = keyValues["lang_preference"]?.toInt() ?: -1,
-            preferredEmail = keyValues["preferredEmail"],
-            country = keyValues["country"],
-            postalCode = keyValues["PostalCode"],
-            gender = keyValues["Gender"],
-            isKid = keyValues["Kid"] == "1",
-            age = keyValues["Age"].orEmpty(),
-            birthDayPresent = keyValues["BDayPre"].orEmpty(),
-            birthday = keyValues["Birthday"].orEmpty(),
-            wallet = keyValues["Wallet"].orEmpty(),
-            flags = keyValues["Flags"]?.toInt() ?: -1,
-            sid = keyValues["sid"]?.toInt() ?: -1,
-            mspAuth = keyValues["MSPAuth"].orEmpty(),
-            clientIp = keyValues["ClientIP"].orEmpty(),
-            clientPort = keyValues["ClientPort"]?.toInt() ?: -1,
-            abchMigrated = keyValues["ABCHMigrated"] == "1",
-            mpopEnabled = keyValues["MPOPEnabled"] == "1"
-        )
-        println(profile)
-        ProfileManager.token = profile.mspAuth
-        continuationMsgHotmail?.resume(Unit)
-        continuationMsgHotmail = null
+        val contentType = keyValues["Content-Type"].orEmpty()
+        if (contentType.contains("text/x-msmsgsprofile")) {
+            val profile = ProfileInformation(
+                MIMEVersion = keyValues["MIME-Version"].orEmpty(),
+                loginTime = keyValues["LoginTime"]?.toLong() ?: -1,
+                emailEnabled = keyValues["EmailEnabled"] == "1",
+                memberHighId = keyValues["MemberIdHigh"]?.toLong() ?: -1,
+                memberLowId = keyValues["MemberIdLow"]?.toLong() ?: -1,
+                langPreference = keyValues["lang_preference"]?.toInt() ?: -1,
+                preferredEmail = keyValues["preferredEmail"],
+                country = keyValues["country"],
+                postalCode = keyValues["PostalCode"],
+                gender = keyValues["Gender"],
+                isKid = keyValues["Kid"] == "1",
+                age = keyValues["Age"].orEmpty(),
+                birthDayPresent = keyValues["BDayPre"].orEmpty(),
+                birthday = keyValues["Birthday"].orEmpty(),
+                wallet = keyValues["Wallet"].orEmpty(),
+                flags = keyValues["Flags"]?.toInt() ?: -1,
+                sid = keyValues["sid"]?.toInt() ?: -1,
+                mspAuth = keyValues["MSPAuth"].orEmpty(),
+                clientIp = keyValues["ClientIP"].orEmpty(),
+                clientPort = keyValues["ClientPort"]?.toInt() ?: -1,
+                abchMigrated = keyValues["ABCHMigrated"] == "1",
+                mpopEnabled = keyValues["MPOPEnabled"] == "1"
+            )
+            ProfileManager.token = profile.mspAuth
+            continuationMsgHotmail?.resume(Unit)
+            continuationMsgHotmail = null
+        }
     }
 
 }
 
 data class ProfileInformation(
     val MIMEVersion: String,
-    val contentType: String,
     val loginTime: Long,
     val emailEnabled: Boolean,
     val memberHighId: Long,
