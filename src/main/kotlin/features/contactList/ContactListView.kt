@@ -30,15 +30,7 @@ class ContactListView(
         stage.show()
         bindViews(root)
         setupListeners()
-        contactList.setCellFactory {
-            object : ListCell<ContactModel?>() {
-                override fun updateItem(item: ContactModel?, empty: Boolean) {
-                    super.updateItem(item, empty)
-                    val label = item?.let { "${item.nickname} (${item.passport})" }.orEmpty()
-                    text = label
-                }
-            }
-        }
+        contactList.setCellFactory { ContactListCell() }
         presenter.start()
     }
 

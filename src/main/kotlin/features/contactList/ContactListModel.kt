@@ -1,5 +1,7 @@
 package features.contactList
 
+import core.Status
+
 data class ContactListModel(
     val profilePicture: String,
     val nickname: String,
@@ -10,5 +12,6 @@ data class ContactListModel(
 
 data class ContactModel(
     val nickname: String,
-    val passport: String
+    val passport: String,
+    val status: Status
 )

@@ -1,5 +1,6 @@
 package protocol.notification
 
+import core.Status
 import protocol.ProtocolVersion
 
 sealed class NotificationReceiveCommand {
@@ -69,5 +70,13 @@ sealed class NotificationReceiveCommand {
         val auth: String
     ) : NotificationReceiveCommand()
 
-    object Unknown: NotificationReceiveCommand()
+    data class NLN(
+        val status: Status,
+        val passport: String,
+        val displayName: String,
+        val networkId: String,
+        val msnObj: String
+    ) : NotificationReceiveCommand()
+
+    object Unknown : NotificationReceiveCommand()
 }

@@ -21,7 +21,7 @@ class ContactListPresenter(
 
     override fun start() {
         ContactManager.onContactListChanged = {
-            val contacts = ContactManager.contacts.map { ContactModel(it.nickname, it.passport) }
+            val contacts = ContactManager.contacts.map { ContactModel(it.nickname, it.passport, it.status) }
             model = model.copy(contacts = contacts)
             updateUI()
         }

@@ -1,5 +1,6 @@
 package protocol.notification
 
+import core.Status
 import protocol.ProtocolVersion
 
 interface CommandParser {
@@ -164,6 +165,35 @@ class CommandParserXfr : CommandParser {
         return regex.find(command)?.let {
             NotificationReceiveCommand.XFR(
                 sequence = it.groupValues[1].toInt(),
+                address = it.groupValues[2],
+                port = it.groupValues[3].toInt(),
+                auth = it.groupValues[4]
+            )
+        } ?: NotificationReceiveCommand.Unknown
+    }
+
+}
+
+class CommandParserNLN : CommandParser {
+    //NLN NLN 1:orfeo.ciano@gmail.com Cyanotic%20Test 0:0 %3Cmsnobj%2F%3E
+    private val regex = Regex("""NLN (\S+) 1:(\S+) (\S+) (\S+) (\S+)""")
+
+    override fun parse(command: String): NotificationReceiveCommand {
+        return regex.find(command)?.let {
+            val status = when (it.groupValues[1]) {
+                "NLN" -> Status.ONLINE
+                "BSY" -> Status.BUSY
+                "IDL" -> Status.IDLE
+                "BRB" -> Status.BE_RIGHT_BACK
+                "AWY" -> Status.AWAY
+                "PHN" -> Status.ON_THE_PHONE
+                "LUN" -> Status.OUT_TO_LUNCH
+                else -> Status.OFFLINE
+            }
+            NotificationReceiveCommand.NLN(
+                status = status,
+                passport = group
+                        sequence = it . groupValues [1].toInt(),
                 address = it.groupValues[2],
                 port = it.groupValues[3].toInt(),
                 auth = it.groupValues[4]

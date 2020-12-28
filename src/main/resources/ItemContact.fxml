@@ -7,12 +7,12 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <HBox spacing="10.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
-    <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+    <ImageView id="status" fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
         <HBox.margin>
             <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
         </HBox.margin>
         <Image url="@status-online.png"/>
     </ImageView>
-    <Label alignment="CENTER" maxHeight="1.7976931348623157E308" text="Nick" textFill="black"/>
-    <Label alignment="CENTER" maxHeight="1.7976931348623157E308" text="Status" textFill="gray"/>
+    <Label id="nick" alignment="CENTER" maxHeight="1.7976931348623157E308" text="Nick" textFill="black"/>
+    <Label id="personal_message" alignment="CENTER" maxHeight="1.7976931348623157E308" text="Status" textFill="gray"/>
 </HBox>
