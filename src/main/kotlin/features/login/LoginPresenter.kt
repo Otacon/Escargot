@@ -55,6 +55,10 @@ class LoginPresenter(
         view.goToLoading(model.username, model.password)
     }
 
+    override fun onSignupClicked() {
+        view.openWebBrowser("https://escargot.log1p.xyz/register")
+    }
+
     private fun isLoginEnabled(username: String, password: String): Boolean {
         return username.isNotBlank() && password.isNotBlank()
     }

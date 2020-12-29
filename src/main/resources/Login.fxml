@@ -1,18 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.Scene?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.PasswordField?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
 <Scene xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
     <VBox id="layout_login" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="500.0" prefWidth="350.0">
@@ -27,8 +20,15 @@
                 <Image url="@blank-profile.png" />
             </ImageView>
         </Pane>
+        <TextFlow prefHeight="200.0" prefWidth="200.0">
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Sign in with your Escargot account. Don't have one?" wrappingWidth="230.0" />
+            <Hyperlink fx:id="signupHyperlink" text="Sign Up." />
+         <VBox.margin>
+            <Insets bottom="15.0" />
+         </VBox.margin>
+        </TextFlow>
         <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="E-mail address:" />
-        <TextField id="username">
+        <TextField fx:id="textUsername">
             <VBox.margin>
                 <Insets />
             </VBox.margin>
@@ -38,7 +38,7 @@
                 <Insets top="10.0" />
             </VBox.margin>
         </Label>
-        <PasswordField id="password">
+        <PasswordField fx:id="textPassword">
             <VBox.margin>
                 <Insets />
             </VBox.margin>
@@ -61,22 +61,22 @@
                 </opaqueInsets>
             </ComboBox>
         </HBox>
-        <CheckBox id="check_remember_user_profile" disable="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Remember me">
+        <CheckBox fx:id="checkRememberUserProfile" disable="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Remember me">
             <VBox.margin>
                 <Insets top="40.0" />
             </VBox.margin>
         </CheckBox>
-        <CheckBox id="check_remember_password" disable="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Remember my password">
+        <CheckBox fx:id="checkRememberPassword" disable="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Remember my password">
             <VBox.margin>
                 <Insets top="16.0" />
             </VBox.margin>
         </CheckBox>
-        <CheckBox id="check_access_automatically" disable="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Sign me in automatically">
+        <CheckBox fx:id="checkAccessAutomatically" disable="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Sign me in automatically">
             <VBox.margin>
                 <Insets top="16.0" />
             </VBox.margin>
         </CheckBox>
-        <Button id="button_login" disable="true" mnemonicParsing="false" text="Sign In">
+        <Button fx:id="buttonLogin" disable="true" mnemonicParsing="false" text="Sign In">
             <VBox.margin>
                 <Insets top="32.0" />
             </VBox.margin>

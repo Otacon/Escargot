@@ -45,6 +45,7 @@ class ConversationView(
             }
         }
         //TODO find a way to make this trash perform much better without refreshing the whole UI.
+        window.toFront();
         messageHistory.items.clear()
         messageHistory.items.addAll(messagesStr)
     }

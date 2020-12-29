@@ -12,9 +12,9 @@ class SystemInfoRetrieverDesktop : SystemInfoRetriever {
             "amd64" -> Arch.AMD64
             else -> Arch.I386
         }
-        val osType = when (System.getProperty("os.name")) {
-            "Windows" -> OSType.WINNT
-            "MacOs" -> OSType.MACOSX
+        val osType = when (System.getProperty("os.name").toLowerCase()) {
+            "windows" -> OSType.WINNT
+            "macosx" -> OSType.MACOSX
             else -> OSType.LINUX
         }
         val osVersion = System.getProperty("os.version")

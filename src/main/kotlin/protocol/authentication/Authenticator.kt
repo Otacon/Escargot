@@ -1,7 +1,6 @@
 package protocol.authentication
 
 import core.ProfileManager.changeStatus
-import core.ProfileManager.onUserInfoChanged
 import core.ProfileManager.passport
 import core.Status
 import okhttp3.MediaType.Companion.toMediaType
@@ -14,6 +13,7 @@ import protocol.notification.NotificationTransport
 import protocol.security.TicketEncoder
 import protocol.soap.RequestSecurityTokenParser
 import protocol.utils.SystemInfoRetriever
+import java.io.IOException
 import java.util.*
 
 class Authenticator(
@@ -58,11 +58,15 @@ class Authenticator(
             .post(requestBody)
             .build()
 
-        val response = okHttpClient
-            .newCall(request)
-            .execute()
+        val response = try {
+            okHttpClient
+                .newCall(request)
+                .execute()
+        } catch (e: IOException) {
+            return AuthenticationResult.ServerError
+        }
 
-        if(response.isSuccessful.not()){
+        if (response.isSuccessful.not()) {
             return AuthenticationResult.InvalidPassword
         }
         val xml = response.body!!.string()
@@ -85,5 +89,5 @@ sealed class AuthenticationResult {
     object UnsupportedProtocol : AuthenticationResult()
     object InvalidPassword : AuthenticationResult()
     object ServerError : AuthenticationResult()
-    object Success: AuthenticationResult()
+    object Success : AuthenticationResult()
 }

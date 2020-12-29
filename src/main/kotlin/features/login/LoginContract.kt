@@ -10,8 +10,8 @@ interface LoginContract {
         fun setRememberPasswordChecked(isChecked: Boolean)
         fun setAccessAutomatically(isChecked: Boolean)
         fun setLoginEnabled(loginEnabled: Boolean)
-        fun setProgress(progress: Double)
         fun goToLoading(username: String, password: String)
+        fun openWebBrowser(url: String)
 
     }
 
@@ -24,6 +24,7 @@ interface LoginContract {
         fun onRememberPasswordChecked(isChecked: Boolean)
         fun onAccessAutomaticallyChecked(isChecked: Boolean)
         fun onLoginClicked()
+        fun onSignupClicked()
 
     }
 
