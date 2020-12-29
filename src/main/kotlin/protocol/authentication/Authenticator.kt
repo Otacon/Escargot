@@ -62,9 +62,12 @@ class Authenticator(
             .newCall(request)
             .execute()
 
+        if(response.isSuccessful.not()){
+            return AuthenticationResult.InvalidPassword
+        }
         val xml = response.body!!.string()
-        val token = requestSecurityTokenParser.parse(xml)
-        val decodedToken = ticketEncoder.encode(token!!.secret, usrResponse.nonce)
+        val token = requestSecurityTokenParser.parse(xml) ?: return AuthenticationResult.ServerError
+        val decodedToken = ticketEncoder.encode(token.secret, usrResponse.nonce)
 
         transport.sendUsrSSOStatus(
             nonce = token.nonce,
@@ -74,12 +77,13 @@ class Authenticator(
         transport.waitForMsgHotmail()
         changeStatus(Status.ONLINE)
         passport = username
-        onUserInfoChanged?.invoke()
         return AuthenticationResult.Success
     }
 }
 
 sealed class AuthenticationResult {
     object UnsupportedProtocol : AuthenticationResult()
+    object InvalidPassword : AuthenticationResult()
+    object ServerError : AuthenticationResult()
     object Success: AuthenticationResult()
 }

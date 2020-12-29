@@ -1,12 +1,11 @@
 package features.loginLoading
 
-import core.ProfileManager
-import core.Status
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
+import protocol.authentication.AuthenticationResult
 import protocol.authentication.Authenticator
 import kotlin.coroutines.CoroutineContext
 
@@ -28,15 +27,17 @@ class LoginLoadingPresenter constructor(
     override fun start(username: String, password: String) {
         model = model.copy(username = username, password = password, text = "Protocol handshake...")
         updateUI()
-        ProfileManager.onStatusChanged = {
+        launch(Dispatchers.IO) {
+            val result = authenticator.authenticate(username, password)
             launch(Dispatchers.JavaFx) {
-                if (ProfileManager.status != Status.OFFLINE) {
-                    view.goToContactList()
+                when (result) {
+                    AuthenticationResult.UnsupportedProtocol,
+                    AuthenticationResult.InvalidPassword,
+                    AuthenticationResult.ServerError -> view.goToLogin()
+                    AuthenticationResult.Success -> view.goToContactList()
+
                 }
             }
-        }
-        launch(Dispatchers.IO) {
-            authenticator.authenticate(username, password)
         }
     }
 
