@@ -28,13 +28,13 @@ class LoginLoadingPresenter constructor(
     override fun start(username: String, password: String) {
         model = model.copy(username = username, password = password, text = "Protocol handshake...")
         updateUI()
-//        profileManager.onStatusChanged = {
-//            launch(Dispatchers.JavaFx) {
-//                if (profileManager.status != Status.OFFLINE) {
-//                    view.goToContactList()
-//                }
-//            }
-//        }
+        ProfileManager.onStatusChanged = {
+            launch(Dispatchers.JavaFx) {
+                if (ProfileManager.status != Status.OFFLINE) {
+                    view.goToContactList()
+                }
+            }
+        }
         launch(Dispatchers.IO) {
             authenticator.authenticate(username, password)
         }

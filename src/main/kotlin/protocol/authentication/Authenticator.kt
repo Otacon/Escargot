@@ -1,5 +1,9 @@
 package protocol.authentication
 
+import core.ProfileManager.changeStatus
+import core.ProfileManager.onUserInfoChanged
+import core.ProfileManager.passport
+import core.Status
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -65,10 +69,14 @@ class Authenticator(
             machineGuid = UUID.randomUUID()
         )
         transport.waitForMsgHotmail()
-        return AuthenticationResult.UnsupportedProtocol
+        changeStatus(Status.ONLINE)
+        passport = username
+        onUserInfoChanged?.invoke()
+        return AuthenticationResult.Success
     }
 }
 
 sealed class AuthenticationResult {
     object UnsupportedProtocol : AuthenticationResult()
+    object Success: AuthenticationResult()
 }
