@@ -1,135 +1,27 @@
 package protocol.soap
 
-import org.w3c.dom.Element
-import javax.xml.parsers.DocumentBuilderFactory
-
-val SAMPLE_DOC = """
-<?xml version="1.0" encoding="utf-8"?>
-<S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
-	<S:Header>
-		<psf:pp xmlns:psf="http://schemas.microsoft.com/Passport/SoapServices/SOAPFault">
-			<psf:serverVersion>1</psf:serverVersion>
-			<psf:PUID>05995AFE7D5ADDB9</psf:PUID>
-			<psf:configVersion>16.000.26889.00</psf:configVersion>
-			<psf:uiVersion>3.100.2179.0</psf:uiVersion>
-			<psf:mobileConfigVersion>16.000.26208.0</psf:mobileConfigVersion>
-			<psf:authstate>0x48803</psf:authstate>
-			<psf:reqstatus>0x0</psf:reqstatus>
-			<psf:serverInfo Path="Live1" RollingUpgradeState="ExclusiveNew" LocVersion="0" ServerTime="2020-11-29T13:31:23Z">XYZPPLOGN1A23 2017.10.03.19.00.04</psf:serverInfo>
-			<psf:cookies/>
-			<psf:browserCookies>
-				<psf:browserCookie Name="MH" URL="http://www.msn.com">MSFT; path=/; domain=.msn.com; expires=Wed, 30-Dec-2037 16:00:00 GMT</psf:browserCookie>
-				<psf:browserCookie Name="MHW" URL="http://www.msn.com">; path=/; domain=.msn.com; expires=Thu, 30-Oct-1980 16:00:00 GMT</psf:browserCookie>
-				<psf:browserCookie Name="MH" URL="http://www.live.com">MSFT; path=/; domain=.live.com; expires=Wed, 30-Dec-2037 16:00:00 GMT</psf:browserCookie>
-				<psf:browserCookie Name="MHW" URL="http://www.live.com">; path=/; domain=.live.com; expires=Thu, 30-Oct-1980 16:00:00 GMT</psf:browserCookie>
-			</psf:browserCookies>
-			<psf:credProperties>
-				<psf:credProperty Name="MainBrandID">MSFT</psf:credProperty>
-				<psf:credProperty Name="BrandIDList"></psf:credProperty>
-				<psf:credProperty Name="IsWinLiveUser">true</psf:credProperty>
-				<psf:credProperty Name="CID">99ae0c117d5addb9</psf:credProperty>
-				<psf:credProperty Name="AuthMembername">orfeo18@hotmail.it</psf:credProperty>
-				<psf:credProperty Name="Country">US</psf:credProperty>
-				<psf:credProperty Name="Language">1033</psf:credProperty>
-				<psf:credProperty Name="FirstName">John</psf:credProperty>
-				<psf:credProperty Name="LastName">Doe</psf:credProperty>
-				<psf:credProperty Name="ChildFlags">00000001</psf:credProperty>
-				<psf:credProperty Name="Flags">40100643</psf:credProperty>
-				<psf:credProperty Name="FlagsV2">00000000</psf:credProperty>
-				<psf:credProperty Name="IP">127.0.0.1</psf:credProperty>
-				<psf:credProperty Name="FamilyID">0000000000000000</psf:credProperty>
-				<psf:credProperty Name="AssociatedForStrongAuth">0</psf:credProperty>
-			</psf:credProperties>
-			<psf:extProperties>
-				<psf:extProperty Name="ANON" Expiry="Wed, 30-Dec-2037 16:00:00 GMT" Domains="bing.com;atdmt.com" IgnoreRememberMe="false">A=2AD1B6380CC38C61A2E95994FFFFFFFF&amp;E=1456&amp;W=1</psf:extProperty>
-				<psf:extProperty Name="NAP" Expiry="Wed, 30-Dec-2037 16:00:00 GMT" Domains="bing.com;atdmt.com" IgnoreRememberMe="false">V=1.9&amp;E=13fc&amp;C=tq1sGI5NyECr4nbob0bsqOGQx85gOAzYs8FuhJP5L22WfJl-67MNNQ&amp;W=1</psf:extProperty>
-				<psf:extProperty Name="LastUsedCredType">1</psf:extProperty>
-				<psf:extProperty Name="WebCredType">1</psf:extProperty>
-				<psf:extProperty Name="CID">99ae0c117d5addb9</psf:extProperty>
-			</psf:extProperties>
-			<psf:response/>
-		</psf:pp>
-	</S:Header>
-	<S:Body>
-		<wst:RequestSecurityTokenResponseCollection xmlns:S="http://schemas.xmlsoap.org/soap/envelope/" xmlns:wst="http://schemas.xmlsoap.org/ws/2004/04/trust" xmlns:wsse="http://schemas.xmlsoap.org/ws/2003/06/secext" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:saml="urn:oasis:names:tc:SAML:1.0:assertion" xmlns:wsp="http://schemas.xmlsoap.org/ws/2002/12/policy" xmlns:psf="http://schemas.microsoft.com/Passport/SoapServices/SOAPFault">
-			<wst:RequestSecurityTokenResponse>
-				<wst:TokenType>urn:passport:legacy</wst:TokenType>
-				<wsp:AppliesTo xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/03/addressing">
-					<wsa:EndpointReference>
-						<wsa:Address>http://Passport.NET/tb</wsa:Address>
-					</wsa:EndpointReference>
-				</wsp:AppliesTo>
-				<wst:LifeTime>
-					<wsu:Created>2020-11-29T13:31:23Z</wsu:Created>
-					<wsu:Expires>2020-11-30T13:31:23Z</wsu:Expires>
-				</wst:LifeTime>
-				<wst:RequestedSecurityToken>
-					<EncryptedData xmlns="http://www.w3.org/2001/04/xmlenc#" Id="BinaryDAToken0" Type="http://www.w3.org/2001/04/xmlenc#Element">
-						<EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#tripledes-cbc"></EncryptionMethod>
-						<ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
-							<ds:KeyName>http://Passport.NET/STS</ds:KeyName>
-						</ds:KeyInfo>
-						<CipherData>
-							<CipherValue>Cap26AQZrSyMm2SwwTyJKyqLR9/S+vQWQsaBc5Mv7PwtQDMzup/udOOMMvSu99R284pmiD3IepBXrEMLK5rLrXAf2A6vrP6vYuGA45GCqQdoxusHZcjt9P2B8WyCTVT2cM8jtGqGIfRlU/4WzOLxNrDJwDfOsmilduGAGZfvRPW7/jyXXrnGK7/PWkymX4YDD+ygJfMrPAfvAprvw/HVE6tutKVc9cViTVYy8oHjosQlb8MKn3vKDW1O2ZWQUc47JPl7DkjQaanfNBGe6CL7K1nr6Z/jy7Ay7MjV+KQehmvphSEmCzLrpB4WWn2PdpdTrOcDj+aJfWHeGL4sIPwEKgrKnTQg9QD8CCsm5wew9P/br39OuIfsC6/PFBEHmVThqj0aMxYLRD4K2GoRay6Ab7NftoIP5dnFnclfRxETAoNpTPE2F5Q669QySrdXxBpBSk8GLmdCDMlhiyzSiByrhFQaZRcH8n9i+i289otYuJQ7xPyP19KwT4CRyOiIlh3DSdlBfurMwihQGxN2spU7P4MwckrDKeOyYQhvNm/XWId/oXBqpHbo2yRPiOwL9p1J4AxA4RaJuh77vyhn2lFQaxPDqZd5A8RJjpb2NE2N3UncKLW7GAangdoLbRDMqt51VMZ0la+b/moL61fKvFXinKRHc7PybrG3MWzgXxO/VMKAuXOsB9XnOgl2A524cgiwyg==</CipherValue>
-						</CipherData>
-					</EncryptedData>
-				</wst:RequestedSecurityToken>
-				<wst:RequestedTokenReference>
-					<wsse:KeyIdentifier ValueType="urn:passport"></wsse:KeyIdentifier>
-					<wsse:Reference URI="#BinaryDAToken0"></wsse:Reference>
-				</wst:RequestedTokenReference>
-				<wst:RequestedProofToken>
-					<wst:BinarySecret>tgoPVK67sU36fQKlGLMgWgTXp7oiaQgE</wst:BinarySecret>
-				</wst:RequestedProofToken>
-			</wst:RequestSecurityTokenResponse>
-			<wst:RequestSecurityTokenResponse>
-				<wst:TokenType>urn:passport:compact</wst:TokenType>
-				<wsp:AppliesTo xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/03/addressing">
-					<wsa:EndpointReference>
-						<wsa:Address>messengerclear.live.com</wsa:Address>
-				</wsa:EndpointReference>
-				</wsp:AppliesTo>
-				<wst:LifeTime>
-					<wsu:Created>2020-11-29T13:31:23Z</wsu:Created>
-					<wsu:Expires>2020-11-30T13:31:23Z</wsu:Expires>
-				</wst:LifeTime>
-				<wst:RequestedSecurityToken>
-					<wsse:BinarySecurityToken Id="Compact1">t=1878625d18e04def5b76Y6+H31sTUOFkqjNTDYqAAFLr5Ote7BMrMnUIzpg860jh084QMgs5djRQLLQP0TVOFkKdWDwAJdEWcfsI9YL8otN9kSfhTaPHR1njHmG0H98O2NE/Ck6zrog3UJFmYlCnHidZk1g3AzUNVXmjZoyMSyVvoHLjQSzoGRpgHg3hHdi7zrFhcYKWD8XeNYdoz9wfA2YAAAgZIgF9kFvsy2AC0Fl/ezc/fSo6YgB9TwmXyoK0wm0F9nz5EfhHQLu2xxgsvMOiXUSFSpN1cZaNzEk/KGVa3Z33Mcu0qJqvXoLyv2VjQyI0VLH6YlW5E+GMwWcQurXB9hT/DnddM5Ggzk3nX8uMSV4kV+AgF1EWpiCdLViRI6DmwwYDtUJU6W6wQXsfyTm6CNMv0eE0wFXmZvoKaL24fggkp99dX+m1vgMQJ39JblVH9cmnnkBQcKkV8lnQJ003fd6iIFzGpgPBW5Z3T1Bp7uzSGMWnHmrEw8eOpKC5ny4x8uoViXDmA2UId23xYSoJ/GQrMjqB+NslqnuVsOBE1oWpNrmfSKhGU1X0kR4Eves56t5i5n3XU+7ne0MkcUzlrMi89n2j8aouf0zeuD7o+ngqvfRCsOqjaU71XWtuD4ogu2X7/Ajtwkxg/UJDFGAnCxFTTd4dqrrEpKyMK8eWBMaartFxwwrH39HMpx1T9JgknJ1hFWELzG8b302sKy64nCseOTGaZrdH63pjGkT7vzyIxVH/b+yJwDRmy/PlLz7fmUj6zpTBNmCtl1EGFOEFdtI2R04EprIkLXbtpoIPA7m0TPZURpnWufCSsDtD91ChxR8j/FnQ/gOOyKg/EJrTcHvM1e50PMRmoRZGlltBRRwBV+ArPO64On6zygr5zud5o/aADF1laBjkuYkjvUVsXwgnaIKbTLN2+sr/WjogxT1Yins79jPa1+3dDenxZtE/rHA/6qsdJmo5BJZqNYQUFrnpkU428LryMnBaNp2BW51JRsWXPAA7yCi0wDlHzEDxpqaOnhI4Ol87ra+VAg==&amp;p=</wsse:BinarySecurityToken>
-				</wst:RequestedSecurityToken>
-				<wst:RequestedTokenReference>
-					<wsse:KeyIdentifier ValueType="urn:passport:compact"></wsse:KeyIdentifier>
-					<wsse:Reference URI="#Compact1"></wsse:Reference>
-				</wst:RequestedTokenReference><wst:RequestedProofToken>
-					<wst:BinarySecret>aKjktJMcql0HSi8x6oO6Dvs74V5ThLC2</wst:BinarySecret>
-				</wst:RequestedProofToken></wst:RequestSecurityTokenResponse>
-		</wst:RequestSecurityTokenResponseCollection>
-	</S:Body>
-</S:Envelope>
-""".trimIndent()
+import org.simpleframework.xml.*
+import org.simpleframework.xml.core.Persister
 
 class RequestSecurityTokenParser {
 
     fun parse(xml: String): SecurityToken? {
-        val documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-        val document = documentBuilder.parse(xml.byteInputStream())
-        val root = document.documentElement
-        val body = root.getElementsByTagName("S:Body").item(0) as Element
-        val tokenCollection = body.getElementsByTagName("wst:RequestSecurityTokenResponseCollection").item(0) as Element
-        val securityTokens = tokenCollection.getElementsByTagName("wst:RequestSecurityTokenResponse")
-        for (i in 0 until securityTokens.length) {
-            val token = securityTokens.item(i) as Element
-            val tokenType = token.getElementsByTagName("wst:TokenType").item(0) as Element
-            if (tokenType.textContent == "urn:passport:compact") {
-                val requestedSecurityToken = token.getElementsByTagName("wst:RequestedSecurityToken").item(0) as Element
-                val tokenAndProfileStr = requestedSecurityToken.childNodes.item(0).nextSibling.textContent
-                val requestedProofToken = token.getElementsByTagName("wst:RequestedProofToken").item(0) as Element
-                val binarySecret = requestedProofToken.getElementsByTagName("wst:BinarySecret").item(0) as Element
-                val secret = binarySecret.childNodes.item(0).textContent
-                val regex = Regex("""t=(.*)&p=""")
-                val result = regex.find(tokenAndProfileStr)
-                val nonce = result!!.groups[1]!!.value
-                return SecurityToken(nonce, secret)
+        try {
+            val serializer: Serializer = Persister()
+            val parsedData = serializer.read(RequestSecurityTokenEnvelope::class.java, xml)
+            parsedData.body.tokens.firstOrNull { it.tokenType == "urn:passport:compact" }?.let {
+                val secret = it.requestedProofToken?.secret
+                it.requestedSecurityToken.binarySecurityToken?.value?.let { binarySecurityToken ->
+                    val regex = Regex("""t=(.*)&p=""")
+                    val result = regex.find(binarySecurityToken)
+                    result?.let { match ->
+                        val nonce = match.groupValues[1]
+                        return SecurityToken(nonce, secret!!)
+                    }
+                }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
         return null
     }
@@ -137,5 +29,274 @@ class RequestSecurityTokenParser {
 
 data class SecurityToken(
     val nonce: String,
+    val secret: String
+)
+
+@Root(name = "Envelope", strict = false)
+@Namespace(reference = "http://schemas.xmlsoap.org/soap/envelope/", prefix = "S")
+data class RequestSecurityTokenEnvelope(
+
+    @field:Element(name = "Header")
+    @param:Element(name = "Header")
+    val header: RequestSecurityTokenResponseHeader,
+
+    @field:Element(name = "Body")
+    @param:Element(name = "Body")
+    val body: RequestSecurityTokenResponseBody
+)
+
+@Namespace(reference = "http://schemas.microsoft.com/Passport/SoapServices/SOAPFault", prefix = "psf")
+@Root(strict = false)
+data class RequestSecurityTokenResponseHeader(
+
+    @field:Path("pp")
+    @param:Path("pp")
+    @field:Element(name = "serverVersion")
+    @param:Element(name = "serverVersion")
+    val serverVersion: String,
+
+    @field:Path("pp")
+    @param:Path("pp")
+    @field:Element(name = "PUID")
+    @param:Element(name = "PUID")
+    val puid: String,
+
+    @field:Path("pp")
+    @param:Path("pp")
+    @field:Element(name = "configVersion")
+    @param:Element(name = "configVersion")
+    val configVersion: String,
+
+    @field:Path("pp")
+    @param:Path("pp")
+    @field:Element(name = "uiVersion")
+    @param:Element(name = "uiVersion")
+    val uiVersion: String,
+
+    @field:Path("pp")
+    @param:Path("pp")
+    @field:Element(name = "mobileConfigVersion")
+    @param:Element(name = "mobileConfigVersion")
+    val mobileConfigVersion: String,
+
+    @field:Path("pp")
+    @param:Path("pp")
+    @field:Element(name = "authstate")
+    @param:Element(name = "authstate")
+    val authState: String,
+
+    @field:Path("pp")
+    @param:Path("pp")
+    @field:Element(name = "reqstatus")
+    @param:Element(name = "reqstatus")
+    val reqStatus: String,
+
+    @field:Path("pp")
+    @param:Path("pp")
+    @field:Element(name = "serverInfo")
+    @param:Element(name = "serverInfo")
+    val serverInfo: RequestSecurityTokenResponseServerInfo,
+
+    @field:Path("pp")
+    @param:Path("pp")
+    @field:ElementList(name = "browserCookies")
+    @param:ElementList(name = "browserCookies")
+    val browserCookies: List<BrowserCookie>,
+
+    @field:Path("pp")
+    @param:Path("pp")
+    @field:ElementList(name = "credProperties")
+    @param:ElementList(name = "credProperties")
+    val credProperties: List<CredProperty>,
+
+    @field:Path("pp")
+    @param:Path("pp")
+    @field:ElementList(name = "extProperties")
+    @param:ElementList(name = "extProperties")
+    val extProperties: List<ExtProperty>
+
+)
+
+data class RequestSecurityTokenResponseServerInfo(
+
+    @field:Attribute(name = "Path")
+    @param:Attribute(name = "Path")
+    val path: String,
+
+    @field:Attribute(name = "RollingUpgradeState")
+    @param:Attribute(name = "RollingUpgradeState")
+    val rollingUpgradeState: String,
+
+    @field:Attribute(name = "LocVersion")
+    @param:Attribute(name = "LocVersion")
+    val locVersion: String,
+
+    @field:Attribute(name = "ServerTime")
+    @param:Attribute(name = "ServerTime")
+    val serverTime: String,
+
+    @field:Text
+    @param:Text
+    val value: String
+)
+
+data class BrowserCookie(
+    @field:Attribute(name = "Name")
+    @param:Attribute(name = "Name")
+    val name: String,
+
+    @field:Attribute(name = "URL")
+    @param:Attribute(name = "URL")
+    val url: String,
+
+    @field:Text
+    @param:Text
+    val value: String
+)
+
+data class CredProperty(
+    @field:Attribute(name = "Name")
+    @param:Attribute(name = "Name")
+    val name: String,
+
+    @field:Text(required = false)
+    @param:Text(required = false)
+    val value: String?
+)
+
+data class ExtProperty(
+    @field:Attribute(name = "Name")
+    @param:Attribute(name = "Name")
+    val name: String,
+
+    @field:Attribute(name = "Expiry", required = false)
+    @param:Attribute(name = "Expiry", required = false)
+    val expiry: String?,
+
+    @field:Attribute(name = "Domains", required = false)
+    @param:Attribute(name = "Domains", required = false)
+    val domains: String?,
+
+    @field:Attribute(name = "IgnoreRememberMe", required = false)
+    @param:Attribute(name = "IgnoreRememberMe", required = false)
+    val ignoreRememberMe: Boolean?,
+
+    @field:Text
+    @param:Text
+    val value: String
+)
+
+data class RequestSecurityTokenResponseBody(
+    @field:ElementList(name = "RequestSecurityTokenResponseCollection")
+    @param:ElementList(name = "RequestSecurityTokenResponseCollection")
+    val tokens: List<RequestSecurityTokenResponse>
+)
+
+data class RequestSecurityTokenResponse(
+
+    @field:Element(name = "TokenType")
+    @param:Element(name = "TokenType")
+    val tokenType: String,
+
+    @field:Path(value = "AppliesTo/EndpointReference")
+    @param:Path(value = "AppliesTo/EndpointReference")
+    @field:Element(name = "Address")
+    @param:Element(name = "Address")
+    val appliesToEndpoint: String,
+
+    @field:Element(name = "LifeTime")
+    @param:Element(name = "LifeTime")
+    val lifetime: LifeTime,
+
+    @field:Element(name = "RequestedSecurityToken")
+    @param:Element(name = "RequestedSecurityToken")
+    val requestedSecurityToken: RequestedSecurityToken,
+
+    @field:Element(name = "RequestedTokenReference", required = false)
+    @param:Element(name = "RequestedTokenReference", required = false)
+    val tokenReference: RequestedTokenReference?,
+
+    @field:Element(name = "RequestedProofToken", required = false)
+    @param:Element(name = "RequestedProofToken", required = false)
+    val requestedProofToken: RequestedProofToken?
+)
+
+data class LifeTime(
+    @field:Element(name = "Created")
+    @param:Element(name = "Created")
+    val created: String,
+
+    @field:Element(name = "Expires")
+    @param:Element(name = "Expires")
+    val expires: String,
+)
+
+data class RequestedSecurityToken(
+    @field:Element(name = "BinarySecurityToken", required = false)
+    @param:Element(name = "BinarySecurityToken", required = false)
+    val binarySecurityToken: BinarySecurityToken?,
+
+    @field:Element(name = "EncryptedData", required = false)
+    @param:Element(name = "EncryptedData", required = false)
+    val encryptedData: EncryptedData?,
+)
+
+data class EncryptedData(
+    @field:Attribute(name = "Id")
+    @param:Attribute(name = "Id")
+    val id: String,
+
+    @field:Attribute(name = "Type")
+    @param:Attribute(name = "Type")
+    val type: String,
+
+    @field:Path(value = "EncryptionMethod")
+    @param:Path(value = "EncryptionMethod")
+    @field:Attribute(name = "Algorithm")
+    @param:Attribute(name = "Algorithm")
+    val algorithm: String,
+
+    @field:Path(value = "KeyInfo")
+    @param:Path(value = "KeyInfo")
+    @field:Element(name = "KeyName")
+    @param:Element(name = "KeyName")
+    val keyName: String,
+
+    @field:Path(value = "CipherData")
+    @param:Path(value = "CipherData")
+    @field:Element(name = "CipherValue")
+    @param:Element(name = "CipherValue")
+    val cypherData: String
+)
+
+data class BinarySecurityToken(
+    @field:Attribute(name = "Id")
+    @param:Attribute(name = "Id")
+    val id: String,
+
+    @field:Text
+    @param:Text
+    val value: String
+)
+
+data class RequestedTokenReference(
+    @field:Path(value = "KeyIdentifier")
+    @param:Path(value = "KeyIdentifier")
+    @field:Attribute(name = "ValueType")
+    @param:Attribute(name = "ValueType")
+    val valueType: String,
+
+    @field:Path(value = "Reference")
+    @param:Path(value = "Reference")
+    @field:Attribute(name = "URI")
+    @param:Attribute(name = "URI")
+    val referenceUri: String
+)
+
+data class RequestedProofToken(
+    @field:Path(value = "BinarySecret")
+    @param:Path(value = "BinarySecret")
+    @field:Text
+    @param:Text
     val secret: String
 )

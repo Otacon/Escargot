@@ -8,6 +8,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import protocol.Endpoints
 import protocol.ProtocolVersion
 import protocol.notification.NotificationTransport
 import protocol.security.TicketEncoder
@@ -23,6 +24,8 @@ class Authenticator(
     private val multipleSecurityTokensRequestFactory: RequestMultipleSecurityTokensRequestFactory,
     private val requestSecurityTokenParser: RequestSecurityTokenParser
 ) {
+    var clientName = "Escargot Messenger"
+    var clientVersion = "1.0 (in-dev)"
 
     suspend fun authenticate(username: String, password: String): AuthenticationResult {
         transport.connect()
@@ -38,8 +41,8 @@ class Authenticator(
             osType = systemInfo.osType,
             osVersion = systemInfo.osVersion,
             arch = systemInfo.arch,
-            clientName = "clientName",
-            clientVersion = "clientVersion",
+            clientName = clientName,
+            clientVersion = clientVersion,
             passport = username
         )
 
@@ -51,7 +54,7 @@ class Authenticator(
         ).toRequestBody("application/xml".toMediaType())
 
         val request = Request.Builder()
-            .url("https://m1.escargot.log1p.xyz/RST.srf")
+            .url(Endpoints.RSTUrl)
             .post(requestBody)
             .build()
 

@@ -1,5 +1,6 @@
 package protocol.notification
 
+import protocol.Endpoints
 import java.io.BufferedInputStream
 import java.io.PrintWriter
 import java.net.Socket
@@ -11,7 +12,7 @@ class NotificationSocket {
     private lateinit var writer: PrintWriter
     private lateinit var reader: BufferedInputStream
 
-    fun connect(endpoint: String = "35.185.200.209", port: Int = 1863) {
+    fun connect(endpoint: String = Endpoints.notificationAddress, port: Int = Endpoints.notificationPort) {
         print("NT: Connecting to $endpoint:$port...")
         socket = Socket(endpoint, port)
         writer = PrintWriter(socket.outputStream)
