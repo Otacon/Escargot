@@ -33,6 +33,7 @@ class ContactListPresenter(
             updateUI()
         }
         launch(Dispatchers.IO) {
+            ProfileManager.changeStatus(Status.ONLINE)
             ContactManager.refreshContactList()
         }
     }

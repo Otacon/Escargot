@@ -1,6 +1,7 @@
 package features.login
 
 import features.appInstance
+import features.contactList.ContactListView
 import features.loginLoading.LoginLoadingView
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
@@ -93,14 +94,17 @@ class LoginView(
     }
 
     override fun goToLoading(username: String, password: String) {
-        LoginLoadingView(stage, username, password)
+        val result = LoginLoadingView.launch(stage, username, password)
+        if (result) {
+            ContactListView(stage)
+        }
     }
 
     override fun openWebBrowser(url: String) {
         appInstance.hostServices.showDocument(url)
     }
 
-    companion object{
+    companion object {
         fun launch(stage: Stage) {
             val controller = LoginView(stage)
             val root = FXMLLoader().apply {

@@ -10,6 +10,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import protocol.Endpoints
 import protocol.ProtocolVersion
 import protocol.notification.NotificationTransport
+import protocol.notification.TransportException
 import protocol.security.TicketEncoder
 import protocol.soap.RequestSecurityTokenParser
 import protocol.utils.SystemInfoRetriever
@@ -30,23 +31,28 @@ class Authenticator(
     suspend fun authenticate(username: String, password: String): AuthenticationResult {
         transport.connect()
 
-        val verResponse = transport.sendVer(
-            protocols = listOf(ProtocolVersion.MSNP18)
-        )
+        val verResponse = transport.sendVer(protocols = listOf(ProtocolVersion.MSNP18))
+        if (verResponse.protocols.size == 1 && verResponse.protocols[0] == ProtocolVersion.UNKNOWN) {
+            return AuthenticationResult.UnsupportedProtocol
+        }
 
         val systemInfo = systemInfoRetriever.getSystemInfo()
 
-        val cvrResponse = transport.sendCvr(
-            locale = systemInfo.locale,
-            osType = systemInfo.osType,
-            osVersion = systemInfo.osVersion,
-            arch = systemInfo.arch,
-            clientName = clientName,
-            clientVersion = clientVersion,
-            passport = username
-        )
+        val usrResponse = try {
+            transport.sendCvr(
+                locale = systemInfo.locale,
+                osType = systemInfo.osType,
+                osVersion = systemInfo.osVersion,
+                arch = systemInfo.arch,
+                clientName = clientName,
+                clientVersion = clientVersion,
+                passport = username
+            )
 
-        val usrResponse = transport.sendUsrSSOInit(username)
+            transport.sendUsrSSOInit(username)
+        } catch (e: TransportException) {
+            return AuthenticationResult.InvalidUser
+        }
 
         val requestBody = multipleSecurityTokensRequestFactory.createRequest(
             username = username,
@@ -67,19 +73,22 @@ class Authenticator(
         }
 
         if (response.isSuccessful.not()) {
-            return AuthenticationResult.InvalidPassword
+            return AuthenticationResult.ServerError
         }
         val xml = response.body!!.string()
-        val token = requestSecurityTokenParser.parse(xml) ?: return AuthenticationResult.ServerError
+        val token = requestSecurityTokenParser.parse(xml) ?: return AuthenticationResult.InvalidPassword
         val decodedToken = ticketEncoder.encode(token.secret, usrResponse.nonce)
 
-        transport.sendUsrSSOStatus(
-            nonce = token.nonce,
-            encryptedToken = decodedToken,
-            machineGuid = UUID.randomUUID()
-        )
+        try {
+            transport.sendUsrSSOStatus(
+                nonce = token.nonce,
+                encryptedToken = decodedToken,
+                machineGuid = UUID.randomUUID()
+            )
+        } catch (e: TransportException){
+            return AuthenticationResult.ServerError
+        }
         transport.waitForMsgHotmail()
-        changeStatus(Status.ONLINE)
         passport = username
         return AuthenticationResult.Success
     }
@@ -88,6 +97,7 @@ class Authenticator(
 sealed class AuthenticationResult {
     object UnsupportedProtocol : AuthenticationResult()
     object InvalidPassword : AuthenticationResult()
+    object InvalidUser : AuthenticationResult()
     object ServerError : AuthenticationResult()
     object Success : AuthenticationResult()
 }

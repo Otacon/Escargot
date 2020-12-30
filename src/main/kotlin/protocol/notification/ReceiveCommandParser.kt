@@ -13,6 +13,7 @@ class ReceiveCommandParser : CommandParser {
         CommandParserRng(),
         CommandParserXfr(),
         CommandParserNln(),
+        CommandParserError()
     )
 
     override fun parse(command: String): NotificationReceiveCommand {

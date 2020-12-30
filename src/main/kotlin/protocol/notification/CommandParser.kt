@@ -202,3 +202,18 @@ class CommandParserNln : CommandParser {
     }
 
 }
+
+class CommandParserError : CommandParser {
+
+    private val regex = Regex("""(\d+) (\d+)""")
+
+    override fun parse(command: String): NotificationReceiveCommand {
+        return regex.find(command)?.let {
+            NotificationReceiveCommand.Error(
+                code = it.groupValues[1].toInt(),
+                sequence = it.groupValues[2].toInt(),
+            )
+        } ?: NotificationReceiveCommand.Unknown
+    }
+
+}

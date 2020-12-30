@@ -78,5 +78,10 @@ sealed class NotificationReceiveCommand {
         val msnObj: String
     ) : NotificationReceiveCommand()
 
+    data class Error(
+        val code: Int,
+        val sequence: Int
+    ) : NotificationReceiveCommand()
+
     object Unknown : NotificationReceiveCommand()
 }

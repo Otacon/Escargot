@@ -17,7 +17,11 @@ class LoginLoadingPresenter constructor(
     private var model = LoginLoadingModel(
         username = "",
         password = "",
-        text = "Loading..."
+        text = "Authenticating...",
+        okVisible = false,
+        cancelVisible = true,
+        retryVisible = false,
+        progressVisible = true
     )
 
     private val job = Job()
@@ -25,28 +29,80 @@ class LoginLoadingPresenter constructor(
         get() = job + Dispatchers.Main
 
     override fun start(username: String, password: String) {
-        model = model.copy(username = username, password = password, text = "Protocol handshake...")
+        model = model.copy(username = username, password = password)
+        startAuthentication()
+    }
+
+    override fun onCancelClicked() {
+        job.cancel()
+        view.closeWithFailure()
+    }
+
+    override fun onOkClicked() {
+        view.closeWithFailure()
+    }
+
+    override fun onRetryClicked() {
+        startAuthentication()
+    }
+
+    private fun startAuthentication() {
+        model = model.copy(
+            text = "Authenticating...",
+            okVisible = false,
+            cancelVisible = true,
+            retryVisible = false,
+            progressVisible = true
+        )
         updateUI()
         launch(Dispatchers.IO) {
-            val result = authenticator.authenticate(username, password)
+            val result = authenticator.authenticate(model.username, model.password)
             launch(Dispatchers.JavaFx) {
-                when (result) {
-                    AuthenticationResult.UnsupportedProtocol,
-                    AuthenticationResult.InvalidPassword,
-                    AuthenticationResult.ServerError -> view.goToLogin()
-                    AuthenticationResult.Success -> view.goToContactList()
-
+                model = when (result) {
+                    AuthenticationResult.UnsupportedProtocol -> model.copy(
+                        text = "This application is incompatible with the server. Please consider updating.",
+                        okVisible = true,
+                        cancelVisible = false,
+                        retryVisible = false,
+                        progressVisible = false
+                    )
+                    AuthenticationResult.InvalidPassword -> model.copy(
+                        text = "Invalid password. Please check your details and try again",
+                        okVisible = true,
+                        cancelVisible = false,
+                        retryVisible = false,
+                        progressVisible = false
+                    )
+                    AuthenticationResult.InvalidUser -> model.copy(
+                        text = "Invalid user. Please check your details and try again",
+                        okVisible = true,
+                        cancelVisible = false,
+                        retryVisible = false,
+                        progressVisible = false
+                    )
+                    AuthenticationResult.ServerError -> model.copy(
+                        text = "Whoops...something went wrong. Please try again.",
+                        okVisible = false,
+                        cancelVisible = true,
+                        retryVisible = true,
+                        progressVisible = false
+                    )
+                    AuthenticationResult.Success -> {
+                        view.closeWithSuccess()
+                        return@launch
+                    }
                 }
+                updateUI()
             }
         }
     }
 
-    override fun onCancelClicked() {
-        view.goToLogin()
-    }
-
     private fun updateUI() {
-        view.setProgress(model.text)
+        view.setProgressText(model.text)
+        view.showProgress(model.progressVisible)
+        view.showCancel(model.cancelVisible)
+        view.showOk(model.okVisible)
+        view.showRetry(model.retryVisible)
     }
 
 
