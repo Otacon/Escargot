@@ -19,11 +19,6 @@ object NotificationTransportManager {
     val transport = NotificationTransport()
 }
 
-data class PendingCommand(
-    val command: String,
-    val continuation: Continuation<NotificationReceiveCommand>
-)
-
 class TransportException(
     val code: Int
 ) : Exception()
@@ -32,7 +27,7 @@ class NotificationTransport {
 
     private val socket: NotificationSocket = NotificationSocket()
     private val parser = ReceiveCommandParser()
-    private val continuations: MutableMap<Int, PendingCommand> = mutableMapOf()
+    private val continuations: MutableMap<Int, Continuation<NotificationReceiveCommand>> = mutableMapOf()
     private var continuationMsgHotmail: Continuation<Unit>? = null
     private var sequence: Int = 1
 
@@ -53,7 +48,7 @@ class NotificationTransport {
                     ProtocolVersion.UNKNOWN -> ""
                 }
             }
-            sendMessage("VER", "VER $sequence $protocolsStr", cont)
+            sendMessage("VER $sequence $protocolsStr", cont)
         }
 
     suspend fun sendCvr(
@@ -78,13 +73,13 @@ class NotificationTransport {
             }
             val message =
                 "CVR $sequence $language $osTypeStr $osVersion $archStr $clientName $clientVersion msmgs $passport"
-            sendMessage("CVR", message, cont)
+            sendMessage(message, cont)
         }
 
     suspend fun sendUsrSSOInit(passport: String): NotificationReceiveCommand.USRSSOStatus =
         suspendCoroutine { cont ->
             val message = "USR $sequence SSO I $passport"
-            sendMessage("USR", message, cont)
+            sendMessage(message, cont)
         }
 
     suspend fun sendUsrSSOStatus(
@@ -94,20 +89,20 @@ class NotificationTransport {
     ): NotificationReceiveCommand.USRSSOAck =
         suspendCoroutine { cont ->
             val message = "USR $sequence SSO S t=$nonce $encryptedToken {$machineGuid}"
-            sendMessage("USR", message, cont)
+            sendMessage(message, cont)
         }
 
     suspend fun sendChg(request: NotificationSendCommand.CHG): NotificationReceiveCommand.CHG =
         suspendCoroutine { cont ->
             //TODO set the client's capabilities
             val message = "CHG $sequence ${request.status} 0 0"
-            sendMessage("CHG", message, cont)
+            sendMessage(message, cont)
         }
 
     suspend fun sendXfr(): NotificationReceiveCommand.XFR =
         suspendCoroutine { cont ->
             val message = "XFR $sequence SB"
-            sendMessage("XFR", message, cont)
+            sendMessage(message, cont)
         }
 
     suspend fun waitForMsgHotmail(): Unit =
@@ -115,12 +110,8 @@ class NotificationTransport {
             continuationMsgHotmail = cont
         }
 
-    private fun sendMessage(command: String, message: String, continuation: Continuation<*>) {
-        val pendingCommand = PendingCommand(
-            command = command,
-            continuation = continuation as Continuation<NotificationReceiveCommand>
-        )
-        continuations[sequence] = pendingCommand
+    private fun sendMessage(message: String, continuation: Continuation<*>) {
+        continuations[sequence] = continuation as Continuation<NotificationReceiveCommand>
         socket.sendMessage(message)
         sequence++
     }
@@ -169,12 +160,12 @@ class NotificationTransport {
     }
 
     private fun resumeContinuation(sequence: Int, command: NotificationReceiveCommand) {
-        continuations[sequence]!!.continuation.resume(command)
+        continuations[sequence]!!.resume(command)
         continuations.remove(sequence)
     }
 
     private fun resumeErrorContinuation(sequence: Int, error: NotificationReceiveCommand.Error) {
-        continuations[sequence]!!.continuation.resumeWithException(TransportException(error.code))
+        continuations[sequence]!!.resumeWithException(TransportException(error.code))
     }
 
     private fun parseProfileInfo(content: String) {
