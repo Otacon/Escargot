@@ -1,7 +1,7 @@
 package protocol.notification
 
-import core.Status
 import protocol.ProtocolVersion
+import protocol.Status
 import java.net.URLDecoder
 
 interface CommandParser {
@@ -50,7 +50,10 @@ class CommandParserGcf : CommandParser {
         return regex.find(command)?.let {
             val sequence = it.groupValues[1].toInt()
             val length = it.groupValues[2].toInt()
-            NotificationReceiveCommand.GCF(length)
+            NotificationReceiveCommand.GCF(
+                sequence = sequence,
+                length = length
+            )
         } ?: NotificationReceiveCommand.Unknown
     }
 
@@ -197,6 +200,22 @@ class CommandParserNln : CommandParser {
                 displayName = URLDecoder.decode(it.groupValues[3], "UTF-8"),
                 networkId = it.groupValues[4],
                 msnObj = URLDecoder.decode(it.groupValues[5], "UTF-8")
+            )
+        } ?: NotificationReceiveCommand.Unknown
+    }
+
+}
+
+
+class CommandParserFln : CommandParser {
+
+    private val regex = Regex("""FLN 1:(\S+) (\S+)""")
+
+    override fun parse(command: String): NotificationReceiveCommand {
+        return regex.find(command)?.let {
+            NotificationReceiveCommand.FLN(
+                passport = it.groupValues[1],
+                networkId = it.groupValues[2]
             )
         } ?: NotificationReceiveCommand.Unknown
     }

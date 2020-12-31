@@ -9,14 +9,8 @@ import javafx.scene.text.Text
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import protocol.authentication.Authenticator
-import protocol.authentication.RequestMultipleSecurityTokensRequestFactory
-import protocol.notification.NotificationTransportManager
-import protocol.security.TicketEncoder
-import protocol.soap.RequestSecurityTokenParser
-import protocol.utils.SystemInfoRetrieverDesktop
+import repositories.AuthenticationResult
+import repositories.ProfileRepositoryFactory
 
 class LoginLoadingView(
     private val stage: Stage,
@@ -39,19 +33,11 @@ class LoginLoadingView(
     @FXML
     private lateinit var okButton: Button
 
-    var success: Boolean = false
+    var success: AuthenticationResult.Success? = null
 
     private val presenter = LoginLoadingPresenter(
         this,
-        Authenticator(
-            SystemInfoRetrieverDesktop(),
-            NotificationTransportManager.transport,
-            OkHttpClient.Builder()
-                .addInterceptor(HttpLoggingInterceptor().also { it.level = HttpLoggingInterceptor.Level.BODY }).build(),
-            TicketEncoder(),
-            RequestMultipleSecurityTokensRequestFactory(),
-            RequestSecurityTokenParser()
-        )
+        ProfileRepositoryFactory().createProfileRepository()
     )
 
     fun onCreate() {
@@ -80,12 +66,12 @@ class LoginLoadingView(
     }
 
     override fun closeWithFailure() {
-        success = false
+        success = null
         stage.close()
     }
 
-    override fun closeWithSuccess() {
-        success = true
+    override fun closeWithSuccess(authData: AuthenticationResult.Success) {
+        success = authData
         stage.close()
     }
 
@@ -96,7 +82,7 @@ class LoginLoadingView(
     }
 
     companion object {
-        fun launch(stage: Stage, username: String, password: String): Boolean {
+        fun launch(stage: Stage, username: String, password: String): AuthenticationResult.Success? {
             val dialog = Stage(StageStyle.UTILITY)
             val controller = LoginLoadingView(dialog, username, password)
             val root = FXMLLoader().apply {

@@ -94,9 +94,8 @@ class LoginView(
     }
 
     override fun goToLoading(username: String, password: String) {
-        val result = LoginLoadingView.launch(stage, username, password)
-        if (result) {
-            ContactListView.launch(stage)
+        LoginLoadingView.launch(stage, username, password)?.let {
+            ContactListView.launch(stage, it.passport, it.token)
         }
     }
 

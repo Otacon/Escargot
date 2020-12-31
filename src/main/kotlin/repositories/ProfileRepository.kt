@@ -1,23 +1,41 @@
-package protocol.authentication
+package repositories
 
-import core.ProfileManager.changeStatus
-import core.ProfileManager.passport
-import core.Status
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.logging.HttpLoggingInterceptor
 import protocol.Endpoints
 import protocol.ProtocolVersion
+import protocol.Status
+import protocol.authentication.RequestMultipleSecurityTokensRequestFactory
+import protocol.notification.NotificationSendCommand
 import protocol.notification.NotificationTransport
+import protocol.notification.NotificationTransportManager
 import protocol.notification.TransportException
 import protocol.security.TicketEncoder
 import protocol.soap.RequestSecurityTokenParser
 import protocol.utils.SystemInfoRetriever
+import protocol.utils.SystemInfoRetrieverDesktop
 import java.io.IOException
 import java.util.*
 
-class Authenticator(
+class ProfileRepositoryFactory {
+
+    fun createProfileRepository(): ProfileRepository {
+        return ProfileRepository(
+            SystemInfoRetrieverDesktop(),
+            NotificationTransportManager.transport,
+            OkHttpClient.Builder()
+                .addInterceptor(HttpLoggingInterceptor().also { it.level = HttpLoggingInterceptor.Level.BODY }).build(),
+            TicketEncoder(),
+            RequestMultipleSecurityTokensRequestFactory(),
+            RequestSecurityTokenParser()
+        )
+    }
+}
+
+class ProfileRepository(
     private val systemInfoRetriever: SystemInfoRetriever,
     private val transport: NotificationTransport,
     private val okHttpClient: OkHttpClient,
@@ -25,6 +43,7 @@ class Authenticator(
     private val multipleSecurityTokensRequestFactory: RequestMultipleSecurityTokensRequestFactory,
     private val requestSecurityTokenParser: RequestSecurityTokenParser
 ) {
+
     var clientName = "Escargot Messenger"
     var clientVersion = "1.0 (in-dev)"
 
@@ -85,19 +104,48 @@ class Authenticator(
                 encryptedToken = decodedToken,
                 machineGuid = UUID.randomUUID()
             )
-        } catch (e: TransportException){
+        } catch (e: TransportException) {
             return AuthenticationResult.ServerError
         }
-        transport.waitForMsgHotmail()
-        passport = username
-        return AuthenticationResult.Success
+        val mspAuthToken = transport.waitForMspAuthToken()
+        return AuthenticationResult.Success(username, mspAuthToken)
+    }
+
+    suspend fun changeStatus(status: Status) {
+        val literalStatus = when (status) {
+            Status.ONLINE -> "NLN"
+            Status.AWAY -> "AWY"
+            Status.BE_RIGHT_BACK -> "BRB"
+            Status.IDLE -> "IDL"
+            Status.OUT_TO_LUNCH -> "LUN"
+            Status.ON_THE_PHONE -> "PHN"
+            Status.BUSY -> "BSY"
+            Status.OFFLINE -> "FLN"
+            Status.HIDDEN -> "HDN"
+        }
+        val transport = NotificationTransportManager.transport
+        try {
+            transport.sendChg(NotificationSendCommand.CHG(literalStatus))
+        } catch (e: TransportException) {
+
+        }
+
     }
 }
 
+sealed class ChangeStatusResult {
+
+    object Success : ChangeStatusResult()
+    object Failure : ChangeStatusResult()
+
+}
+
 sealed class AuthenticationResult {
+
     object UnsupportedProtocol : AuthenticationResult()
     object InvalidPassword : AuthenticationResult()
     object InvalidUser : AuthenticationResult()
     object ServerError : AuthenticationResult()
-    object Success : AuthenticationResult()
+    data class Success(val passport: String, val token: String) : AuthenticationResult()
+
 }

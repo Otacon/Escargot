@@ -1,15 +1,11 @@
 package features.contactList
 
-import core.Status
+import protocol.Status
 
 data class ContactListModel(
-    val profilePicture: String,
-    val status: Status = Status.ONLINE,
-    val nickname: String,
-    val personalMessage: String,
+    val me: ContactModel.Contact,
     val filter: String,
-    val onlineContacts: List<ContactModel.Contact>,
-    val offlineContacts: List<ContactModel.Contact>
+    val contacts: List<ContactModel.Contact>
 )
 
 sealed class ContactModel {
@@ -20,10 +16,11 @@ sealed class ContactModel {
     ) : ContactModel()
 
     data class Contact(
-        val nickname: String,
+        val nickname: String?,
         val passport: String,
         val personalMessage: String,
-        val status: Status
+        val status: Status,
+        val profilePicture: String?
     ) : ContactModel()
 
 }

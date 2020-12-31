@@ -1,6 +1,5 @@
 package features.contactList
 
-import core.Status
 import core.SwitchBoardManager
 import features.conversation.ConversationView
 import features.login.LoginView
@@ -13,12 +12,17 @@ import javafx.scene.control.*
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.stage.Stage
+import protocol.Status
 import protocol.notification.NotificationTransportManager
+import repositories.ContactListRepositoryFactory
+import repositories.ProfileRepositoryFactory
 import kotlin.system.exitProcess
 
 
 class ContactListView(
-    private val stage: Stage
+    private val stage: Stage,
+    private val passport: String,
+    private val token: String
 ) : ContactListContract.View {
 
     @FXML
@@ -34,7 +38,7 @@ class ContactListView(
     private lateinit var nickname: TextField
 
     @FXML
-    private lateinit var status: TextField
+    private lateinit var personalMessage: TextField
 
     @FXML
     private lateinit var contactsFilter: TextField
@@ -52,7 +56,11 @@ class ContactListView(
     private val statusBusy = Image("/status-busy.png")
     private val statusOffline = Image("/status-offline.png")
 
-    private val presenter = ContactListPresenter(this)
+    private val presenter = ContactListPresenter(
+        this,
+        ProfileRepositoryFactory().createProfileRepository(),
+        ContactListRepositoryFactory().createContactListRepository(token)
+    )
     private val contactsRoot = TreeItem<ContactModel>(ContactModel.Root)
     private val contactsOnline = TreeItem<ContactModel>(ContactModel.Category("Available"))
     private val contactsOffline = TreeItem<ContactModel>(ContactModel.Category("Offline"))
@@ -67,7 +75,7 @@ class ContactListView(
         contactsOnline.isExpanded = true
         contactsOffline.isExpanded = true
         contactList.root = contactsRoot
-        presenter.start()
+        presenter.start(passport)
         setupStatusButton()
     }
 
@@ -122,8 +130,8 @@ class ContactListView(
         }
     }
 
-    override fun setProfilePicture(picture: String) {
-        if (picture.isNotBlank()) {
+    override fun setProfilePicture(picture: String?) {
+        picture?.let {
             profilePicture.image = Image(picture)
         }
     }
@@ -133,7 +141,7 @@ class ContactListView(
     }
 
     override fun setPersonalMessage(text: String) {
-        status.text = text
+        personalMessage.text = text
     }
 
     override fun setContacts(online: List<ContactModel.Contact>, offline: List<ContactModel.Contact>) {
@@ -148,8 +156,8 @@ class ContactListView(
 
     }
 
-    override fun openConversation(passport: String) {
-        ConversationView(passport)
+    override fun openConversation(recipient: String) {
+        ConversationView(passport, recipient)
     }
 
     override fun setStatus(status: Status) {
@@ -169,8 +177,10 @@ class ContactListView(
 
     companion object {
 
-        fun launch(stage: Stage) {
-            val controller = ContactListView(stage)
+        fun launch(stage: Stage, passport: String, token: String) {
+            val controller = ContactListView(stage, passport, token)
+            //TODO this is an hack.
+            SwitchBoardManager.myPassport = passport
             val root = FXMLLoader().apply {
                 setController(controller)
                 location = javaClass.getResource("/ContactList.fxml")

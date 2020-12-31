@@ -22,7 +22,7 @@ class UbxBodyParser {
 data class UbxBodyData(
     @field:Element(name = "PSM", required = false)
     @param:Element(name = "PSM", required = false)
-    val personalMessage: String? = null,
+    val personalMessage: String = "",
 
     @field:Element(name = "CurrentMedia", required = false)
     @param:Element(name = "CurrentMedia", required = false)

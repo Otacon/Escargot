@@ -50,10 +50,12 @@ class NotificationSocket {
 }
 
 private fun BufferedInputStream.readLine(): String {
-    var output = ""
-    while (!output.endsWith("\r\n")) {
-        val char = this.read().toChar()
-        output += char
-    }
-    return output.trim()
+    val buffer = ByteArray(128_000)
+    var index = 0
+    do {
+        val lastByte = read()
+        buffer[index] = lastByte.toByte()
+        index++
+    } while (lastByte != 0x0A)
+    return String(buffer, 0, index - 2, StandardCharsets.UTF_8)
 }

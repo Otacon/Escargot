@@ -1,23 +1,23 @@
 package features.contactList
 
-import core.Status
+import protocol.Status
 
 interface ContactListContract {
 
     interface View {
 
-        fun setProfilePicture(picture: String)
+        fun setProfilePicture(picture: String?)
         fun setNickname(text: String)
         fun setPersonalMessage(text: String)
         fun setContacts(online: List<ContactModel.Contact>, offline : List<ContactModel.Contact>)
-        fun openConversation(passport: String)
+        fun openConversation(recipient: String)
         fun setStatus(status: Status)
 
     }
 
     interface Presenter {
 
-        fun start()
+        fun start(passport: String)
         fun onContactClick(selectedContact: ContactModel.Contact)
         fun onContactFilterChanged(filter: String)
         fun onStatusChanged(status: Status)

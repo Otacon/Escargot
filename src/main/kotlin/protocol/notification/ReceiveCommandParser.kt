@@ -13,6 +13,7 @@ class ReceiveCommandParser : CommandParser {
         CommandParserRng(),
         CommandParserXfr(),
         CommandParserNln(),
+        CommandParserFln(),
         CommandParserError()
     )
 

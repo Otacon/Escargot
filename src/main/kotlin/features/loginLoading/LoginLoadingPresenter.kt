@@ -5,13 +5,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
-import protocol.authentication.AuthenticationResult
-import protocol.authentication.Authenticator
+import repositories.AuthenticationResult
+import repositories.ProfileRepository
 import kotlin.coroutines.CoroutineContext
 
 class LoginLoadingPresenter constructor(
     private val view: LoginLoadingContract.View,
-    private val authenticator: Authenticator
+    private val profileRepository: ProfileRepository
 ) : LoginLoadingContract.Presenter, CoroutineScope {
 
     private var model = LoginLoadingModel(
@@ -56,7 +56,7 @@ class LoginLoadingPresenter constructor(
         )
         updateUI()
         launch(Dispatchers.IO) {
-            val result = authenticator.authenticate(model.username, model.password)
+            val result = profileRepository.authenticate(model.username, model.password)
             launch(Dispatchers.JavaFx) {
                 model = when (result) {
                     AuthenticationResult.UnsupportedProtocol -> model.copy(
@@ -87,8 +87,8 @@ class LoginLoadingPresenter constructor(
                         retryVisible = true,
                         progressVisible = false
                     )
-                    AuthenticationResult.Success -> {
-                        view.closeWithSuccess()
+                    is AuthenticationResult.Success -> {
+                        view.closeWithSuccess(result)
                         return@launch
                     }
                 }

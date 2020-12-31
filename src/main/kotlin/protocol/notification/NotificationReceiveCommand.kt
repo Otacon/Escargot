@@ -1,6 +1,6 @@
 package protocol.notification
 
-import core.Status
+import protocol.Status
 import protocol.ProtocolVersion
 
 sealed class NotificationReceiveCommand {
@@ -31,6 +31,7 @@ sealed class NotificationReceiveCommand {
     ) : NotificationReceiveCommand()
 
     data class GCF(
+        val sequence: Int,
         val length: Int
     ) : NotificationReceiveCommand()
 
@@ -76,6 +77,11 @@ sealed class NotificationReceiveCommand {
         val displayName: String,
         val networkId: String,
         val msnObj: String
+    ) : NotificationReceiveCommand()
+
+    data class FLN(
+        val passport: String,
+        val networkId: String,
     ) : NotificationReceiveCommand()
 
     data class Error(

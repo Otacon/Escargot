@@ -9,12 +9,14 @@ import javafx.scene.input.KeyCode
 import javafx.stage.Stage
 
 class ConversationView(
+    sender: String,
     recipient: String
 ) : ConversationContract.View {
 
     private val presenter = ConversationPresenter(
         this,
-        ConversationManager.getConversation(recipient)
+        ConversationManager.getConversation(recipient),
+        sender
     )
 
     private lateinit var messageHistory: ListView<String>

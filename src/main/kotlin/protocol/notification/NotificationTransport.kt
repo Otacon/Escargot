@@ -1,11 +1,13 @@
 package protocol.notification
 
-import core.ContactManager
-import core.ProfileManager
 import core.SwitchBoardManager
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 import protocol.ProtocolVersion
+import protocol.Status
 import protocol.utils.Arch
 import protocol.utils.LocaleId
 import protocol.utils.OSType
@@ -28,8 +30,9 @@ class NotificationTransport {
     private val socket: NotificationSocket = NotificationSocket()
     private val parser = ReceiveCommandParser()
     private val continuations: MutableMap<Int, Continuation<NotificationReceiveCommand>> = mutableMapOf()
-    private var continuationMsgHotmail: Continuation<Unit>? = null
+    private var continuationMspAuthToken: Continuation<String>? = null
     private var sequence: Int = 1
+    private val contactChanged = Channel<ProfileData>()
 
     fun connect() {
         socket.connect()
@@ -109,10 +112,14 @@ class NotificationTransport {
             sendMessage(message, cont)
         }
 
-    suspend fun waitForMsgHotmail(): Unit =
+    suspend fun waitForMspAuthToken(): String =
         suspendCoroutine { cont ->
-            continuationMsgHotmail = cont
+            continuationMspAuthToken = cont
         }
+
+    fun contactChanged(): Flow<ProfileData> {
+        return contactChanged.consumeAsFlow()
+    }
 
     private fun sendMessage(message: String, continuation: Continuation<*>) {
         continuations[sequence] = continuation as Continuation<NotificationReceiveCommand>
@@ -130,16 +137,23 @@ class NotificationTransport {
             is NotificationReceiveCommand.USRSSOAck -> resumeContinuation(command.sequence, command)
             is NotificationReceiveCommand.MSG -> {
                 val profileInfo = socket.readRaw(command.length)
-                parseProfileInfo(profileInfo)
+                val token = parseProfileInfo(profileInfo)
+                token?.let {
+                    continuationMspAuthToken?.resume(token)
+                    continuationMspAuthToken = null
+                }
             }
             is NotificationReceiveCommand.UBX -> {
                 if (command.length > 0) {
                     val body = socket.readRaw(command.length)
                     val data = UbxBodyParser().parse(body)
-                    ContactManager.update(
+                    val profileData = ProfileData(
                         passport = command.email,
-                        personalMessage = data.personalMessage
+                        personalMessage = data.personalMessage,
+                        nickname = null,
+                        status = null
                     )
+                    contactChanged.offer(profileData)
                 }
             }
             is NotificationReceiveCommand.CHG -> resumeContinuation(command.sequence, command)
@@ -152,14 +166,25 @@ class NotificationTransport {
             )
             is NotificationReceiveCommand.XFR -> resumeContinuation(command.sequence, command)
             is NotificationReceiveCommand.NLN -> {
-                ContactManager.update(
+                val profileData = ProfileData(
                     passport = command.passport,
+                    status = command.status,
                     nickname = command.displayName,
-                    status = command.status
+                    personalMessage = null,
                 )
+                contactChanged.offer(profileData)
+            }
+            is NotificationReceiveCommand.FLN -> {
+                val profileData = ProfileData(
+                    passport = command.passport,
+                    status = Status.OFFLINE,
+                    nickname = null,
+                    personalMessage = null,
+                )
+                contactChanged.offer(profileData)
             }
             is NotificationReceiveCommand.Error -> resumeErrorContinuation(command.sequence, command)
-            is NotificationReceiveCommand.Unknown -> println("NT - Unknown Command : $message")
+            is NotificationReceiveCommand.Unknown -> println("NT - Command not supported: $message")
         }
     }
 
@@ -172,7 +197,7 @@ class NotificationTransport {
         continuations[sequence]!!.resumeWithException(TransportException(error.code))
     }
 
-    private fun parseProfileInfo(content: String) {
+    private fun parseProfileInfo(content: String): String? {
         val lines = content.split("\n")
         val keyValues = lines.mapNotNull {
             if (it.isBlank()) {
@@ -212,10 +237,9 @@ class NotificationTransport {
                 abchMigrated = keyValues["ABCHMigrated"] == "1",
                 mpopEnabled = keyValues["MPOPEnabled"] == "1"
             )
-            ProfileManager.token = profile.mspAuth
-            continuationMsgHotmail?.resume(Unit)
-            continuationMsgHotmail = null
+            return profile.mspAuth
         }
+        return null
     }
 
 }
@@ -243,4 +267,11 @@ data class ProfileInformation(
     val clientPort: Int,
     val abchMigrated: Boolean,
     val mpopEnabled: Boolean
+)
+
+data class ProfileData(
+    val passport: String,
+    val nickname: String?,
+    val personalMessage: String?,
+    val status: Status?
 )

@@ -1,6 +1,6 @@
 package protocol.notification
 
-import core.Status
+import protocol.Status
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

@@ -1,5 +1,7 @@
 package features.loginLoading
 
+import repositories.AuthenticationResult
+
 interface LoginLoadingContract {
 
     interface View {
@@ -10,7 +12,7 @@ interface LoginLoadingContract {
         fun showRetry(isVisible: Boolean)
         fun showProgress(isVisible: Boolean)
         fun closeWithFailure()
-        fun closeWithSuccess()
+        fun closeWithSuccess(authData: AuthenticationResult.Success)
 
     }
 

@@ -2,7 +2,6 @@ package features.conversation
 
 import core.Conversation
 import core.Message
-import core.ProfileManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -12,7 +11,8 @@ import kotlin.coroutines.CoroutineContext
 
 class ConversationPresenter(
     private val view: ConversationContract.View,
-    private val conversation: Conversation
+    private val conversation: Conversation,
+    private val passport: String
 ) : ConversationContract.Presenter, CoroutineScope {
 
     private val job = Job()
@@ -33,7 +33,7 @@ class ConversationPresenter(
     override fun onSendMessage(message: String) {
         view.clearMessageInput()
         launch(Dispatchers.IO) {
-            conversation.sendMessage(Message(ProfileManager.passport, message.trim()))
+            conversation.sendMessage(Message(passport, message.trim()))
             updateUi()
         }
     }
@@ -50,7 +50,7 @@ class ConversationPresenter(
     }
 
     private fun Message.toModel(): ConversationMessageModel {
-        return if (this.sender == ProfileManager.passport) {
+        return if (this.sender == passport) {
             ConversationMessageModel.OwnMessage(
                 this.timestamp, this.content
             )
