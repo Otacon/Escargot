@@ -4,8 +4,9 @@ import core.Status
 
 data class ContactListModel(
     val profilePicture: String,
+    val status: Status = Status.ONLINE,
     val nickname: String,
-    val status: String,
+    val personalMessage: String,
     val filter: String,
     val onlineContacts: List<ContactModel.Contact>,
     val offlineContacts: List<ContactModel.Contact>

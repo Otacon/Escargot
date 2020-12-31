@@ -1,16 +1,15 @@
 package features.contactList
 
+import core.Status
 import core.SwitchBoardManager
 import features.conversation.ConversationView
 import features.login.LoginView
 import javafx.application.Platform
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
+import javafx.geometry.Side
 import javafx.scene.Scene
-import javafx.scene.control.MenuItem
-import javafx.scene.control.TextField
-import javafx.scene.control.TreeItem
-import javafx.scene.control.TreeView
+import javafx.scene.control.*
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.stage.Stage
@@ -43,10 +42,21 @@ class ContactListView(
     @FXML
     private lateinit var contactList: TreeView<ContactModel>
 
+    @FXML
+    private lateinit var statusButton: Button
+
+    private val statusImage = ImageView()
+
+    private val statusOnline = Image("/status-online.png")
+    private val statusAway = Image("/status-away.png")
+    private val statusBusy = Image("/status-busy.png")
+    private val statusOffline = Image("/status-offline.png")
+
     private val presenter = ContactListPresenter(this)
     private val contactsRoot = TreeItem<ContactModel>(ContactModel.Root)
     private val contactsOnline = TreeItem<ContactModel>(ContactModel.Category("Available"))
     private val contactsOffline = TreeItem<ContactModel>(ContactModel.Category("Offline"))
+
 
     fun onCreate() {
         setupListeners()
@@ -58,9 +68,28 @@ class ContactListView(
         contactsOffline.isExpanded = true
         contactList.root = contactsRoot
         presenter.start()
+        setupStatusButton()
+    }
+
+    private fun setupStatusButton() {
+        statusImage.fitHeight = 10.0
+        statusImage.isPreserveRatio = true
+        statusButton.graphic = statusImage
+        val menu = ContextMenu()
+        val online = MenuItem("Available").also { it.setOnAction { presenter.onStatusChanged(Status.ONLINE) } }
+        val away = MenuItem("Busy").also { it.setOnAction { presenter.onStatusChanged(Status.BUSY) } }
+        val idle = MenuItem("Away").also { it.setOnAction { presenter.onStatusChanged(Status.AWAY) } }
+        val busy = MenuItem("Appear offline").also { it.setOnAction { presenter.onStatusChanged(Status.HIDDEN) } }
+        menu.items.addAll(online, away, idle, busy)
+        statusButton.setOnMouseClicked {
+            menu.show(statusButton, Side.BOTTOM, 0.0, 0.0)
+        }
     }
 
     private fun setupListeners() {
+        statusButton.setOnMouseClicked {
+
+        }
         contactList.setOnMouseClicked { event ->
             if (event.clickCount == 2) {
                 val selectedItem = contactList.selectionModel.selectedItem
@@ -103,7 +132,7 @@ class ContactListView(
         nickname.text = text
     }
 
-    override fun setStatus(text: String) {
+    override fun setPersonalMessage(text: String) {
         status.text = text
     }
 
@@ -121,6 +150,21 @@ class ContactListView(
 
     override fun openConversation(passport: String) {
         ConversationView(passport)
+    }
+
+    override fun setStatus(status: Status) {
+        val image = when (status) {
+            Status.ONLINE -> statusOnline
+            Status.AWAY,
+            Status.BE_RIGHT_BACK,
+            Status.IDLE,
+            Status.OUT_TO_LUNCH,
+            Status.ON_THE_PHONE -> statusAway
+            Status.BUSY -> statusBusy
+            Status.OFFLINE,
+            Status.HIDDEN -> statusOffline
+        }
+        statusImage.image = image
     }
 
     companion object {

@@ -20,8 +20,9 @@ class ContactListPresenter(
 
     var model = ContactListModel(
         profilePicture = "",
+        status = Status.ONLINE,
         nickname = "",
-        status = "",
+        personalMessage = "",
         filter = "",
         onlineContacts = emptyList(),
         offlineContacts = emptyList()
@@ -47,7 +48,7 @@ class ContactListPresenter(
             updateUI()
         }
         launch(Dispatchers.IO) {
-            ProfileManager.changeStatus(Status.ONLINE)
+            ProfileManager.changeStatus(model.status)
             ContactManager.refreshContactList()
         }
     }
@@ -63,10 +64,18 @@ class ContactListPresenter(
         updateUI()
     }
 
+    override fun onStatusChanged(status: Status) {
+        model = model.copy(status = status)
+        launch(Dispatchers.IO) {
+            ProfileManager.changeStatus(status)
+        }
+        updateUI()
+    }
+
     private fun updateUI() = launch(Dispatchers.JavaFx) {
         view.setProfilePicture(model.profilePicture)
         view.setNickname(model.nickname)
-        view.setStatus(model.status)
+        view.setPersonalMessage(model.personalMessage)
         val online = model.onlineContacts.filter {
             "${it.nickname} ${it.passport}".contains(model.filter, ignoreCase = true)
         }.sortedWith(compareBy({ it.status }, { it.nickname }, { it.passport }))
@@ -74,6 +83,7 @@ class ContactListPresenter(
             "${it.nickname} ${it.passport}".contains(model.filter, ignoreCase = true)
         }.sortedWith(compareBy({ it.status }, { it.nickname }, { it.passport }))
         view.setContacts(online, offline)
+        view.setStatus(model.status)
     }
 
 
