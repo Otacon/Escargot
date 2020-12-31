@@ -9,7 +9,7 @@
 <HBox spacing="5.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
     <ImageView id="status" fitHeight="10.0" fitWidth="10.0" pickOnBounds="true" preserveRatio="true">
         <HBox.margin>
-            <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+            <Insets bottom="8.0" top="8.0" />
         </HBox.margin>
         <Image url="@status-online.png" />
     </ImageView>

@@ -18,13 +18,27 @@ class ContactListPresenter(
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.Main
 
-    var model = ContactListModel(profilePicture = "", nickname = "", status = "", filter = "", contacts = emptyList())
+    var model = ContactListModel(
+        profilePicture = "",
+        nickname = "",
+        status = "",
+        filter = "",
+        onlineContacts = emptyList(),
+        offlineContacts = emptyList()
+    )
 
     override fun start() {
         ContactManager.onContactListChanged = {
-            val contacts =
-                ContactManager.contacts.map { ContactModel(it.nickname, it.passport, it.personalMessage, it.status) }
-            model = model.copy(contacts = contacts)
+            val (offline, online) = ContactManager.contacts.map {
+                ContactModel.Contact(
+                    it.nickname,
+                    it.passport,
+                    it.personalMessage,
+                    it.status
+                )
+            }
+                .partition { it.status == Status.OFFLINE }
+            model = model.copy(onlineContacts = online, offlineContacts = offline)
             updateUI()
         }
         ProfileManager.onUserInfoChanged = {
@@ -38,7 +52,7 @@ class ContactListPresenter(
         }
     }
 
-    override fun onContactClick(selectedContact: ContactModel) {
+    override fun onContactClick(selectedContact: ContactModel.Contact) {
         if (selectedContact.status != Status.OFFLINE) {
             view.openConversation(selectedContact.passport)
         }
@@ -53,10 +67,13 @@ class ContactListPresenter(
         view.setProfilePicture(model.profilePicture)
         view.setNickname(model.nickname)
         view.setStatus(model.status)
-        val sortedList = model.contacts.filter {
+        val online = model.onlineContacts.filter {
             "${it.nickname} ${it.passport}".contains(model.filter, ignoreCase = true)
         }.sortedWith(compareBy({ it.status }, { it.nickname }, { it.passport }))
-        view.setContacts(sortedList)
+        val offline = model.offlineContacts.filter {
+            "${it.nickname} ${it.passport}".contains(model.filter, ignoreCase = true)
+        }.sortedWith(compareBy({ it.status }, { it.nickname }, { it.passport }))
+        view.setContacts(online, offline)
     }
 
 

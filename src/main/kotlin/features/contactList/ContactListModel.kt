@@ -7,12 +7,22 @@ data class ContactListModel(
     val nickname: String,
     val status: String,
     val filter: String,
-    val contacts : List<ContactModel>
+    val onlineContacts: List<ContactModel.Contact>,
+    val offlineContacts: List<ContactModel.Contact>
 )
 
-data class ContactModel(
-    val nickname: String,
-    val passport: String,
-    val personalMessage: String,
-    val status: Status
-)
+sealed class ContactModel {
+    object Root : ContactModel()
+
+    data class Category(
+        val name: String
+    ) : ContactModel()
+
+    data class Contact(
+        val nickname: String,
+        val passport: String,
+        val personalMessage: String,
+        val status: Status
+    ) : ContactModel()
+
+}

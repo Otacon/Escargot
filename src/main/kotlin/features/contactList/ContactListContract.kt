@@ -7,7 +7,7 @@ interface ContactListContract {
         fun setProfilePicture(picture: String)
         fun setNickname(text: String)
         fun setStatus(text: String)
-        fun setContacts(contacts: List<ContactModel>)
+        fun setContacts(online: List<ContactModel.Contact>, offline : List<ContactModel.Contact>)
         fun openConversation(passport: String)
 
     }
@@ -15,7 +15,7 @@ interface ContactListContract {
     interface Presenter {
 
         fun start()
-        fun onContactClick(selectedContact: ContactModel)
+        fun onContactClick(selectedContact: ContactModel.Contact)
         fun onContactFilterChanged(filter: String)
 
     }
