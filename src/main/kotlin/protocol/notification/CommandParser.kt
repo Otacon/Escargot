@@ -206,7 +206,6 @@ class CommandParserNln : CommandParser {
 
 }
 
-
 class CommandParserFln : CommandParser {
 
     private val regex = Regex("""FLN 1:(\S+) (\S+)""")
@@ -216,6 +215,21 @@ class CommandParserFln : CommandParser {
             NotificationReceiveCommand.FLN(
                 passport = it.groupValues[1],
                 networkId = it.groupValues[2]
+            )
+        } ?: NotificationReceiveCommand.Unknown
+    }
+
+}
+
+class CommandParserUux : CommandParser {
+
+    private val regex = Regex("""UUX (\d+) (\d+)""")
+
+    override fun parse(command: String): NotificationReceiveCommand {
+        return regex.find(command)?.let {
+            NotificationReceiveCommand.UUX(
+                sequence = it.groupValues[1].toInt(),
+                param = it.groupValues[2].toInt()
             )
         } ?: NotificationReceiveCommand.Unknown
     }

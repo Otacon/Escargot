@@ -84,6 +84,11 @@ sealed class NotificationReceiveCommand {
         val networkId: String,
     ) : NotificationReceiveCommand()
 
+    data class UUX(
+        val sequence: Int,
+        val param: Int
+    ) : NotificationReceiveCommand()
+
     data class Error(
         val code: Int,
         val sequence: Int

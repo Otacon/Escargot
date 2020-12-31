@@ -4,6 +4,7 @@ import core.SwitchBoardManager
 import features.conversation.ConversationView
 import features.login.LoginView
 import javafx.application.Platform
+import javafx.event.EventHandler
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
 import javafx.geometry.Side
@@ -11,6 +12,8 @@ import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
 import javafx.stage.Stage
 import protocol.Status
 import protocol.notification.NotificationTransportManager
@@ -22,7 +25,7 @@ import kotlin.system.exitProcess
 class ContactListView(
     private val stage: Stage,
     private val passport: String,
-    private val token: String
+    token: String
 ) : ContactListContract.View {
 
     @FXML
@@ -75,6 +78,7 @@ class ContactListView(
         contactsOnline.isExpanded = true
         contactsOffline.isExpanded = true
         contactList.root = contactsRoot
+        statusImage.requestFocus()
         presenter.start(passport)
         setupStatusButton()
     }
@@ -95,8 +99,15 @@ class ContactListView(
     }
 
     private fun setupListeners() {
-        statusButton.setOnMouseClicked {
-
+        personalMessage.setOnKeyPressed { event ->
+            when(event.code){
+                KeyCode.ENTER -> presenter.onPersonalMessageChanged(personalMessage.text)
+                KeyCode.ESCAPE -> {
+                    presenter.onCancelPersonalMessage()
+                    statusImage.requestFocus()
+                }
+                else -> {}
+            }
         }
         contactList.setOnMouseClicked { event ->
             if (event.clickCount == 2) {

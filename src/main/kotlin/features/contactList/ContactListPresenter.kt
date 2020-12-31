@@ -33,7 +33,7 @@ class ContactListPresenter(
 
     override fun start(passport: String) {
         model = model.copy(me = model.me.copy(passport = passport))
-        launch(Dispatchers.IO){
+        launch(Dispatchers.IO) {
             contactListRepository.contactChanged.collect { profileData ->
                 model = if (profileData.passport.equals(model.me.passport, true)) {
                     val self = updateContact(model.me, profileData)
@@ -97,6 +97,15 @@ class ContactListPresenter(
         model = model.copy(me = model.me.copy(status = status))
         launch(Dispatchers.IO) { profileRepository.changeStatus(status) }
         updateUI()
+    }
+
+    override fun onPersonalMessageChanged(text: String) {
+        model = model.copy(me = model.me.copy(personalMessage = text))
+        launch(Dispatchers.IO) { profileRepository.changePersonalMessage(text) }
+    }
+
+    override fun onCancelPersonalMessage() {
+        view.setPersonalMessage(model.me.personalMessage)
     }
 
     private fun updateUI() = launch(Dispatchers.JavaFx) {

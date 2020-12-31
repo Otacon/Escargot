@@ -44,6 +44,7 @@ class LoginView(
         stage.icons.add(Image(javaClass.getResourceAsStream("/e-logo.png")))
         setupListeners()
         stage.show()
+        textUsername.requestFocus()
     }
 
     private fun setupListeners() {

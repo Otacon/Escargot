@@ -21,6 +21,8 @@ interface ContactListContract {
         fun onContactClick(selectedContact: ContactModel.Contact)
         fun onContactFilterChanged(filter: String)
         fun onStatusChanged(status: Status)
+        fun onPersonalMessageChanged(text: String)
+        fun onCancelPersonalMessage()
 
     }
 

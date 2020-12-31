@@ -112,6 +112,13 @@ class NotificationTransport {
             sendMessage(message, cont)
         }
 
+    suspend fun sendUux(text: String) : NotificationReceiveCommand.UUX =
+        suspendCoroutine { cont ->
+            val body = "<Data><PSM>$text</PSM><CurrentMedia></CurrentMedia></Data>"
+            val message = "UUX $sequence ${body.length}\r\n$body"
+            sendMessage(message, cont)
+        }
+
     suspend fun waitForMspAuthToken(): String =
         suspendCoroutine { cont ->
             continuationMspAuthToken = cont

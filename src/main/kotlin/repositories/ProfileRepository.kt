@@ -131,6 +131,14 @@ class ProfileRepository(
         }
 
     }
+
+    suspend fun changePersonalMessage(text: String) {
+        try{
+            transport.sendUux(text)
+        } catch (e: TransportException){
+
+        }
+    }
 }
 
 sealed class ChangeStatusResult {
