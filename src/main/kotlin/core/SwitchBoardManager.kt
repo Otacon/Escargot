@@ -24,4 +24,8 @@ object SwitchBoardManager {
         switchBoards[passport] = switchboard
     }
 
+    fun disconnect(){
+        switchBoards.forEach { key, value -> value.disconnect() }
+    }
+
 }

@@ -32,6 +32,10 @@ class SwitchBoardTransport {
         }
     }
 
+    fun disconnect() {
+        socket.close()
+    }
+
     suspend fun sendUsr(command: SwitchBoardSendCommand.USR): SwitchBoardReceiveCommand.Usr =
         suspendCoroutine { cont ->
             val message = "USR $sequence ${command.passport} ${command.auth}"

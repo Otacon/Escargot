@@ -40,6 +40,10 @@ class NotificationTransport {
         }
     }
 
+    fun disconnect() {
+        socket.close()
+    }
+
     suspend fun sendVer(protocols: List<ProtocolVersion>): NotificationReceiveCommand.VER =
         suspendCoroutine { cont ->
             val protocolsStr = protocols.joinToString(" ") {
