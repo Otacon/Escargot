@@ -1,11 +1,13 @@
 package features.contactList
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.javafx.JavaFx
+import kotlinx.coroutines.launch
 import protocol.Status
-import protocol.notification.ProfileData
-import repositories.ContactListRepository
+import repositories.contactList.ContactListRepository
 import repositories.profile.ProfileRepository
 import kotlin.coroutines.CoroutineContext
 
@@ -20,68 +22,56 @@ class ContactListPresenter(
         get() = job + Dispatchers.Main
 
     var model = ContactListModel(
-        me = ContactModel.Contact(
-            nickname = null,
-            passport = "",
-            personalMessage = "",
-            status = Status.ONLINE,
-            profilePicture = null
-        ),
+        nickname = null,
+        passport = "",
+        personalMessage = "",
+        status = Status.ONLINE,
+        profilePicture = null,
         filter = "",
         contacts = emptyList()
     )
 
     override fun start() {
-        runBlocking {
-            model = model.copy(me = model.me.copy(passport = profileRepository.getCurrentPassport()))
+        launch(Dispatchers.IO){
+            contactListRepository.startListeningForAccountChanges()
         }
         launch(Dispatchers.IO) {
-            contactListRepository.contactChanged.collect { profileData ->
-                model = if (profileData.passport.equals(model.me.passport, true)) {
-                    val self = updateContact(model.me, profileData)
-                    model.copy(me = self)
-                } else {
-                    val updatedContacts = model.contacts.map {
-                        if (it.passport.equals(profileData.passport, true)) {
-                            updateContact(it, profileData)
-                        } else {
-                            it
-                        }
-                    }
-                    model.copy(contacts = updatedContacts)
+            contactListRepository.contactUpdates().collect { contacts ->
+                val models = contacts.map { contact ->
+                    ContactModel.Contact(
+                        nickname = contact.nickname,
+                        passport = contact.passport,
+                        personalMessage = contact.personalMessage ?: "",
+                        status = contact.status.asStatus(),
+                        null
+                    )
                 }
-                updateUI()
+                model = model.copy(contacts = models)
+                launch(Dispatchers.JavaFx) {
+                    updateUI()
+                }
             }
         }
         launch(Dispatchers.IO) {
-            val allContacts = contactListRepository.getContacts()
-
-            val (me, others) = allContacts.partition { it.contactInfo.contactType.equals("Me", true) }
-
-            me.firstOrNull()?.let {
-                model = model.copy(me = model.me.copy(nickname = it.contactInfo.displayName))
+            contactListRepository.profileUpdates().collect { profile ->
+                profile?.let {
+                    model = model.copy(
+                        nickname = it.nickname,
+                        passport = it.passport,
+                        personalMessage = it.personalMessage ?: "",
+                        status = it.status.asStatus()
+                    )
+                    launch(Dispatchers.JavaFx) {
+                        updateUI()
+                    }
+                }
             }
-            val otherContacts = others.map {
-                ContactModel.Contact(
-                    nickname = it.contactInfo.displayName,
-                    passport = it.contactInfo.passportName,
-                    personalMessage = "",
-                    status = Status.OFFLINE,
-                    profilePicture = null
-                )
-            }
-            model = model.copy(contacts = otherContacts)
-            updateUI()
-            profileRepository.changeStatus(model.me.status)
+
         }
-    }
-
-    private fun updateContact(contact: ContactModel.Contact, profileData: ProfileData): ContactModel.Contact {
-        return contact.copy(
-            nickname = profileData.nickname ?: contact.nickname,
-            personalMessage = profileData.personalMessage ?: contact.personalMessage,
-            status = profileData.status ?: contact.status
-        )
+        launch(Dispatchers.IO) {
+            contactListRepository.refreshContacts()
+            profileRepository.changeStatus(Status.ONLINE)
+        }
     }
 
     override fun onContactClick(selectedContact: ContactModel.Contact) {
@@ -96,25 +86,25 @@ class ContactListPresenter(
     }
 
     override fun onStatusChanged(status: Status) {
-        model = model.copy(me = model.me.copy(status = status))
+        model = model.copy(status = status)
         launch(Dispatchers.IO) { profileRepository.changeStatus(status) }
         updateUI()
     }
 
     override fun onPersonalMessageChanged(text: String) {
-        model = model.copy(me = model.me.copy(personalMessage = text))
+        model = model.copy(personalMessage = text)
         launch(Dispatchers.IO) { profileRepository.updatePersonalMessage(text) }
     }
 
     override fun onCancelPersonalMessage() {
-        view.setPersonalMessage(model.me.personalMessage)
+        view.setPersonalMessage(model.personalMessage)
     }
 
     private fun updateUI() = launch(Dispatchers.JavaFx) {
-        view.setStatus(model.me.status)
-        view.setProfilePicture(model.me.profilePicture)
-        view.setNickname(model.me.nickname ?: model.me.passport)
-        view.setPersonalMessage(model.me.personalMessage)
+        view.setStatus(model.status)
+        view.setProfilePicture(model.profilePicture)
+        view.setNickname(model.nickname ?: model.passport)
+        view.setPersonalMessage(model.personalMessage)
 
         val (offlineContacts, onlineContacts) = model.contacts.partition { it.status == Status.OFFLINE }
         val online = onlineContacts.filter {
@@ -128,5 +118,16 @@ class ContactListPresenter(
         view.setContacts(online, offline)
     }
 
-
+    private fun String?.asStatus(): Status {
+        return when (this) {
+            "NLN" -> Status.ONLINE
+            "BSY" -> Status.BUSY
+            "IDL" -> Status.IDLE
+            "BRB" -> Status.BE_RIGHT_BACK
+            "AWY" -> Status.AWAY
+            "PHN" -> Status.ON_THE_PHONE
+            "LUN" -> Status.OUT_TO_LUNCH
+            else -> Status.OFFLINE
+        }
+    }
 }

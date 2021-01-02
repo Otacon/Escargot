@@ -3,6 +3,27 @@ CREATE TABLE contact(
     account TEXT NOT NULL,
     nickname TEXT,
     personalMessage TEXT,
+    status TEXT,
     profilePicture BLOB,
     FOREIGN KEY(account) REFERENCES account(passport)
 );
+
+add:
+INSERT OR REPLACE INTO contact(passport,account,nickname,personalMessage,status,profilePicture)
+VALUES ?;
+
+remove:
+DELETE FROM contact
+WHERE account = ? AND passport = ?;
+
+getAll:
+SELECT * FROM contact
+WHERE account = :passport AND passport != :passport;
+
+getByPassport:
+SELECT * FROM contact
+WHERE account = :account AND passport = :passport;
+
+getAllFiltered:
+SELECT * FROM contact
+WHERE account = ? AND (passport LIKE '%?%' OR nickname LIKE '%?%');

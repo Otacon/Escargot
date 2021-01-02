@@ -3,7 +3,11 @@ package features.contactList
 import protocol.Status
 
 data class ContactListModel(
-    val me: ContactModel.Contact,
+    val nickname: String?,
+    val passport: String,
+    val personalMessage: String,
+    val status: Status,
+    val profilePicture: String?,
     val filter: String,
     val contacts: List<ContactModel.Contact>
 )

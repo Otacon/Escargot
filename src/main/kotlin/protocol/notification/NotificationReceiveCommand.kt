@@ -72,7 +72,7 @@ sealed class NotificationReceiveCommand {
     ) : NotificationReceiveCommand()
 
     data class NLN(
-        val status: Status,
+        val status: String,
         val passport: String,
         val displayName: String,
         val networkId: String,

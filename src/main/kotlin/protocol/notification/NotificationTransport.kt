@@ -185,7 +185,7 @@ class NotificationTransport {
             is NotificationReceiveCommand.FLN -> {
                 val profileData = ProfileData(
                     passport = command.passport,
-                    status = Status.OFFLINE,
+                    status = "NLN",
                     nickname = null,
                     personalMessage = null,
                 )
@@ -281,7 +281,7 @@ data class ProfileData(
     val passport: String,
     val nickname: String?,
     val personalMessage: String?,
-    val status: Status?
+    val status: String?
 )
 
 data class SwitchboardInvite(

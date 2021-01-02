@@ -18,10 +18,13 @@ repositories {
 dependencies {
     implementation("com.squareup.okhttp3", "okhttp", "4.2.2")
     implementation("com.squareup.okhttp3", "logging-interceptor", "4.2.2")
+    implementation("org.simpleframework", "simple-xml", "2.7.1")
+
     implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.4.2")
     implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-javafx", "1.4.2")
-    implementation("org.simpleframework", "simple-xml", "2.7.1")
+
     implementation("com.squareup.sqldelight","sqlite-driver","1.4.3")
+    implementation("com.squareup.sqldelight","coroutines-extensions","1.2.1")
 
     testImplementation("junit", "junit", "4.12")
 }

@@ -122,6 +122,8 @@ class ProfileDataSourceRemote(
 
         }
     }
+
+    suspend fun contactChanged() = transport.contactChanged()
 }
 
 

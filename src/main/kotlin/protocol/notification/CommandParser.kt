@@ -184,18 +184,8 @@ class CommandParserNln : CommandParser {
 
     override fun parse(command: String): NotificationReceiveCommand {
         return regex.find(command)?.let {
-            val status = when (it.groupValues[1]) {
-                "NLN" -> Status.ONLINE
-                "BSY" -> Status.BUSY
-                "IDL" -> Status.IDLE
-                "BRB" -> Status.BE_RIGHT_BACK
-                "AWY" -> Status.AWAY
-                "PHN" -> Status.ON_THE_PHONE
-                "LUN" -> Status.OUT_TO_LUNCH
-                else -> Status.OFFLINE
-            }
             NotificationReceiveCommand.NLN(
-                status = status,
+                status = it.groupValues[1],
                 passport = it.groupValues[2],
                 displayName = URLDecoder.decode(it.groupValues[3], "UTF-8"),
                 networkId = it.groupValues[4],

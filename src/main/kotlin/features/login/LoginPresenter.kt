@@ -51,20 +51,21 @@ class LoginPresenter(
     override fun onUsernameChanged(username: String) {
         launch(Dispatchers.IO) {
             val account = profileRepository.getAccountByPassport(username)
-            model = if (account != null) {
-                model.copy(
+            if (account != null) {
+                model = model.copy(
                     username = account.passport,
                     password = account.password ?: "",
                     rememberProfile = account.temporary.not(),
                     rememberPassword = account.password != null,
                     accessAutomatically = account.auto_sigin
                 )
+                launch(Dispatchers.JavaFx) {
+                    updateUI()
+                }
             } else {
-                model.copy(username = username, isLoginEnabled = isLoginEnabled(username, model.password))
+                model = model.copy(username = username, isLoginEnabled = isLoginEnabled(username, model.password))
             }
-            launch(Dispatchers.JavaFx) {
-                updateUI()
-            }
+
         }
     }
 

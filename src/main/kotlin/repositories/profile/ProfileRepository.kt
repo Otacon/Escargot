@@ -45,9 +45,5 @@ class ProfileRepository(
         return local.getAccountByPassport(passport)
     }
 
-    suspend fun getCurrentPassport() : String{
-        return local.getCurrentPassport()
-    }
-
 }
 

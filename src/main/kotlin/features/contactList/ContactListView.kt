@@ -15,7 +15,7 @@ import javafx.scene.input.KeyCode
 import javafx.stage.Stage
 import protocol.Status
 import protocol.notification.NotificationTransportManager
-import repositories.ContactListRepositoryFactory
+import repositories.contactList.ContactListRepositoryFactory
 import repositories.profile.ProfileRepositoryFactory
 import kotlin.system.exitProcess
 
