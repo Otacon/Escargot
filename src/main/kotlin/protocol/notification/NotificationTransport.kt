@@ -32,8 +32,8 @@ class NotificationTransport {
     private val continuations: MutableMap<Int, Continuation<NotificationReceiveCommand>> = mutableMapOf()
     private var continuationMspAuthToken: Continuation<String>? = null
     private var sequence: Int = 1
-    private val contactChanged = Channel<ProfileData>()
-    private val switchboardInvites = Channel<SwitchboardInvite>()
+    private val contactChanged = Channel<ProfileData>(capacity = Channel.UNLIMITED)
+    private val switchboardInvites = Channel<SwitchboardInvite>(capacity = Channel.UNLIMITED)
 
     fun connect() {
         socket.connect()
@@ -185,7 +185,7 @@ class NotificationTransport {
             is NotificationReceiveCommand.FLN -> {
                 val profileData = ProfileData(
                     passport = command.passport,
-                    status = "NLN",
+                    status = "FLN",
                     nickname = null,
                     personalMessage = null,
                 )
