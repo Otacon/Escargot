@@ -4,8 +4,10 @@ plugins {
     id("java")
     kotlin("jvm") version "1.4.20"
     id("org.openjfx.javafxplugin") version "0.0.9"
+    id("com.squareup.sqldelight") version "1.4.3"
     application
 }
+
 group = "me.orfeo"
 version = "1.0-SNAPSHOT"
 
@@ -19,6 +21,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.4.2")
     implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-javafx", "1.4.2")
     implementation("org.simpleframework", "simple-xml", "2.7.1")
+    implementation("com.squareup.sqldelight","sqlite-driver","1.4.3")
 
     testImplementation("junit", "junit", "4.12")
 }
@@ -35,6 +38,12 @@ java {
 tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions.jvmTarget = "11"
     kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.time.ExperimentalTime"
+}
+
+sqldelight {
+    database("Database") { // This will be the name of the generated database class.
+        packageName = "me.orfeo"
+    }
 }
 
 application {

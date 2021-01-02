@@ -6,7 +6,7 @@ import kotlinx.coroutines.javafx.JavaFx
 import protocol.Status
 import protocol.notification.ProfileData
 import repositories.ContactListRepository
-import repositories.ProfileRepository
+import repositories.profile.ProfileRepository
 import kotlin.coroutines.CoroutineContext
 
 class ContactListPresenter(
@@ -31,8 +31,10 @@ class ContactListPresenter(
         contacts = emptyList()
     )
 
-    override fun start(passport: String) {
-        model = model.copy(me = model.me.copy(passport = passport))
+    override fun start() {
+        runBlocking {
+            model = model.copy(me = model.me.copy(passport = profileRepository.getCurrentPassport()))
+        }
         launch(Dispatchers.IO) {
             contactListRepository.contactChanged.collect { profileData ->
                 model = if (profileData.passport.equals(model.me.passport, true)) {
@@ -101,7 +103,7 @@ class ContactListPresenter(
 
     override fun onPersonalMessageChanged(text: String) {
         model = model.copy(me = model.me.copy(personalMessage = text))
-        launch(Dispatchers.IO) { profileRepository.changePersonalMessage(text) }
+        launch(Dispatchers.IO) { profileRepository.updatePersonalMessage(text) }
     }
 
     override fun onCancelPersonalMessage() {

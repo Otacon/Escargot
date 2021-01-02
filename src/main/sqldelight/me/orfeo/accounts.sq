@@ -1,0 +1,45 @@
+import java.lang.Long;
+
+CREATE TABLE account(
+    passport TEXT PRIMARY KEY,
+    password TEXT,
+    mspauth TEXT,
+    profilePicture BLOB,
+    status TEXT,
+    temporary INTEGER AS Boolean NOT NULL DEFAULT 1,
+    last_login INTEGER AS Long NOT NULL DEFAULT 0,
+    auto_sigin INTEGER AS Boolean NOT NULL DEFAULT 0
+);
+
+getAll:
+SELECT * FROM account;
+
+getByPassport:
+SELECT * FROM account
+WHERE passport = ?;
+
+getLastUsed:
+SELECT * FROM account
+ORDER BY last_login DESC;
+
+getCurrent:
+SELECT * FROM account
+ORDER BY last_login DESC
+LIMIT 1;
+
+addAccount:
+INSERT OR REPLACE INTO account(passport, password, mspauth, temporary, last_login, auto_sigin)
+VALUES (?,?,?,?,?,?);
+
+updateStatus:
+UPDATE account
+SET status = ?
+WHERE passport = ?;
+
+removeAccount:
+DELETE FROM account
+WHERE(passport = ?);
+
+clearTemporaryAccounts:
+DELETE FROM account
+WHERE(temporary = 1);

@@ -1,22 +1,23 @@
 package features.conversation
 
 import core.ConversationManager
+import database.MSNDB
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
 import javafx.scene.control.ListView
 import javafx.scene.control.TextArea
 import javafx.scene.input.KeyCode
 import javafx.stage.Stage
+import repositories.profile.ProfileDataSourceLocal
 
 class ConversationView(
-    sender: String,
     recipient: String
 ) : ConversationContract.View {
 
     private val presenter = ConversationPresenter(
         this,
         ConversationManager.getConversation(recipient),
-        sender
+        ProfileDataSourceLocal(MSNDB.db)
     )
 
     private lateinit var messageHistory: ListView<String>

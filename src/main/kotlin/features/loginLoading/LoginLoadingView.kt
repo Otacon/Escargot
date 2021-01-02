@@ -9,8 +9,8 @@ import javafx.scene.text.Text
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
-import repositories.AuthenticationResult
-import repositories.ProfileRepositoryFactory
+import repositories.profile.AuthenticationResult
+import repositories.profile.ProfileRepositoryFactory
 
 class LoginLoadingView(
     private val stage: Stage,

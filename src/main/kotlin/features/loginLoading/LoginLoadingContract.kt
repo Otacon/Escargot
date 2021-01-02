@@ -1,6 +1,6 @@
 package features.loginLoading
 
-import repositories.AuthenticationResult
+import repositories.profile.AuthenticationResult
 
 interface LoginLoadingContract {
 

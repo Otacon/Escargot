@@ -1,0 +1,8 @@
+CREATE TABLE contact(
+    passport TEXT PRIMARY KEY,
+    account TEXT NOT NULL,
+    nickname TEXT,
+    personalMessage TEXT,
+    profilePicture BLOB,
+    FOREIGN KEY(account) REFERENCES account(passport)
+);

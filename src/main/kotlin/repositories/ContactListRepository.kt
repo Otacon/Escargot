@@ -1,6 +1,6 @@
 package repositories
 
-import kotlinx.coroutines.flow.flow
+import database.MSNDB
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -11,25 +11,28 @@ import org.simpleframework.xml.core.Persister
 import protocol.Status
 import protocol.notification.NotificationTransport
 import protocol.notification.NotificationTransportManager
+import repositories.profile.ProfileDataSourceLocal
+import repositories.profile.ProfileRepository
+import repositories.profile.ProfileRepositoryFactory
 import java.io.StringWriter
 
 class ContactListRepositoryFactory {
 
-    fun createContactListRepository(mspAuthToken: String): ContactListRepository {
+    fun createContactListRepository(): ContactListRepository {
         val okHttpClient = OkHttpClient.Builder()
             .addInterceptor(HttpLoggingInterceptor().also { it.level = HttpLoggingInterceptor.Level.BODY })
             .build()
         return ContactListRepository(
-            mspAuthToken,
             okHttpClient,
+            ProfileDataSourceLocal(MSNDB.db),
             NotificationTransportManager.transport
         )
     }
 }
 
 class ContactListRepository(
-    private val mspAuthToken: String,
     private val okHttpClient: OkHttpClient,
+    private val profileDataSource: ProfileDataSourceLocal,
     private val transport: NotificationTransport
 ) {
 
@@ -65,7 +68,7 @@ class ContactListRepository(
             .url("https://m1.escargot.log1p.xyz/abservice/abservice.asmx")
             .post(body = soapRequestBody.toRequestBody("text/xml".toMediaType()))
             .addHeader("SOAPAction", "http://www.msn.com/webservices/AddressBook/ABFindAll")
-            .addHeader("Cookie", "MSPAuth=$mspAuthToken")
+            .addHeader("Cookie", "MSPAuth=${profileDataSource.getMsnpAuth()}")
             .build()
         val response = okHttpClient.newCall(request).execute()
 

@@ -4,7 +4,6 @@ import core.SwitchBoardManager
 import features.conversation.ConversationView
 import features.login.LoginView
 import javafx.application.Platform
-import javafx.event.EventHandler
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
 import javafx.geometry.Side
@@ -13,19 +12,16 @@ import javafx.scene.control.*
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.input.KeyCode
-import javafx.scene.input.KeyEvent
 import javafx.stage.Stage
 import protocol.Status
 import protocol.notification.NotificationTransportManager
 import repositories.ContactListRepositoryFactory
-import repositories.ProfileRepositoryFactory
+import repositories.profile.ProfileRepositoryFactory
 import kotlin.system.exitProcess
 
 
 class ContactListView(
-    private val stage: Stage,
-    private val passport: String,
-    token: String
+    private val stage: Stage
 ) : ContactListContract.View {
 
     @FXML
@@ -62,7 +58,7 @@ class ContactListView(
     private val presenter = ContactListPresenter(
         this,
         ProfileRepositoryFactory().createProfileRepository(),
-        ContactListRepositoryFactory().createContactListRepository(token)
+        ContactListRepositoryFactory().createContactListRepository()
     )
     private val contactsRoot = TreeItem<ContactModel>(ContactModel.Root)
     private val contactsOnline = TreeItem<ContactModel>(ContactModel.Category("Available"))
@@ -79,7 +75,7 @@ class ContactListView(
         contactsOffline.isExpanded = true
         contactList.root = contactsRoot
         statusImage.requestFocus()
-        presenter.start(passport)
+        presenter.start()
         setupStatusButton()
     }
 
@@ -168,7 +164,7 @@ class ContactListView(
     }
 
     override fun openConversation(recipient: String) {
-        ConversationView(passport, recipient)
+        ConversationView(recipient)
     }
 
     override fun setStatus(status: Status) {
@@ -188,10 +184,8 @@ class ContactListView(
 
     companion object {
 
-        fun launch(stage: Stage, passport: String, token: String) {
-            val controller = ContactListView(stage, passport, token)
-            //TODO this is an hack.
-            SwitchBoardManager.myPassport = passport
+        fun launch(stage: Stage) {
+            val controller = ContactListView(stage)
             val root = FXMLLoader().apply {
                 setController(controller)
                 location = javaClass.getResource("/ContactList.fxml")

@@ -7,25 +7,27 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
+import repositories.profile.ProfileDataSourceLocal
 import kotlin.coroutines.CoroutineContext
 
 class ConversationPresenter(
     private val view: ConversationContract.View,
     private val conversation: Conversation,
-    private val passport: String
+    private val profileDataSourceLocal: ProfileDataSourceLocal
 ) : ConversationContract.Presenter, CoroutineScope {
 
     private val job = Job()
-    private var model = ConversationModel(recipient = "", messages = emptyList(), isOtherTyping = false)
+    private var model =
+        ConversationModel(myPassport = "", recipient = "", messages = emptyList(), isOtherTyping = false)
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.Main
 
     override fun start() {
-        model = model.copy(recipient = conversation.recipient)
         conversation.conversationChanged = ::onMessageReceived
         launch(Dispatchers.IO) {
+            val myPassport = profileDataSourceLocal.getCurrentPassport()
             val newHistory = conversation.messageHistory.map { it.toModel() }
-            model = model.copy(messages = newHistory)
+            model = model.copy(myPassport = myPassport, recipient = conversation.recipient, messages = newHistory)
             updateUi()
         }
     }
@@ -33,7 +35,7 @@ class ConversationPresenter(
     override fun onSendMessage(message: String) {
         view.clearMessageInput()
         launch(Dispatchers.IO) {
-            conversation.sendMessage(Message(passport, message.trim()))
+            conversation.sendMessage(Message(model.myPassport, message.trim()))
             updateUi()
         }
     }
@@ -50,7 +52,7 @@ class ConversationPresenter(
     }
 
     private fun Message.toModel(): ConversationMessageModel {
-        return if (this.sender == passport) {
+        return if (this.sender == model.myPassport) {
             ConversationMessageModel.OwnMessage(
                 this.timestamp, this.content
             )
@@ -65,6 +67,7 @@ class ConversationPresenter(
 }
 
 data class ConversationModel(
+    val myPassport: String,
     val recipient: String,
     val messages: List<ConversationMessageModel>,
     val isOtherTyping: Boolean

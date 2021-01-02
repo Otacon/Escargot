@@ -33,6 +33,7 @@ class NotificationTransport {
     private var continuationMspAuthToken: Continuation<String>? = null
     private var sequence: Int = 1
     private val contactChanged = Channel<ProfileData>()
+    private val switchboardInvites = Channel<SwitchboardInvite>()
 
     fun connect() {
         socket.connect()
@@ -281,4 +282,12 @@ data class ProfileData(
     val nickname: String?,
     val personalMessage: String?,
     val status: Status?
+)
+
+data class SwitchboardInvite(
+    val sessionId: String,
+    val address: String,
+    val port: Int,
+    val passport: String,
+    val auth: String
 )

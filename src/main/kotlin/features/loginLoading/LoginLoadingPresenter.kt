@@ -5,8 +5,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
-import repositories.AuthenticationResult
-import repositories.ProfileRepository
+import repositories.profile.AuthenticationResult
+import repositories.profile.ProfileRepository
 import kotlin.coroutines.CoroutineContext
 
 class LoginLoadingPresenter constructor(

@@ -1,10 +1,9 @@
-package repositories
+package repositories.profile
 
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.logging.HttpLoggingInterceptor
 import protocol.Endpoints
 import protocol.ProtocolVersion
 import protocol.Status
@@ -16,26 +15,11 @@ import protocol.notification.TransportException
 import protocol.security.TicketEncoder
 import protocol.soap.RequestSecurityTokenParser
 import protocol.utils.SystemInfoRetriever
-import protocol.utils.SystemInfoRetrieverDesktop
 import java.io.IOException
 import java.util.*
 
-class ProfileRepositoryFactory {
 
-    fun createProfileRepository(): ProfileRepository {
-        return ProfileRepository(
-            SystemInfoRetrieverDesktop(),
-            NotificationTransportManager.transport,
-            OkHttpClient.Builder()
-                .addInterceptor(HttpLoggingInterceptor().also { it.level = HttpLoggingInterceptor.Level.BODY }).build(),
-            TicketEncoder(),
-            RequestMultipleSecurityTokensRequestFactory(),
-            RequestSecurityTokenParser()
-        )
-    }
-}
-
-class ProfileRepository(
+class ProfileDataSourceRemote(
     private val systemInfoRetriever: SystemInfoRetriever,
     private val transport: NotificationTransport,
     private val okHttpClient: OkHttpClient,
@@ -43,7 +27,6 @@ class ProfileRepository(
     private val multipleSecurityTokensRequestFactory: RequestMultipleSecurityTokensRequestFactory,
     private val requestSecurityTokenParser: RequestSecurityTokenParser
 ) {
-
     var clientName = "Escargot Messenger"
     var clientVersion = "1.0 (in-dev)"
 
@@ -132,14 +115,15 @@ class ProfileRepository(
 
     }
 
-    suspend fun changePersonalMessage(text: String) {
-        try{
+    suspend fun updatePersonalMessage(text: String) {
+        try {
             transport.sendUux(text)
-        } catch (e: TransportException){
+        } catch (e: TransportException) {
 
         }
     }
 }
+
 
 sealed class ChangeStatusResult {
 

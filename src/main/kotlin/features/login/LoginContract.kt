@@ -5,6 +5,7 @@ interface LoginContract {
     interface View {
 
         fun setUsername(username: String)
+        fun setUsernameOptions(usernames: List<String>)
         fun setPassword(password: String)
         fun setRememberUserProfileChecked(isChecked: Boolean)
         fun setRememberPasswordChecked(isChecked: Boolean)
@@ -12,7 +13,7 @@ interface LoginContract {
         fun setLoginEnabled(loginEnabled: Boolean)
         fun goToLoading(username: String, password: String)
         fun openWebBrowser(url: String)
-
+        fun goToContactList()
     }
 
     interface Presenter {
@@ -25,6 +26,7 @@ interface LoginContract {
         fun onAccessAutomaticallyChecked(isChecked: Boolean)
         fun onLoginClicked()
         fun onSignupClicked()
+        fun onLoginSuccessful(mspAuth: String)
 
     }
 

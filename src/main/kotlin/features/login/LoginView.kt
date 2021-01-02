@@ -9,13 +9,14 @@ import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.image.Image
 import javafx.stage.Stage
+import repositories.profile.ProfileRepositoryFactory
 
 class LoginView(
     private val stage: Stage
 ) : LoginContract.View {
 
     @FXML
-    private lateinit var textUsername: TextField
+    private lateinit var textUsername: ComboBox<String>
 
     @FXML
     private lateinit var textPassword: PasswordField
@@ -35,7 +36,7 @@ class LoginView(
     @FXML
     private lateinit var signupHyperlink: Hyperlink
 
-    private val presenter = LoginPresenter(this)
+    private val presenter = LoginPresenter(this, ProfileRepositoryFactory().createProfileRepository())
 
     fun onCreate(root: Scene) {
         stage.title = "Escargot 0.1 (In-Dev)"
@@ -45,11 +46,12 @@ class LoginView(
         setupListeners()
         stage.show()
         textUsername.requestFocus()
+        presenter.onStart()
     }
 
     private fun setupListeners() {
         buttonLogin.setOnMouseClicked { presenter.onLoginClicked() }
-        textUsername.textProperty().addListener { _, old, new ->
+        textUsername.editor.textProperty().addListener { _, old, new ->
             if (old != new) {
                 presenter.onUsernameChanged(new)
             }
@@ -71,7 +73,12 @@ class LoginView(
     }
 
     override fun setUsername(username: String) {
-        textUsername.text = username
+        textUsername.editor.text = username
+    }
+
+    override fun setUsernameOptions(usernames: List<String>){
+        textUsername.items.clear()
+        textUsername.items.addAll(usernames)
     }
 
     override fun setPassword(password: String) {
@@ -96,8 +103,12 @@ class LoginView(
 
     override fun goToLoading(username: String, password: String) {
         LoginLoadingView.launch(stage, username, password)?.let {
-            ContactListView.launch(stage, it.passport, it.token)
+            presenter.onLoginSuccessful(it.token)
         }
+    }
+
+    override fun goToContactList(){
+        ContactListView.launch(stage)
     }
 
     override fun openWebBrowser(url: String) {

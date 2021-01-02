@@ -28,17 +28,17 @@
          </VBox.margin>
         </TextFlow>
         <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="E-mail address:" />
-        <TextField fx:id="textUsername">
+        <ComboBox fx:id="textUsername" editable="true" maxWidth="1.7976931348623157E308">
             <VBox.margin>
                 <Insets />
             </VBox.margin>
-        </TextField>
+        </ComboBox>
         <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Password:">
             <VBox.margin>
                 <Insets top="10.0" />
             </VBox.margin>
         </Label>
-        <PasswordField fx:id="textPassword">
+        <PasswordField fx:id="textPassword" maxWidth="1.7976931348623157E308">
             <VBox.margin>
                 <Insets />
             </VBox.margin>
@@ -61,17 +61,17 @@
                 </opaqueInsets>
             </ComboBox>
         </HBox>
-        <CheckBox fx:id="checkRememberUserProfile" disable="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Remember me">
+        <CheckBox fx:id="checkRememberUserProfile" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Remember me">
             <VBox.margin>
                 <Insets top="40.0" />
             </VBox.margin>
         </CheckBox>
-        <CheckBox fx:id="checkRememberPassword" disable="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Remember my password">
+        <CheckBox fx:id="checkRememberPassword" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Remember my password">
             <VBox.margin>
                 <Insets top="16.0" />
             </VBox.margin>
         </CheckBox>
-        <CheckBox fx:id="checkAccessAutomatically" disable="true" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Sign me in automatically">
+        <CheckBox fx:id="checkAccessAutomatically" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Sign me in automatically">
             <VBox.margin>
                 <Insets top="16.0" />
             </VBox.margin>
