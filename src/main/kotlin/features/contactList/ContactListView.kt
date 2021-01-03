@@ -1,7 +1,7 @@
 package features.contactList
 
-import core.SwitchBoardManager
 import features.conversation.ConversationView
+import features.conversationManager.ConversationManager
 import features.login.LoginView
 import javafx.application.Platform
 import javafx.fxml.FXML
@@ -14,6 +14,7 @@ import javafx.scene.image.ImageView
 import javafx.scene.input.KeyCode
 import javafx.stage.Stage
 import protocol.Status
+import protocol.notification.NotificationTransport
 import protocol.notification.NotificationTransportManager
 import repositories.contactList.ContactListRepositoryFactory
 import repositories.profile.ProfileRepositoryFactory
@@ -66,6 +67,7 @@ class ContactListView(
 
 
     fun onCreate() {
+        ConversationManager.start(NotificationTransportManager.transport)
         setupListeners()
         contactList.setCellFactory { ContactListCell() }
         contactList.isShowRoot = false
@@ -126,12 +128,10 @@ class ContactListView(
 
         menuLogout.setOnAction {
             NotificationTransportManager.transport.disconnect()
-            SwitchBoardManager.disconnect()
             LoginView.launch(stage)
         }
         menuExit.setOnAction {
             NotificationTransportManager.transport.disconnect()
-            SwitchBoardManager.disconnect()
             Platform.exit()
             exitProcess(0)
         }
@@ -164,7 +164,7 @@ class ContactListView(
     }
 
     override fun openConversation(recipient: String) {
-        ConversationView(recipient)
+        ConversationManager.openConversation(recipient)
     }
 
     override fun setStatus(status: Status) {

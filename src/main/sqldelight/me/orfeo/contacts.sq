@@ -9,7 +9,7 @@ CREATE TABLE contact(
 );
 
 add:
-INSERT OR REPLACE INTO contact(passport,account,nickname,personalMessage,status,profilePicture)
+INSERT OR REPLACE INTO contact
 VALUES ?;
 
 remove:

@@ -1,21 +1,25 @@
 package features.conversation
 
-import core.Conversation
-import core.Message
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
+import protocol.notification.NotificationTransportManager
+import protocol.notification.SwitchboardInvite
+import protocol.switchboard.SwitchBoardSendCommand
+import protocol.switchboard.SwitchBoardTransport
 import repositories.profile.ProfileDataSourceLocal
 import kotlin.coroutines.CoroutineContext
 
 class ConversationPresenter(
     private val view: ConversationContract.View,
-    private val conversation: Conversation,
+    private val recipient: String,
     private val profileDataSourceLocal: ProfileDataSourceLocal
 ) : ConversationContract.Presenter, CoroutineScope {
 
+    private var switchBoardTransport: SwitchBoardTransport? = null
     private val job = Job()
     private var model =
         ConversationModel(myPassport = "", recipient = "", messages = emptyList(), isOtherTyping = false)
@@ -23,20 +27,56 @@ class ConversationPresenter(
         get() = job + Dispatchers.Main
 
     override fun start() {
-        conversation.conversationChanged = ::onMessageReceived
+
+    }
+
+    override fun onSendMessage(message: String) {
         launch(Dispatchers.IO) {
-            val myPassport = profileDataSourceLocal.getCurrentPassport()
-            val newHistory = conversation.messageHistory.map { it.toModel() }
-            model = model.copy(myPassport = myPassport, recipient = conversation.recipient, messages = newHistory)
+            val switchboard = switchBoardTransport.let {
+                if (it == null) {
+                    val response = NotificationTransportManager.transport.sendXfr()
+                    SwitchBoardTransport().also { s ->
+                        s.connect(response.address, response.port)
+                        val passport = profileDataSourceLocal.getCurrentPassport()
+                        s.sendUsr(SwitchBoardSendCommand.USR(passport, response.auth))
+                        s.sendCal(SwitchBoardSendCommand.CAL(recipient))
+                        s.waitToJoin()
+                        listenForSwitchboardChanges(s)
+                    }
+                } else {
+                    it
+                }
+            }
+            switchboard.sendMsg(SwitchBoardSendCommand.MSG(message))
+            val newMessage = ConversationMessageModel.OwnMessage(System.currentTimeMillis(), message)
+            model = model.copy(messages = model.messages + newMessage)
             updateUi()
         }
     }
 
-    override fun onSendMessage(message: String) {
-        view.clearMessageInput()
+    override fun onSwitchboardInviteReceived(invite: SwitchboardInvite) {
         launch(Dispatchers.IO) {
-            conversation.sendMessage(Message(model.myPassport, message.trim()))
-            updateUi()
+            switchBoardTransport = SwitchBoardTransport().also {
+                it.connect(invite.address, invite.port)
+                val passport = profileDataSourceLocal.getCurrentPassport()
+                val command = SwitchBoardSendCommand.ANS(passport, invite.auth, invite.sessionId)
+                it.sendAns(command)
+                listenForSwitchboardChanges(it)
+            }
+        }
+    }
+
+    private fun listenForSwitchboardChanges(switchboard: SwitchBoardTransport) {
+        launch(Dispatchers.IO) {
+            switchboard.socketClosed().collect { switchBoardTransport = null }
+        }
+        launch(Dispatchers.IO) {
+            switchboard.messageReceived().collect {
+                val newMessage = ConversationMessageModel.OtherMessage(System.currentTimeMillis(), it.contact, it.text)
+                playNotification()
+                model = model.copy(messages = model.messages + newMessage)
+                updateUi()
+            }
         }
     }
 
@@ -45,24 +85,9 @@ class ConversationPresenter(
         view.setHistory(model.messages)
     }
 
-    private fun onMessageReceived() {
-        val newHistory = conversation.messageHistory.map { it.toModel() }
-        model = model.copy(messages = newHistory)
-        updateUi()
+    private fun playNotification() = launch(Dispatchers.JavaFx) {
+        view.playNotification()
     }
-
-    private fun Message.toModel(): ConversationMessageModel {
-        return if (this.sender == model.myPassport) {
-            ConversationMessageModel.OwnMessage(
-                this.timestamp, this.content
-            )
-        } else {
-            ConversationMessageModel.OtherMessage(
-                this.timestamp, model.recipient, this.content
-            )
-        }
-    }
-
 
 }
 

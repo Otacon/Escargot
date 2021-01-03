@@ -1,8 +1,8 @@
 package protocol.switchboard
 
-import core.ConversationManager
-import core.Message
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
@@ -15,6 +15,8 @@ class SwitchBoardTransport {
     private val parser = SwitchBoardCommandParser()
     private var sequence: Int = 1
     private var joinContinuation: Continuation<Unit>? = null
+    private val messages = Channel<MessageData>(Channel.UNLIMITED)
+    private val socketClosed = Channel<Unit>()
 
     var isOpen = false
 
@@ -26,13 +28,23 @@ class SwitchBoardTransport {
                     readNext()
                 } catch (e: Exception) {
                     println("SB: Connection closed. Freeing thread.")
+                    socketClosed.offer(Unit)
+                    socketClosed.close()
+                    messages.close()
                     break
                 }
             }
         }
     }
 
+    fun socketClosed() = socketClosed.consumeAsFlow()
+
+    fun messageReceived() = messages.consumeAsFlow()
+
     fun disconnect() {
+        socketClosed.offer(Unit)
+        socketClosed.close()
+        messages.close()
         socket.close()
     }
 
@@ -90,9 +102,7 @@ class SwitchBoardTransport {
                         val body = socket.readRaw(command.length)
                         when (val msg = MsgBodyParser().parse(body)) {
                             is MsgBody.Message -> {
-                                val conversation = ConversationManager.getConversation(command.passport)
-                                conversation.messageHistory.add(Message(command.passport, msg.text))
-                                conversation.conversationChanged?.invoke()
+                                messages.offer(MessageData(command.passport, msg.text))
                             }
                             is MsgBody.Typing -> println("Typing")
                             MsgBody.Unknown -> println("No idea!")
@@ -104,7 +114,6 @@ class SwitchBoardTransport {
                         isOpen = false
                     }
                     is SwitchBoardReceiveCommand.Ans -> {
-                        println("Completed ANS.")
                         continuations[command.sequence]?.resume(command)
                     }
                     is SwitchBoardReceiveCommand.Iro -> {
@@ -114,3 +123,8 @@ class SwitchBoardTransport {
         }
     }
 }
+
+data class MessageData(
+    val contact: String,
+    val text: String
+)

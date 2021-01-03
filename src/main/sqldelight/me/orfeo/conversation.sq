@@ -1,0 +1,19 @@
+CREATE TABLE conversation(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    account TEXT NOT NULL,
+    recipient TEXT NOT NULL,
+    FOREIGN KEY(account) REFERENCES account(passport),
+    UNIQUE(account,recipient)
+);
+
+create:
+INSERT INTO conversation
+VALUES ?;
+
+getByAccountRecipient:
+SELECT * FROM conversation
+WHERE account = ? AND recipient = ?;
+
+getById:
+SELECT * FROM conversation
+WHERE id = ?;

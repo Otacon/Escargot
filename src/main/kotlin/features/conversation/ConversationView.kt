@@ -1,22 +1,25 @@
 package features.conversation
 
-import core.ConversationManager
 import database.MSNDB
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
 import javafx.scene.control.ListView
 import javafx.scene.control.TextArea
 import javafx.scene.input.KeyCode
+import javafx.scene.media.Media
+import javafx.scene.media.MediaPlayer
 import javafx.stage.Stage
+import protocol.notification.SwitchboardInvite
 import repositories.profile.ProfileDataSourceLocal
 
 class ConversationView(
-    recipient: String
+    val recipient: String,
+    val onClose: ((ConversationView) -> Unit)
 ) : ConversationContract.View {
 
     private val presenter = ConversationPresenter(
         this,
-        ConversationManager.getConversation(recipient),
+        recipient,
         ProfileDataSourceLocal(MSNDB.db)
     )
 
@@ -30,6 +33,7 @@ class ConversationView(
         window = Stage()
         window.scene = root
         window.show()
+        window.setOnCloseRequest { onClose(this) }
         bindViews(root)
         setupListeners()
         presenter.start()
@@ -47,14 +51,24 @@ class ConversationView(
                 is ConversationMessageModel.Error -> "Error:\n${it.text}"
             }
         }
-        //TODO find a way to make this trash perform much better without refreshing the whole UI.
-        window.toFront();
         messageHistory.items.clear()
         messageHistory.items.addAll(messagesStr)
     }
 
     override fun clearMessageInput() {
         chatInput.text = ""
+    }
+
+    override fun playNotification() {
+        if(window.isFocused.not()){
+            val file = javaClass.getResource("/message.mp3")
+            window.toFront();
+            MediaPlayer(Media(file.toString())).play()
+        }
+    }
+
+    fun switchboardInvite(invite: SwitchboardInvite) {
+        presenter.onSwitchboardInviteReceived(invite)
     }
 
     private fun bindViews(root: Scene) {

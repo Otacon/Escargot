@@ -1,13 +1,11 @@
 package protocol.notification
 
-import core.SwitchBoardManager
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
 import protocol.ProtocolVersion
-import protocol.Status
 import protocol.utils.Arch
 import protocol.utils.LocaleId
 import protocol.utils.OSType
@@ -113,7 +111,7 @@ class NotificationTransport {
             sendMessage(message, cont)
         }
 
-    suspend fun sendUux(text: String) : NotificationReceiveCommand.UUX =
+    suspend fun sendUux(text: String): NotificationReceiveCommand.UUX =
         suspendCoroutine { cont ->
             val body = "<Data><PSM>$text</PSM><CurrentMedia></CurrentMedia></Data>"
             val message = "UUX $sequence ${body.length}\r\n$body"
@@ -127,6 +125,10 @@ class NotificationTransport {
 
     fun contactChanged(): Flow<ProfileData> {
         return contactChanged.consumeAsFlow()
+    }
+
+    fun switchboardInvites(): Flow<SwitchboardInvite>{
+        return switchboardInvites.consumeAsFlow()
     }
 
     private fun sendMessage(message: String, continuation: Continuation<*>) {
@@ -165,12 +167,14 @@ class NotificationTransport {
                 }
             }
             is NotificationReceiveCommand.CHG -> resumeContinuation(command.sequence, command)
-            is NotificationReceiveCommand.RNG -> SwitchBoardManager.inviteReceived(
-                command.sessionId,
-                command.address,
-                command.port,
-                command.passport,
-                command.auth
+            is NotificationReceiveCommand.RNG -> switchboardInvites.offer(
+                SwitchboardInvite(
+                    command.sessionId,
+                    command.address,
+                    command.port,
+                    command.passport,
+                    command.auth
+                )
             )
             is NotificationReceiveCommand.XFR -> resumeContinuation(command.sequence, command)
             is NotificationReceiveCommand.NLN -> {
