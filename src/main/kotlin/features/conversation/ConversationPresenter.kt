@@ -1,25 +1,22 @@
 package features.conversation
 
+import database.MSNDB
+import features.conversationManager.ConversationManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
-import protocol.notification.NotificationTransportManager
-import protocol.notification.SwitchboardInvite
-import protocol.switchboard.SwitchBoardSendCommand
-import protocol.switchboard.SwitchBoardTransport
 import repositories.profile.ProfileDataSourceLocal
 import kotlin.coroutines.CoroutineContext
 
 class ConversationPresenter(
     private val view: ConversationContract.View,
-    private val recipient: String,
-    private val profileDataSourceLocal: ProfileDataSourceLocal
+    private val recipient: String
 ) : ConversationContract.Presenter, CoroutineScope {
 
-    private var switchBoardTransport: SwitchBoardTransport? = null
     private val job = Job()
     private var model =
         ConversationModel(myPassport = "", recipient = "", messages = emptyList(), isOtherTyping = false)
@@ -27,56 +24,23 @@ class ConversationPresenter(
         get() = job + Dispatchers.Main
 
     override fun start() {
-
-    }
-
-    override fun onSendMessage(message: String) {
         launch(Dispatchers.IO) {
-            val switchboard = switchBoardTransport.let {
-                if (it == null) {
-                    val response = NotificationTransportManager.transport.sendXfr()
-                    SwitchBoardTransport().also { s ->
-                        s.connect(response.address, response.port)
-                        val passport = profileDataSourceLocal.getCurrentPassport()
-                        s.sendUsr(SwitchBoardSendCommand.USR(passport, response.auth))
-                        s.sendCal(SwitchBoardSendCommand.CAL(recipient))
-                        s.waitToJoin()
-                        listenForSwitchboardChanges(s)
-                    }
-                } else {
-                    it
-                }
-            }
-            switchboard.sendMsg(SwitchBoardSendCommand.MSG(message))
-            val newMessage = ConversationMessageModel.OwnMessage(System.currentTimeMillis(), message)
-            model = model.copy(messages = model.messages + newMessage)
-            updateUi()
-        }
-    }
-
-    override fun onSwitchboardInviteReceived(invite: SwitchboardInvite) {
-        launch(Dispatchers.IO) {
-            switchBoardTransport = SwitchBoardTransport().also {
-                it.connect(invite.address, invite.port)
-                val passport = profileDataSourceLocal.getCurrentPassport()
-                val command = SwitchBoardSendCommand.ANS(passport, invite.auth, invite.sessionId)
-                it.sendAns(command)
-                listenForSwitchboardChanges(it)
-            }
-        }
-    }
-
-    private fun listenForSwitchboardChanges(switchboard: SwitchBoardTransport) {
-        launch(Dispatchers.IO) {
-            switchboard.socketClosed().collect { switchBoardTransport = null }
-        }
-        launch(Dispatchers.IO) {
-            switchboard.messageReceived().collect {
-                val newMessage = ConversationMessageModel.OtherMessage(System.currentTimeMillis(), it.contact, it.text)
+            MSNDB.db.messagesQueries.getNewMessages().executeAsList().asFlow().collect { msg ->
+                val newMessage =
+                    ConversationMessageModel.OtherMessage(System.currentTimeMillis(), recipient, msg.message)
                 playNotification()
                 model = model.copy(messages = model.messages + newMessage)
                 updateUi()
             }
+        }
+    }
+
+    override fun onSendMessage(message: String) {
+        launch(Dispatchers.IO) {
+            ConversationManager.sendMessage(recipient, message)
+            val newMessage = ConversationMessageModel.OwnMessage(System.currentTimeMillis(), message)
+            model = model.copy(messages = model.messages + newMessage)
+            updateUi()
         }
     }
 

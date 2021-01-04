@@ -7,8 +7,8 @@ CREATE TABLE conversation(
 );
 
 create:
-INSERT INTO conversation
-VALUES ?;
+INSERT INTO conversation(account, recipient)
+VALUES (?, ?);
 
 getByAccountRecipient:
 SELECT * FROM conversation

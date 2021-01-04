@@ -67,7 +67,7 @@ class ContactListView(
 
 
     fun onCreate() {
-        ConversationManager.start(NotificationTransportManager.transport)
+        ConversationManager.start()
         setupListeners()
         contactList.setCellFactory { ContactListCell() }
         contactList.isShowRoot = false
@@ -164,7 +164,7 @@ class ContactListView(
     }
 
     override fun openConversation(recipient: String) {
-        ConversationManager.openConversation(recipient)
+        ConversationView(recipient)
     }
 
     override fun setStatus(status: Status) {

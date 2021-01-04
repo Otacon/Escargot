@@ -1,7 +1,5 @@
 package features.conversation
 
-import protocol.notification.SwitchboardInvite
-
 interface ConversationContract {
 
     interface View {
@@ -14,7 +12,6 @@ interface ConversationContract {
     interface Presenter {
         fun start()
         fun onSendMessage(message: String)
-        fun onSwitchboardInviteReceived(invite: SwitchboardInvite)
     }
 
 }

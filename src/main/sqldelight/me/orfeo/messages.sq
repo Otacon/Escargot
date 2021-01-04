@@ -8,8 +8,8 @@ CREATE TABLE messages(
 );
 
 add:
-INSERT INTO messages
-VALUES ?;
+INSERT INTO messages(conversation_id, timestamp, message, read)
+VALUES (?,?,?,?);
 
 getAllByConversationId:
 SELECT * FROM messages

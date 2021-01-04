@@ -13,8 +13,7 @@ import protocol.notification.SwitchboardInvite
 import repositories.profile.ProfileDataSourceLocal
 
 class ConversationView(
-    val recipient: String,
-    val onClose: ((ConversationView) -> Unit)
+    val recipient: String
 ) : ConversationContract.View {
 
     private val presenter = ConversationPresenter(
@@ -33,7 +32,6 @@ class ConversationView(
         window = Stage()
         window.scene = root
         window.show()
-        window.setOnCloseRequest { onClose(this) }
         bindViews(root)
         setupListeners()
         presenter.start()
@@ -65,10 +63,6 @@ class ConversationView(
             window.toFront();
             MediaPlayer(Media(file.toString())).play()
         }
-    }
-
-    fun switchboardInvite(invite: SwitchboardInvite) {
-        presenter.onSwitchboardInviteReceived(invite)
     }
 
     private fun bindViews(root: Scene) {
