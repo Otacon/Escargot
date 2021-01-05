@@ -12,6 +12,7 @@ interface ConversationContract {
     interface Presenter {
         fun start()
         fun onSendMessage(message: String)
+        fun onDestroy()
     }
 
 }

@@ -1,7 +1,6 @@
 package features.contactList
 
 import features.conversation.ConversationView
-import features.conversationManager.ConversationManager
 import features.login.LoginView
 import javafx.application.Platform
 import javafx.fxml.FXML
@@ -14,7 +13,6 @@ import javafx.scene.image.ImageView
 import javafx.scene.input.KeyCode
 import javafx.stage.Stage
 import protocol.Status
-import protocol.notification.NotificationTransport
 import protocol.notification.NotificationTransportManager
 import repositories.contactList.ContactListRepositoryFactory
 import repositories.profile.ProfileRepositoryFactory
@@ -64,10 +62,9 @@ class ContactListView(
     private val contactsRoot = TreeItem<ContactModel>(ContactModel.Root)
     private val contactsOnline = TreeItem<ContactModel>(ContactModel.Category("Available"))
     private val contactsOffline = TreeItem<ContactModel>(ContactModel.Category("Offline"))
-
+    private val windows = mutableMapOf<String, ConversationView>()
 
     fun onCreate() {
-        ConversationManager.start()
         setupListeners()
         contactList.setCellFactory { ContactListCell() }
         contactList.isShowRoot = false
@@ -98,13 +95,14 @@ class ContactListView(
 
     private fun setupListeners() {
         personalMessage.setOnKeyPressed { event ->
-            when(event.code){
+            when (event.code) {
                 KeyCode.ENTER -> presenter.onPersonalMessageChanged(personalMessage.text)
                 KeyCode.ESCAPE -> {
                     presenter.onCancelPersonalMessage()
                     statusImage.requestFocus()
                 }
-                else -> {}
+                else -> {
+                }
             }
         }
         contactList.setOnMouseClicked { event ->
@@ -164,7 +162,12 @@ class ContactListView(
     }
 
     override fun openConversation(recipient: String) {
-        ConversationView(recipient)
+        val window = windows[recipient]
+        if (window == null) {
+            windows[recipient] = ConversationView(recipient) {
+                windows.remove(recipient)
+            }
+        }
     }
 
     override fun setStatus(status: Status) {

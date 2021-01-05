@@ -1,18 +1,12 @@
 package features.conversation
 
-import com.squareup.sqldelight.runtime.coroutines.asFlow
-import com.squareup.sqldelight.runtime.coroutines.mapToList
-import com.squareup.sqldelight.runtime.coroutines.mapToOne
 import database.MSNDB
-import features.conversationManager.ConversationManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
-import repositories.profile.ProfileDataSourceLocal
 import kotlin.coroutines.CoroutineContext
 
 class ConversationPresenter(
@@ -21,6 +15,7 @@ class ConversationPresenter(
 ) : ConversationContract.Presenter, CoroutineScope {
 
     private val job = Job()
+    private val repository = ConversationRepository()
     private var model =
         ConversationModel(myPassport = "", recipient = "", messages = emptyList(), isOtherTyping = false)
     override val coroutineContext: CoroutineContext
@@ -28,11 +23,17 @@ class ConversationPresenter(
 
     override fun start() {
         launch(Dispatchers.IO) {
-            MSNDB.db.messagesQueries.getNewMessages().asFlow().mapToOne().collect { msg ->
-                val newMessage =
-                    ConversationMessageModel.OtherMessage(System.currentTimeMillis(), recipient, msg.message)
-                playNotification()
-                model = model.copy(messages = model.messages + newMessage)
+            val myPassport = MSNDB.db.accountsQueries.getCurrent().executeAsOne().passport
+            repository.newMessages(recipient).collect { messages ->
+                val allMessages = messages.map { msg ->
+                    if (recipient != myPassport) {
+                        playNotification()
+                        ConversationMessageModel.OtherMessage(msg.timestamp, recipient, msg.text)
+                    } else {
+                        ConversationMessageModel.OwnMessage(System.currentTimeMillis(), msg.text)
+                    }
+                }
+                model = model.copy(messages = allMessages)
                 updateUi()
             }
         }
@@ -40,11 +41,12 @@ class ConversationPresenter(
 
     override fun onSendMessage(message: String) {
         launch(Dispatchers.IO) {
-            ConversationManager.sendMessage(recipient, message)
-            val newMessage = ConversationMessageModel.OwnMessage(System.currentTimeMillis(), message)
-            model = model.copy(messages = model.messages + newMessage)
-            updateUi()
+            repository.sendMessage(message, recipient)
         }
+    }
+
+    override fun onDestroy() {
+        job.cancel()
     }
 
     private fun updateUi() = launch(Dispatchers.JavaFx) {

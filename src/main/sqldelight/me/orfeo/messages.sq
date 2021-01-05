@@ -1,29 +1,30 @@
-CREATE TABLE messages(
+CREATE TABLE message(
     id INTEGER as Long PRIMARY KEY AUTOINCREMENT,
     conversation_id INTEGER NOT NULL,
+    sender TEXT NOT NULL,
     timestamp INTEGER as Long NOT NULL,
-    message TEXT NOT NULL,
-    read INTEGER as Boolean NOT NULL,
+    text TEXT NOT NULL,
+    synced INTEGER as Boolean NOT NULL,
     FOREIGN KEY(conversation_id) REFERENCES conversation(id)
 );
 
 add:
-INSERT INTO messages(conversation_id, timestamp, message, read)
-VALUES (?,?,?,?);
+INSERT INTO message(conversation_id, sender, timestamp, text, synced)
+VALUES (?,?,?,?,?);
 
 getAllByConversationId:
-SELECT * FROM messages
+SELECT * FROM message
 WHERE conversation_id = ?
-ORDER BY timestamp DESC;
+ORDER BY timestamp ASC;
 
 getNewMessages:
-SELECT * FROM messages
-WHERE read = 0
-ORDER BY timestamp DESC
+SELECT * FROM message
+WHERE synced = 0
+ORDER BY timestamp ASC
 LIMIT 1;
 
-markAsRead:
-UPDATE messages
-SET read = 1
+markAsSynced:
+UPDATE message
+SET synced = 1
 WHERE id = ?;
 

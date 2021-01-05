@@ -1,5 +1,6 @@
 package features.contactList
 
+import features.conversationManager.ConversationManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -32,7 +33,7 @@ class ContactListPresenter(
     )
 
     override fun start() {
-        launch(Dispatchers.IO){
+        launch(Dispatchers.IO) {
             contactListRepository.startListeningForAccountChanges()
         }
         launch(Dispatchers.IO) {
@@ -69,8 +70,22 @@ class ContactListPresenter(
 
         }
         launch(Dispatchers.IO) {
+            contactListRepository.newMessages().collect { messages ->
+                messages.forEach {
+                    if (it.sender != model.passport) {
+                        contactListRepository.markAsRead(it.id)
+                        launch(Dispatchers.JavaFx) {
+                            view.openConversation(it.sender)
+                        }
+                    }
+                }
+            }
+
+        }
+        launch(Dispatchers.IO) {
             contactListRepository.refreshContacts()
             profileRepository.changeStatus(Status.ONLINE)
+            ConversationManager.start()
         }
     }
 

@@ -3,6 +3,7 @@ package repositories.contactList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import me.orfeo.Contact
+import me.orfeo.Message
 import repositories.profile.ProfileDataSourceLocal
 
 class ContactListRepository(
@@ -52,6 +53,14 @@ class ContactListRepository(
     suspend fun profileUpdates(): Flow<Contact?> {
         val passport = profileLocal.getCurrentPassport()
         return local.profileUpdates(passport)
+    }
+
+    suspend fun newMessages(): Flow<List<Message>>{
+        return local.newMessages()
+    }
+
+    suspend fun markAsRead(id: Long) {
+        local.markMessageAsRead(id)
     }
 
 }

@@ -11,7 +11,8 @@ import javafx.stage.Stage
 import javafx.util.Duration
 
 class ConversationView(
-    val recipient: String
+    val recipient: String,
+    val onClose: (() -> Unit)
 ) : ConversationContract.View {
 
     private val presenter = ConversationPresenter(
@@ -32,6 +33,10 @@ class ConversationView(
         bindViews(root)
         setupListeners()
         presenter.start()
+        window.setOnCloseRequest {
+            onClose()
+            presenter.onDestroy()
+        }
     }
 
     override fun setWindowTitle(title: String) {
