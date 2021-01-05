@@ -1,5 +1,6 @@
 package features.conversation
 
+import core.ConversationWindowManager
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
 import javafx.scene.control.ListView
@@ -11,8 +12,7 @@ import javafx.stage.Stage
 import javafx.util.Duration
 
 class ConversationView(
-    val recipient: String,
-    val onClose: (() -> Unit)
+    val recipient: String
 ) : ConversationContract.View {
 
     private val presenter = ConversationPresenter(
@@ -33,8 +33,9 @@ class ConversationView(
         bindViews(root)
         setupListeners()
         presenter.start()
+        ConversationWindowManager.onConversationWindowOpened(this)
         window.setOnCloseRequest {
-            onClose()
+            ConversationWindowManager.onConversationWindowClosed(this)
             presenter.onDestroy()
         }
     }

@@ -1,5 +1,6 @@
 package features.contactList
 
+import core.ConversationWindowManager
 import features.conversation.ConversationView
 import features.login.LoginView
 import javafx.application.Platform
@@ -62,7 +63,6 @@ class ContactListView(
     private val contactsRoot = TreeItem<ContactModel>(ContactModel.Root)
     private val contactsOnline = TreeItem<ContactModel>(ContactModel.Category("Available"))
     private val contactsOffline = TreeItem<ContactModel>(ContactModel.Category("Offline"))
-    private val windows = mutableMapOf<String, ConversationView>()
 
     fun onCreate() {
         setupListeners()
@@ -162,11 +162,8 @@ class ContactListView(
     }
 
     override fun openConversation(recipient: String) {
-        val window = windows[recipient]
-        if (window == null) {
-            windows[recipient] = ConversationView(recipient) {
-                windows.remove(recipient)
-            }
+        if(!ConversationWindowManager.isWindowOpen(recipient)){
+            ConversationView(recipient)
         }
     }
 
