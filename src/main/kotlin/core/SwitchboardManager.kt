@@ -1,62 +1,20 @@
-package features.conversationManager
+package core
 
-import com.squareup.sqldelight.runtime.coroutines.asFlow
-import com.squareup.sqldelight.runtime.coroutines.mapToList
 import database.MSNDB
-import features.conversation.ConversationView
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.launch
 import protocol.notification.NotificationTransportManager
 import protocol.switchboard.SwitchBoardSendCommand
 import protocol.switchboard.SwitchBoardTransport
+import kotlin.coroutines.CoroutineContext
 
-object ConversationManager {
-    private val switchboardManager = SwitchboardManager()
-    private val passport by lazy { MSNDB.db.accountsQueries.getLastUsed().executeAsOne().passport }
+class SwitchboardManager : CoroutineScope {
 
-    fun start() {
-        switchboardManager.start()
-        GlobalScope.launch {
-            MSNDB.db.messagesQueries.getNewMessages().asFlow().mapToList().collect { messages ->
-                messages.forEach { message ->
-                    val conversation = MSNDB.db.conversationQueries.getById(message.conversation_id).executeAsOne()
-                    if (!message.synced && message.sender == passport) {
-                        val switchboard = switchboardManager.getSwitchboard(conversation.recipient)
-                        switchboard.sendMsg(SwitchBoardSendCommand.MSG(message.text))
-                        MSNDB.db.messagesQueries.markAsSynced(message.id)
-                    }
-                }
-            }
-        }
-        GlobalScope.launch {
-            switchboardManager.messages.consumeAsFlow().collect {
-                val recipient = if (it.recipient == passport) {
-                    it.sender
-                } else {
-                    it.recipient
-                }
-                var conversation =
-                    MSNDB.db.conversationQueries.getByAccountRecipient(passport, recipient).executeAsOneOrNull()
-                conversation = if (conversation == null) {
-                    MSNDB.db.conversationQueries.create(passport, recipient)
-                    MSNDB.db.conversationQueries.getByAccountRecipient(passport, recipient).executeAsOne()
-                } else {
-                    conversation
-                }
-                MSNDB.db.messagesQueries.add(conversation.id, it.sender, System.currentTimeMillis(), it.message, false)
-            }
-        }
-    }
-
-}
-
-
-class SwitchboardManager {
+    private val job = Job()
+    override val coroutineContext: CoroutineContext
+        get() = job + Dispatchers.IO
 
     private val passport by lazy { MSNDB.db.accountsQueries.getLastUsed().executeAsOne().passport }
     val messages = Channel<SwitchboardMessage>(Channel.UNLIMITED)
@@ -69,11 +27,7 @@ class SwitchboardManager {
                     val switchboard = SwitchBoardTransport().apply {
                         connect(msg.address, msg.port)
                         sendAns(SwitchBoardSendCommand.ANS(passport, msg.auth, msg.sessionId))
-                    }
-                    GlobalScope.launch {
-                        switchboard
-                            .messageReceived()
-                            .collect { messages.offer(SwitchboardMessage(it.contact, passport, it.text)) }
+                        receiveNewMessages()
                     }
                     switchboards.add(SwitchboardElement(msg.passport, switchboard))
                 }
@@ -86,11 +40,7 @@ class SwitchboardManager {
                             sendUsr(SwitchBoardSendCommand.USR(passport, switchboardParams.auth))
                             sendCal(SwitchBoardSendCommand.CAL(msg.recipient))
                             waitToJoin()
-                        }
-                        GlobalScope.launch {
-                            switchboard
-                                .messageReceived()
-                                .collect { messages.offer(SwitchboardMessage(it.contact, passport, it.text)) }
+                            receiveNewMessages()
                         }
                         switchboards.add(SwitchboardElement(msg.recipient, switchboard))
                         msg.switchboard.complete(switchboard)
@@ -105,8 +55,12 @@ class SwitchboardManager {
         }
     }
 
+    private fun SwitchBoardTransport.receiveNewMessages() = launch {
+        messageReceived().collect { messages.offer(SwitchboardMessage(it.contact, passport, it.text)) }
+    }
+
     fun start() {
-        GlobalScope.launch {
+        launch {
             NotificationTransportManager.transport.switchboardInvites().collect {
                 val invite = SwitchboardOperation.AcceptInvite(
                     address = it.address,
@@ -128,17 +82,6 @@ class SwitchboardManager {
 
 }
 
-data class SwitchboardMessage(
-    val sender: String,
-    val recipient: String,
-    val message: String
-)
-
-data class SwitchboardElement(
-    val recipient: String,
-    val switchboard: SwitchBoardTransport
-)
-
 private sealed class SwitchboardOperation {
     data class AcceptInvite(
         val address: String,
@@ -157,3 +100,14 @@ private sealed class SwitchboardOperation {
         val switchboard: SwitchBoardTransport
     ) : SwitchboardOperation()
 }
+
+data class SwitchboardMessage(
+    val sender: String,
+    val recipient: String,
+    val message: String
+)
+
+private data class SwitchboardElement(
+    val recipient: String,
+    val switchboard: SwitchBoardTransport
+)

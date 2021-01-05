@@ -1,6 +1,6 @@
 package features.contactList
 
-import features.conversationManager.ConversationManager
+import core.ConversationManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
