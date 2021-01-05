@@ -27,6 +27,7 @@ class SwitchBoardTransport {
                 try {
                     readNext()
                 } catch (e: Exception) {
+                    e.printStackTrace()
                     println("SB: Connection closed. Freeing thread.")
                     socketClosed.offer(Unit)
                     socketClosed.close()

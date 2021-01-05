@@ -1,5 +1,8 @@
 package features.conversation
 
+import com.squareup.sqldelight.runtime.coroutines.asFlow
+import com.squareup.sqldelight.runtime.coroutines.mapToList
+import com.squareup.sqldelight.runtime.coroutines.mapToOne
 import database.MSNDB
 import features.conversationManager.ConversationManager
 import kotlinx.coroutines.CoroutineScope
@@ -25,7 +28,7 @@ class ConversationPresenter(
 
     override fun start() {
         launch(Dispatchers.IO) {
-            MSNDB.db.messagesQueries.getNewMessages().executeAsList().asFlow().collect { msg ->
+            MSNDB.db.messagesQueries.getNewMessages().asFlow().mapToOne().collect { msg ->
                 val newMessage =
                     ConversationMessageModel.OtherMessage(System.currentTimeMillis(), recipient, msg.message)
                 playNotification()

@@ -40,7 +40,7 @@ object ConversationManager {
                                         MSNDB.db.conversationQueries.create(passport, messageData.contact)
                                         MSNDB.db.conversationQueries.getByAccountRecipient(passport, messageData.contact).executeAsOne().id
                                     }
-                                    MSNDB.db.messagesQueries.add(conversationId, System.currentTimeMillis(), messageData.contact, false)
+                                    MSNDB.db.messagesQueries.add(conversationId, System.currentTimeMillis(), messageData.text, false)
                                 }
                             }
                         }
@@ -53,7 +53,21 @@ object ConversationManager {
                     switchboard.switchboard.sendMsg(SwitchBoardSendCommand.MSG(msg.message))
                 }
                 is ConversationOperation.AcceptInvite -> {
-
+                    val switchboard = SwitchBoardTransport().apply {
+                        connect(msg.address, msg.port)
+                        sendAns(SwitchBoardSendCommand.ANS(passport,msg.auth, msg.sessionId))
+                        GlobalScope.launch {
+                            messageReceived().collect { messageData ->
+                                val conversationId = MSNDB.db.conversationQueries.getByAccountRecipient(passport, messageData.contact).executeAsOneOrNull()?.id ?: run {
+                                    MSNDB.db.conversationQueries.create(passport, messageData.contact)
+                                    MSNDB.db.conversationQueries.getByAccountRecipient(passport, messageData.contact).executeAsOne().id
+                                }
+                                MSNDB.db.messagesQueries.add(conversationId, System.currentTimeMillis(), messageData.text, false)
+                            }
+                        }
+                    }
+                    val conversationSwitchboard = ConversationSwitchboard(msg.passport, switchboard)
+                    switchboards.add(conversationSwitchboard)
                 }
             }
         }

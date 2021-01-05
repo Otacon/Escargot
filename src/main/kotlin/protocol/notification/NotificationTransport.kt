@@ -37,7 +37,11 @@ class NotificationTransport {
         socket.connect()
         GlobalScope.launch {
             while (true) {
-                readNext()
+                try {
+                    readNext()
+                }catch (e: Exception){
+                    e.printStackTrace()
+                }
             }
         }
     }

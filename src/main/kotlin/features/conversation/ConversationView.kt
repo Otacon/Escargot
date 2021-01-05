@@ -1,6 +1,5 @@
 package features.conversation
 
-import database.MSNDB
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
 import javafx.scene.control.ListView
@@ -9,8 +8,7 @@ import javafx.scene.input.KeyCode
 import javafx.scene.media.Media
 import javafx.scene.media.MediaPlayer
 import javafx.stage.Stage
-import protocol.notification.SwitchboardInvite
-import repositories.profile.ProfileDataSourceLocal
+import javafx.util.Duration
 
 class ConversationView(
     val recipient: String
@@ -18,8 +16,7 @@ class ConversationView(
 
     private val presenter = ConversationPresenter(
         this,
-        recipient,
-        ProfileDataSourceLocal(MSNDB.db)
+        recipient
     )
 
     private lateinit var messageHistory: ListView<String>
@@ -58,10 +55,13 @@ class ConversationView(
     }
 
     override fun playNotification() {
-        if(window.isFocused.not()){
+        if (window.isFocused.not()) {
             val file = javaClass.getResource("/message.mp3")
-            window.toFront();
-            MediaPlayer(Media(file.toString())).play()
+            window.toFront()
+            MediaPlayer(Media(file.toString())).apply {
+                startTime = Duration.ZERO
+                play()
+            }
         }
     }
 
