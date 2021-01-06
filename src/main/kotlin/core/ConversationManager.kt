@@ -26,7 +26,6 @@ object ConversationManager : CoroutineScope {
     private val conversations = ConversationsTable()
     private val messages = MessagesTable()
 
-
     fun start() {
         switchboardManager.start()
         receiveNewMessages()
@@ -69,6 +68,10 @@ object ConversationManager : CoroutineScope {
             )
             messages.addMessage(conversation.id, message.sender, System.currentTimeMillis(), message.message)
         }
+    }
+
+    suspend fun markAsRead(conversationId: Long) {
+        conversations.markAsRead(conversationId)
     }
 
 }

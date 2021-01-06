@@ -19,5 +19,10 @@ getById:
 SELECT * FROM conversation
 WHERE id = ?;
 
+setLastRead:
+UPDATE conversation
+SET last_read_time = ?
+WHERE id = ?;
+
 lastInsertedId:
 SELECT last_insert_rowid();

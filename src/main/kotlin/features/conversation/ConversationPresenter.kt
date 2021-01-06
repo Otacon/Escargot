@@ -28,7 +28,7 @@ class ConversationPresenter(
             val conversation = interactor.getConversation(recipient)
             model = model.copy(account = account, conversationId = conversation.id)
             interactor.newMessages(conversation.id).collect { msg ->
-                val message = if (recipient != account) {
+                val message = if (msg.sender != account) {
                     playNotification()
                     ConversationMessageModel.OtherMessage(msg.timestamp, recipient, msg.text)
                 } else {

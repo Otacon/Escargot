@@ -27,4 +27,10 @@ class ConversationsTable {
 
     }
 
+    suspend fun markAsRead(conversationId: Long) {
+        queries.transaction {
+            queries.setLastRead(System.currentTimeMillis(), conversationId)
+        }
+    }
+
 }

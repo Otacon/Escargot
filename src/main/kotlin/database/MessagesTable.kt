@@ -37,6 +37,14 @@ class MessagesTable {
     }
 
     fun newOtherMessages(account: String): Flow<Message> {
-        return queries.selectNewOtherMessages(account).asFlow().mapToOneNotNull()
+        return queries.selectNewOtherMessages(account).asFlow().mapToOneNotNull().map {
+            Message(
+                id = it.id,
+                conversation_id = it.conversation_id,
+                sender = it.sender,
+                timestamp = it.timestamp,
+                text = it.text
+            )
+        }
     }
 }

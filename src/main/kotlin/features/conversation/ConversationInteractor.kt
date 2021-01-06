@@ -2,6 +2,7 @@ package features.conversation
 
 import core.ConversationManager
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import me.orfeo.Conversation
 import me.orfeo.Message
 
@@ -14,7 +15,10 @@ class ConversationInteractor(
     }
 
     suspend fun newMessages(conversationId: Long): Flow<Message> {
-        return conversationManager.newConversationMessages(conversationId)
+        return conversationManager.newConversationMessages(conversationId).map {
+            conversationManager.markAsRead(conversationId)
+            it
+        }
     }
 
     suspend fun sendMessage(conversationId: Long, message: String) {
