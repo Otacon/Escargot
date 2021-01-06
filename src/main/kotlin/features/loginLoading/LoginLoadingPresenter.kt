@@ -1,17 +1,17 @@
 package features.loginLoading
 
+import core.AuthenticationResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
-import repositories.profile.AuthenticationResult
-import repositories.profile.ProfileRepository
+import protocol.Status
 import kotlin.coroutines.CoroutineContext
 
 class LoginLoadingPresenter constructor(
     private val view: LoginLoadingContract.View,
-    private val profileRepository: ProfileRepository
+    private val interactor: LoginLoadingInteractor
 ) : LoginLoadingContract.Presenter, CoroutineScope {
 
     private var model = LoginLoadingModel(
@@ -56,7 +56,7 @@ class LoginLoadingPresenter constructor(
         )
         updateUI()
         launch(Dispatchers.IO) {
-            val result = profileRepository.authenticate(model.username, model.password)
+            val result = interactor.login(model.username, model.password)
             launch(Dispatchers.JavaFx) {
                 model = when (result) {
                     AuthenticationResult.UnsupportedProtocol -> model.copy(
@@ -88,6 +88,12 @@ class LoginLoadingPresenter constructor(
                         progressVisible = false
                     )
                     is AuthenticationResult.Success -> {
+                        model = model.copy(text = "Syncing contact list...")
+                        updateUI()
+                        interactor.refreshContactList()
+                        model = model.copy(text = "Updating status...")
+                        updateUI()
+                        interactor.updateStatus(Status.ONLINE)
                         view.closeWithSuccess(result)
                         return@launch
                     }

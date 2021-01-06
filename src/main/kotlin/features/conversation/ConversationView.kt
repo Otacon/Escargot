@@ -1,5 +1,6 @@
 package features.conversation
 
+import core.ConversationManager
 import core.ConversationWindowManager
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
@@ -17,7 +18,8 @@ class ConversationView(
 
     private val presenter = ConversationPresenter(
         this,
-        recipient
+        recipient,
+        ConversationInteractor(ConversationManager)
     )
 
     private lateinit var messageHistory: ListView<String>

@@ -1,6 +1,5 @@
 package core
 
-import database.MSNDB
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.actor
@@ -16,12 +15,14 @@ class SwitchboardManager : CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.IO
 
-    private val passport by lazy { MSNDB.db.accountsQueries.getLastUsed().executeAsOne().passport }
+    private val accountManager = AccountManager
+
     val messages = Channel<SwitchboardMessage>(Channel.UNLIMITED)
 
     private val switchboardActor = GlobalScope.actor<SwitchboardOperation> {
         val switchboards = mutableSetOf<SwitchboardElement>()
         for (msg in channel) {
+            val passport = accountManager.getCurrentAccount().passport
             when (msg) {
                 is SwitchboardOperation.AcceptInvite -> {
                     val switchboard = SwitchBoardTransport().apply {
@@ -56,6 +57,7 @@ class SwitchboardManager : CoroutineScope {
     }
 
     private fun SwitchBoardTransport.receiveNewMessages() = launch {
+        val passport = accountManager.getCurrentAccount().passport
         messageReceived().collect { messages.offer(SwitchboardMessage(it.contact, passport, it.text)) }
     }
 

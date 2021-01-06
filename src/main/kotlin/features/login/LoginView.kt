@@ -1,5 +1,6 @@
 package features.login
 
+import core.AccountManager
 import features.appInstance
 import features.contactList.ContactListView
 import features.loginLoading.LoginLoadingView
@@ -9,7 +10,6 @@ import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.image.Image
 import javafx.stage.Stage
-import repositories.profile.ProfileRepositoryFactory
 
 class LoginView(
     private val stage: Stage
@@ -36,7 +36,7 @@ class LoginView(
     @FXML
     private lateinit var signupHyperlink: Hyperlink
 
-    private val presenter = LoginPresenter(this, ProfileRepositoryFactory().createProfileRepository())
+    private val presenter = LoginPresenter(this, LoginInteractor(AccountManager))
 
     fun onCreate(root: Scene) {
         stage.title = "Escargot 0.1 (In-Dev)"
@@ -76,7 +76,7 @@ class LoginView(
         textUsername.editor.text = username
     }
 
-    override fun setUsernameOptions(usernames: List<String>){
+    override fun setAccountsHistory(usernames: List<String>){
         textUsername.items.clear()
         textUsername.items.addAll(usernames)
     }

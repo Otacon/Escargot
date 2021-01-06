@@ -1,6 +1,6 @@
 package features.conversation
 
-import database.MSNDB
+import core.AccountManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -11,37 +11,39 @@ import kotlin.coroutines.CoroutineContext
 
 class ConversationPresenter(
     private val view: ConversationContract.View,
-    private val recipient: String
+    private val recipient: String,
+    private val interactor: ConversationInteractor
 ) : ConversationContract.Presenter, CoroutineScope {
 
     private val job = Job()
-    private val repository = ConversationRepository()
+
     private var model =
-        ConversationModel(myPassport = "", recipient = "", messages = emptyList(), isOtherTyping = false)
+        ConversationModel(account = "", conversationId = 0, messages = emptyList(), isOtherTyping = false)
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.Main
 
     override fun start() {
         launch(Dispatchers.IO) {
-            val myPassport = MSNDB.db.accountsQueries.getCurrent().executeAsOne().passport
-            repository.newMessages(recipient).collect { messages ->
-                val allMessages = messages.map { msg ->
-                    if (recipient != myPassport) {
-                        playNotification()
-                        ConversationMessageModel.OtherMessage(msg.timestamp, recipient, msg.text)
-                    } else {
-                        ConversationMessageModel.OwnMessage(System.currentTimeMillis(), msg.text)
-                    }
+            val account = AccountManager.getCurrentAccount().passport
+            val conversation = interactor.getConversation(recipient)
+            model = model.copy(account = account, conversationId = conversation.id)
+            interactor.newMessages(conversation.id).collect { msg ->
+                val message = if (recipient != account) {
+                    playNotification()
+                    ConversationMessageModel.OtherMessage(msg.timestamp, recipient, msg.text)
+                } else {
+                    ConversationMessageModel.OwnMessage(System.currentTimeMillis(), msg.text)
                 }
-                model = model.copy(messages = allMessages)
+                model = model.copy(messages = model.messages + message)
                 updateUi()
             }
         }
     }
 
     override fun onSendMessage(message: String) {
+        view.clearMessageInput()
         launch(Dispatchers.IO) {
-            repository.sendMessage(message, recipient)
+            interactor.sendMessage(model.conversationId, message.trim())
         }
     }
 
@@ -50,7 +52,7 @@ class ConversationPresenter(
     }
 
     private fun updateUi() = launch(Dispatchers.JavaFx) {
-        view.setWindowTitle(model.recipient)
+        view.setWindowTitle("Conversation")
         view.setHistory(model.messages)
     }
 
@@ -61,8 +63,8 @@ class ConversationPresenter(
 }
 
 data class ConversationModel(
-    val myPassport: String,
-    val recipient: String,
+    val account: String,
+    val conversationId: Long,
     val messages: List<ConversationMessageModel>,
     val isOtherTyping: Boolean
 )

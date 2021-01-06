@@ -5,12 +5,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
-import repositories.profile.ProfileRepository
 import kotlin.coroutines.CoroutineContext
 
 class LoginPresenter(
     private val view: LoginContract.View,
-    private val profileRepository: ProfileRepository
+    private val interactor: LoginInteractor
 ) : LoginContract.Presenter, CoroutineScope {
 
     private var model = LoginModel(
@@ -28,18 +27,20 @@ class LoginPresenter(
 
     override fun onStart() {
         launch(Dispatchers.IO) {
-            val latestUsedAccounts = profileRepository.getLatestUsedAccounts()
-            val savedUsernames = latestUsedAccounts.map { it.passport }
-            val latestAccount = latestUsedAccounts.firstOrNull()
-            model = model.copy(
-                username = latestAccount?.passport ?: model.username,
-                password = latestAccount?.password ?: "",
-                rememberProfile = latestAccount?.temporary?.not() ?: model.rememberProfile,
-                rememberPassword = latestAccount?.password != null,
-                accessAutomatically = latestAccount?.auto_sigin ?: model.accessAutomatically
-            )
+            val latestUsedAccounts = interactor.getSavedUsernames()
+            val latestAccount = interactor.getLastUsedAccount()
+            latestAccount?.let {
+                model = model.copy(
+                    username = latestAccount.passport,
+                    password = latestAccount.password ?: "",
+                    rememberProfile = latestAccount.temporary.not(),
+                    rememberPassword = latestAccount.password != null,
+                    accessAutomatically = latestAccount.auto_sigin
+                )
+            }
+
             launch(Dispatchers.JavaFx) {
-                view.setUsernameOptions(savedUsernames)
+                view.setAccountsHistory(latestUsedAccounts)
                 updateUI()
                 if (latestAccount?.auto_sigin == true) {
                     view.goToLoading(model.username, model.password)
@@ -50,7 +51,7 @@ class LoginPresenter(
 
     override fun onUsernameChanged(username: String) {
         launch(Dispatchers.IO) {
-            val account = profileRepository.getAccountByPassport(username)
+            val account = interactor.getAccountByPassport(username)
             if (account != null) {
                 model = model.copy(
                     username = account.passport,
@@ -99,12 +100,10 @@ class LoginPresenter(
 
     override fun onLoginSuccessful(mspAuth: String) {
         launch(Dispatchers.IO) {
-            profileRepository.saveAccount(
-                username = model.username,
+            interactor.updateLoginPreferences(
+                savePassword = model.rememberPassword,
                 password = model.password,
-                mspAuth = mspAuth,
                 rememberUser = model.rememberProfile,
-                rememberPassword = model.rememberPassword,
                 autoSignin = model.accessAutomatically
             )
             launch(Dispatchers.JavaFx) {

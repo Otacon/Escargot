@@ -1,4 +1,4 @@
-package repositories.profile
+package core
 
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -6,11 +6,8 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import protocol.Endpoints
 import protocol.ProtocolVersion
-import protocol.Status
 import protocol.authentication.RequestMultipleSecurityTokensRequestFactory
-import protocol.notification.NotificationSendCommand
 import protocol.notification.NotificationTransport
-import protocol.notification.NotificationTransportManager
 import protocol.notification.TransportException
 import protocol.security.TicketEncoder
 import protocol.soap.RequestSecurityTokenParser
@@ -19,7 +16,7 @@ import java.io.IOException
 import java.util.*
 
 
-class ProfileDataSourceRemote(
+class MSNPAuthenticator(
     private val systemInfoRetriever: SystemInfoRetriever,
     private val transport: NotificationTransport,
     private val okHttpClient: OkHttpClient,
@@ -93,45 +90,6 @@ class ProfileDataSourceRemote(
         val mspAuthToken = transport.waitForMspAuthToken()
         return AuthenticationResult.Success(username, mspAuthToken)
     }
-
-    suspend fun changeStatus(status: Status) {
-        val literalStatus = when (status) {
-            Status.ONLINE -> "NLN"
-            Status.AWAY -> "AWY"
-            Status.BE_RIGHT_BACK -> "BRB"
-            Status.IDLE -> "IDL"
-            Status.OUT_TO_LUNCH -> "LUN"
-            Status.ON_THE_PHONE -> "PHN"
-            Status.BUSY -> "BSY"
-            Status.OFFLINE -> "FLN"
-            Status.HIDDEN -> "HDN"
-        }
-        val transport = NotificationTransportManager.transport
-        try {
-            transport.sendChg(NotificationSendCommand.CHG(literalStatus))
-        } catch (e: TransportException) {
-
-        }
-
-    }
-
-    suspend fun updatePersonalMessage(text: String) {
-        try {
-            transport.sendUux(text)
-        } catch (e: TransportException) {
-
-        }
-    }
-
-    suspend fun contactChanged() = transport.contactChanged()
-}
-
-
-sealed class ChangeStatusResult {
-
-    object Success : ChangeStatusResult()
-    object Failure : ChangeStatusResult()
-
 }
 
 sealed class AuthenticationResult {

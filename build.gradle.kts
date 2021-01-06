@@ -4,7 +4,7 @@ plugins {
     id("java")
     kotlin("jvm") version "1.4.20"
     id("org.openjfx.javafxplugin") version "0.0.9"
-    id("com.squareup.sqldelight") version "1.4.3"
+    id("com.squareup.sqldelight") version "1.4.4"
     application
 }
 
@@ -13,6 +13,7 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    maven(url = "https://kotlin.bintray.com/kotlinx/")
 }
 
 dependencies {
@@ -22,8 +23,9 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.4.2")
     implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-javafx", "1.4.2")
+    implementation("org.jetbrains.kotlinx","kotlinx-datetime-jvm","0.1.1")
 
-    implementation("com.squareup.sqldelight","sqlite-driver","1.4.3")
+    implementation("com.squareup.sqldelight","sqlite-driver","1.4.4")
     implementation("com.squareup.sqldelight","coroutines-extensions","1.2.1")
 
     testImplementation("junit", "junit", "4.12")

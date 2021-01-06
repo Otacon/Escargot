@@ -2,13 +2,14 @@ CREATE TABLE conversation(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     account TEXT NOT NULL,
     recipient TEXT NOT NULL,
+    last_read_time Integer NOT NULL,
     FOREIGN KEY(account) REFERENCES account(passport),
     UNIQUE(account,recipient)
 );
 
 create:
-INSERT INTO conversation(account, recipient)
-VALUES (?, ?);
+INSERT INTO conversation(account, recipient, last_read_time)
+VALUES (?, ?, ?);
 
 getByAccountRecipient:
 SELECT * FROM conversation
@@ -17,3 +18,6 @@ WHERE account = ? AND recipient = ?;
 getById:
 SELECT * FROM conversation
 WHERE id = ?;
+
+lastInsertedId:
+SELECT last_insert_rowid();

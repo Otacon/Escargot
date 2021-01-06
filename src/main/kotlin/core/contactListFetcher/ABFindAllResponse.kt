@@ -1,4 +1,4 @@
-package repositories.contactList.data
+package core.contactListFetcher
 
 import org.simpleframework.xml.Element
 import org.simpleframework.xml.ElementList

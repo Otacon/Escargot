@@ -8,14 +8,12 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import protocol.Status
-import repositories.contactList.ContactListRepository
-import repositories.profile.ProfileRepository
+import protocol.asStatus
 import kotlin.coroutines.CoroutineContext
 
 class ContactListPresenter(
     private val view: ContactListContract.View,
-    private val profileRepository: ProfileRepository,
-    private val contactListRepository: ContactListRepository
+    private val interactor: ContactListInteractor
 ) : ContactListContract.Presenter, CoroutineScope {
 
     private val job = Job()
@@ -34,17 +32,13 @@ class ContactListPresenter(
 
     override fun start() {
         launch(Dispatchers.IO) {
-            contactListRepository.startListeningForAccountChanges()
-        }
-        launch(Dispatchers.IO) {
-            contactListRepository.contactUpdates().collect { contacts ->
+            interactor.otherContactsUpdates().collect { contacts ->
                 val models = contacts.map { contact ->
                     ContactModel.Contact(
                         nickname = contact.nickname,
                         passport = contact.passport,
                         personalMessage = contact.personalMessage ?: "",
-                        status = contact.status.asStatus(),
-                        null
+                        status = contact.status?.asStatus() ?: Status.OFFLINE
                     )
                 }
                 model = model.copy(contacts = models)
@@ -54,39 +48,26 @@ class ContactListPresenter(
             }
         }
         launch(Dispatchers.IO) {
-            contactListRepository.profileUpdates().collect { profile ->
-                profile?.let {
-                    model = model.copy(
-                        nickname = it.nickname,
-                        passport = it.passport,
-                        personalMessage = it.personalMessage ?: "",
-                        status = it.status.asStatus()
-                    )
-                    launch(Dispatchers.JavaFx) {
-                        updateUI()
-                    }
+            interactor.ownContactUpdates().collect { contact ->
+                model = model.copy(
+                    nickname = contact.nickname,
+                    passport = contact.passport,
+                    personalMessage = contact.personalMessage ?: "",
+                    status = contact.status?.asStatus() ?: Status.OFFLINE
+                )
+                launch(Dispatchers.JavaFx) {
+                    updateUI()
                 }
             }
-
         }
         launch(Dispatchers.IO) {
-            contactListRepository.newMessages().collect { messages ->
-                messages.forEach {
-                    if (it.sender != model.passport) {
-                        contactListRepository.markAsRead(it.id)
-                        launch(Dispatchers.JavaFx) {
-                            view.openConversation(it.sender)
-                        }
-                    }
+            interactor.newMessagesForConversation().collect { conversation ->
+                launch(Dispatchers.JavaFx) {
+                    view.openConversation(conversation.recipient)
                 }
             }
-
         }
-        launch(Dispatchers.IO) {
-            contactListRepository.refreshContacts()
-            profileRepository.changeStatus(Status.ONLINE)
-            ConversationManager.start()
-        }
+        ConversationManager.start()
     }
 
     override fun onContactClick(selectedContact: ContactModel.Contact) {
@@ -102,13 +83,13 @@ class ContactListPresenter(
 
     override fun onStatusChanged(status: Status) {
         model = model.copy(status = status)
-        launch(Dispatchers.IO) { profileRepository.changeStatus(status) }
+        launch(Dispatchers.IO) { interactor.changeStatus(status) }
         updateUI()
     }
 
     override fun onPersonalMessageChanged(text: String) {
         model = model.copy(personalMessage = text)
-        launch(Dispatchers.IO) { profileRepository.updatePersonalMessage(text) }
+        launch(Dispatchers.IO) { interactor.updatePersonalMessage(text) }
     }
 
     override fun onCancelPersonalMessage() {
@@ -131,18 +112,5 @@ class ContactListPresenter(
         }.sortedWith(compareBy({ it.status }, { it.nickname }, { it.passport }))
 
         view.setContacts(online, offline)
-    }
-
-    private fun String?.asStatus(): Status {
-        return when (this) {
-            "NLN" -> Status.ONLINE
-            "BSY" -> Status.BUSY
-            "IDL" -> Status.IDLE
-            "BRB" -> Status.BE_RIGHT_BACK
-            "AWY" -> Status.AWAY
-            "PHN" -> Status.ON_THE_PHONE
-            "LUN" -> Status.OUT_TO_LUNCH
-            else -> Status.OFFLINE
-        }
     }
 }

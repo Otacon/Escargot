@@ -5,7 +5,7 @@ interface LoginContract {
     interface View {
 
         fun setUsername(username: String)
-        fun setUsernameOptions(usernames: List<String>)
+        fun setAccountsHistory(usernames: List<String>)
         fun setPassword(password: String)
         fun setRememberUserProfileChecked(isChecked: Boolean)
         fun setRememberPasswordChecked(isChecked: Boolean)

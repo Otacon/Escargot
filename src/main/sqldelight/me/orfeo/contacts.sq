@@ -4,11 +4,10 @@ CREATE TABLE contact(
     nickname TEXT,
     personalMessage TEXT,
     status TEXT,
-    profilePicture BLOB,
     FOREIGN KEY(account) REFERENCES account(passport)
 );
 
-add:
+insertOrUpdate:
 INSERT OR REPLACE INTO contact
 VALUES ?;
 

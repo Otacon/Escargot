@@ -36,11 +36,13 @@ class NotificationTransport {
     fun connect() {
         socket.connect()
         GlobalScope.launch {
-            while (true) {
+            var reading = true
+            while (reading) {
                 try {
                     readNext()
-                }catch (e: Exception){
+                } catch (e: Exception) {
                     e.printStackTrace()
+                    reading = false
                 }
             }
         }
@@ -131,7 +133,7 @@ class NotificationTransport {
         return contactChanged.consumeAsFlow()
     }
 
-    fun switchboardInvites(): Flow<SwitchboardInvite>{
+    fun switchboardInvites(): Flow<SwitchboardInvite> {
         return switchboardInvites.consumeAsFlow()
     }
 

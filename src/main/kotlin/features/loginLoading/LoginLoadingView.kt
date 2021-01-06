@@ -1,5 +1,8 @@
 package features.loginLoading
 
+import core.AccountManager
+import core.AuthenticationResult
+import core.ContactManager
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
@@ -9,8 +12,6 @@ import javafx.scene.text.Text
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
-import repositories.profile.AuthenticationResult
-import repositories.profile.ProfileRepositoryFactory
 
 class LoginLoadingView(
     private val stage: Stage,
@@ -37,7 +38,7 @@ class LoginLoadingView(
 
     private val presenter = LoginLoadingPresenter(
         this,
-        ProfileRepositoryFactory().createProfileRepository()
+        LoginLoadingInteractor(AccountManager, ContactManager)
     )
 
     fun onCreate() {

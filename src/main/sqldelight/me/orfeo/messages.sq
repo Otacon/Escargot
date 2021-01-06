@@ -4,27 +4,32 @@ CREATE TABLE message(
     sender TEXT NOT NULL,
     timestamp INTEGER as Long NOT NULL,
     text TEXT NOT NULL,
-    synced INTEGER as Boolean NOT NULL,
     FOREIGN KEY(conversation_id) REFERENCES conversation(id)
 );
 
-add:
-INSERT INTO message(conversation_id, sender, timestamp, text, synced)
-VALUES (?,?,?,?,?);
+getById:
+SELECT * FROM message
+WHERE id = ?;
 
-getAllByConversationId:
+add:
+INSERT INTO message(conversation_id, sender, timestamp, text)
+VALUES (?,?,?,?);
+
+selectAllByConversationId:
 SELECT * FROM message
 WHERE conversation_id = ?
 ORDER BY timestamp ASC;
 
-getNewMessages:
+selectNewConversationMessages:
 SELECT * FROM message
-WHERE synced = 0
-ORDER BY timestamp ASC
+INNER JOIN conversation ON conversation.id = message.conversation_id
+WHERE message.conversation_id = ?
+AND timestamp > conversation.last_read_time
+ORDER BY timestamp DESC
 LIMIT 1;
 
-markAsSynced:
-UPDATE message
-SET synced = 1
-WHERE id = ?;
-
+selectNewOtherMessages:
+SELECT * FROM message
+WHERE sender != ?
+ORDER BY timestamp DESC
+LIMIT 1;

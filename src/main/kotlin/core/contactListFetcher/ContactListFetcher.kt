@@ -1,4 +1,4 @@
-package repositories.contactList
+package core.contactListFetcher
 
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -6,17 +6,12 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.simpleframework.xml.Serializer
 import org.simpleframework.xml.core.Persister
-import protocol.notification.NotificationTransport
-import repositories.*
 import repositories.contactList.data.*
 import java.io.StringWriter
 
-class ContactListDataSourceRemote(
-    private val okHttpClient: OkHttpClient,
-    private val trasport: NotificationTransport
+class ContactListFetcher(
+    private val httpClient: OkHttpClient
 ) {
-
-    suspend fun contactChanged() = trasport.contactChanged()
 
     suspend fun getContacts(mspAuth: String): List<AbFindAllContact> {
         val persister: Serializer = Persister()
@@ -50,7 +45,7 @@ class ContactListDataSourceRemote(
             .addHeader("SOAPAction", "http://www.msn.com/webservices/AddressBook/ABFindAll")
             .addHeader("Cookie", "MSPAuth=$mspAuth")
             .build()
-        val response = okHttpClient.newCall(request).execute()
+        val response = httpClient.newCall(request).execute()
 
         val serializer: Serializer = Persister()
         val soapResponseBody = response.body!!.string()

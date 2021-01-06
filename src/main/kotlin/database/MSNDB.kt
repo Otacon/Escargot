@@ -3,6 +3,7 @@ package database
 import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
 import com.squareup.sqldelight.db.SqlCursor
 import com.squareup.sqldelight.db.SqlDriver
+import me.orfeo.Account
 import me.orfeo.Database
 import me.orfeo.Database.Companion.Schema
 import me.orfeo.Database.Companion.invoke
@@ -27,7 +28,12 @@ object MSNDB {
                 setVersion(driver, schemaVer)
             }
         }
-        return invoke(driver)
+        return invoke(
+            driver,
+            Account.Adapter(
+                StatusAdapter()
+            )
+        )
     }
 
     private fun getVersion(driver: SqlDriver): Int {

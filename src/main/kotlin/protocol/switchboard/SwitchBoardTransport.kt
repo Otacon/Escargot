@@ -23,7 +23,8 @@ class SwitchBoardTransport {
     fun connect(address: String, port: Int) {
         socket.connect(address, port)
         GlobalScope.launch {
-            while (true) {
+            var reading = true
+            while (reading) {
                 try {
                     readNext()
                 } catch (e: Exception) {
@@ -32,7 +33,7 @@ class SwitchBoardTransport {
                     socketClosed.offer(Unit)
                     socketClosed.close()
                     messages.close()
-                    break
+                    reading = false
                 }
             }
         }

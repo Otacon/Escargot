@@ -1,5 +1,8 @@
 package features.contactList
 
+import core.AccountManager
+import core.ContactManager
+import core.ConversationManager
 import core.ConversationWindowManager
 import features.conversation.ConversationView
 import features.login.LoginView
@@ -15,8 +18,6 @@ import javafx.scene.input.KeyCode
 import javafx.stage.Stage
 import protocol.Status
 import protocol.notification.NotificationTransportManager
-import repositories.contactList.ContactListRepositoryFactory
-import repositories.profile.ProfileRepositoryFactory
 import kotlin.system.exitProcess
 
 
@@ -57,8 +58,7 @@ class ContactListView(
 
     private val presenter = ContactListPresenter(
         this,
-        ProfileRepositoryFactory().createProfileRepository(),
-        ContactListRepositoryFactory().createContactListRepository()
+        ContactListInteractor(ContactManager, AccountManager, ConversationManager)
     )
     private val contactsRoot = TreeItem<ContactModel>(ContactModel.Root)
     private val contactsOnline = TreeItem<ContactModel>(ContactModel.Category("Available"))
@@ -162,7 +162,7 @@ class ContactListView(
     }
 
     override fun openConversation(recipient: String) {
-        if(!ConversationWindowManager.isWindowOpen(recipient)){
+        if (!ConversationWindowManager.isWindowOpen(recipient)) {
             ConversationView(recipient)
         }
     }

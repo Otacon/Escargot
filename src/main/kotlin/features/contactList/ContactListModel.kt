@@ -23,8 +23,7 @@ sealed class ContactModel {
         val nickname: String?,
         val passport: String,
         val personalMessage: String,
-        val status: Status,
-        val profilePicture: String?
+        val status: Status
     ) : ContactModel()
 
 }
