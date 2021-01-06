@@ -57,53 +57,53 @@ class LoginLoadingPresenter constructor(
         updateUI()
         launch(Dispatchers.IO) {
             val result = interactor.login(model.username, model.password)
-            launch(Dispatchers.JavaFx) {
-                model = when (result) {
-                    AuthenticationResult.UnsupportedProtocol -> model.copy(
-                        text = "This application is incompatible with the server. Please consider updating.",
-                        okVisible = true,
-                        cancelVisible = false,
-                        retryVisible = false,
-                        progressVisible = false
-                    )
-                    AuthenticationResult.InvalidPassword -> model.copy(
-                        text = "Invalid password. Please check your details and try again",
-                        okVisible = true,
-                        cancelVisible = false,
-                        retryVisible = false,
-                        progressVisible = false
-                    )
-                    AuthenticationResult.InvalidUser -> model.copy(
-                        text = "Invalid user. Please check your details and try again",
-                        okVisible = true,
-                        cancelVisible = false,
-                        retryVisible = false,
-                        progressVisible = false
-                    )
-                    AuthenticationResult.ServerError -> model.copy(
-                        text = "Whoops...something went wrong. Please try again.",
-                        okVisible = false,
-                        cancelVisible = true,
-                        retryVisible = true,
-                        progressVisible = false
-                    )
-                    is AuthenticationResult.Success -> {
-                        model = model.copy(text = "Syncing contact list...")
-                        updateUI()
-                        interactor.refreshContactList()
-                        model = model.copy(text = "Updating status...")
-                        updateUI()
-                        interactor.updateStatus(Status.ONLINE)
+            model = when (result) {
+                AuthenticationResult.UnsupportedProtocol -> model.copy(
+                    text = "This application is incompatible with the server. Please consider updating.",
+                    okVisible = true,
+                    cancelVisible = false,
+                    retryVisible = false,
+                    progressVisible = false
+                )
+                AuthenticationResult.InvalidPassword -> model.copy(
+                    text = "Invalid password. Please check your details and try again",
+                    okVisible = true,
+                    cancelVisible = false,
+                    retryVisible = false,
+                    progressVisible = false
+                )
+                AuthenticationResult.InvalidUser -> model.copy(
+                    text = "Invalid user. Please check your details and try again",
+                    okVisible = true,
+                    cancelVisible = false,
+                    retryVisible = false,
+                    progressVisible = false
+                )
+                AuthenticationResult.ServerError -> model.copy(
+                    text = "Whoops...something went wrong. Please try again.",
+                    okVisible = false,
+                    cancelVisible = true,
+                    retryVisible = true,
+                    progressVisible = false
+                )
+                is AuthenticationResult.Success -> {
+                    model = model.copy(text = "Syncing contact list...")
+                    updateUI()
+                    interactor.refreshContactList()
+                    model = model.copy(text = "Updating status...")
+                    updateUI()
+                    interactor.updateStatus(Status.ONLINE)
+                    launch(Dispatchers.JavaFx) {
                         view.closeWithSuccess(result)
-                        return@launch
                     }
+                    return@launch
                 }
-                updateUI()
             }
+            updateUI()
         }
     }
 
-    private fun updateUI() {
+    private fun updateUI() = launch(Dispatchers.JavaFx) {
         view.setProgressText(model.text)
         view.showProgress(model.progressVisible)
         view.showCancel(model.cancelVisible)

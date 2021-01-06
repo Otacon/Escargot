@@ -31,7 +31,7 @@ LIMIT 1;
 selectNewOtherMessages:
 SELECT * FROM message
 INNER JOIN conversation ON conversation.id = message.conversation_id
-WHERE sender != ?
+WHERE sender != :account AND account = :account
 AND timestamp > conversation.last_read_time
 ORDER BY timestamp DESC
 LIMIT 1;
