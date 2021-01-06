@@ -1,9 +1,9 @@
 package database
 
 import com.squareup.sqldelight.runtime.coroutines.asFlow
-import com.squareup.sqldelight.runtime.coroutines.mapToOne
 import com.squareup.sqldelight.runtime.coroutines.mapToOneNotNull
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import me.orfeo.Message
 
 class MessagesTable {
@@ -26,14 +26,12 @@ class MessagesTable {
     }
 
     fun addMessage(conversationId: Long, sender: String, timestamp: Long, message: String) {
-        queries.transaction {
-            queries.add(
-                conversation_id = conversationId,
-                sender = sender,
-                timestamp = timestamp,
-                text = message
-            )
-        }
+        queries.add(
+            conversation_id = conversationId,
+            sender = sender,
+            timestamp = timestamp,
+            text = message
+        )
     }
 
     fun newOtherMessages(account: String): Flow<Message> {

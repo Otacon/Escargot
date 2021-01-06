@@ -165,7 +165,7 @@ class NotificationTransport {
                     val data = UbxBodyParser().parse(body)
                     val profileData = ProfileData(
                         passport = command.email,
-                        personalMessage = data.personalMessage,
+                        personalMessage = data.personalMessage ?: "",
                         nickname = null,
                         status = null
                     )
