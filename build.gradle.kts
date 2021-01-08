@@ -5,11 +5,12 @@ plugins {
     kotlin("jvm") version "1.4.20"
     id("org.openjfx.javafxplugin") version "0.0.9"
     id("com.squareup.sqldelight") version "1.4.4"
+    id("org.beryx.runtime") version "1.12.1"
     application
 }
 
 group = "me.orfeo"
-version = "1.0-SNAPSHOT"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
@@ -56,6 +57,28 @@ sqldelight {
     }
 }
 
+runtime {
+    options.set(
+        listOf(
+            "--compress", "2",
+            "--no-man-pages"
+        )
+    )
+
+    jpackage {
+        jvmArgs.add("-Duser.dir=/tmp")
+        imageOptions = listOf("--icon", "src/main/resources/e-logo.icns")
+        installerOptions = listOf(
+            "--resource-dir", "src/main/resources"
+        )
+    }
+
+    launcher {
+
+    }
+}
+
 application {
+    applicationName = "Escargot"
     mainClassName = "MainKt"
 }
