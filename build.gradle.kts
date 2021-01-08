@@ -66,16 +66,19 @@ runtime {
     )
 
     jpackage {
+        // MacOSX config
         jvmArgs.add("-Duser.dir=/tmp")
         imageOptions = listOf("--icon", "src/main/resources/e-logo.icns")
+
+        // Base Config
         installerOptions = listOf(
             "--resource-dir", "src/main/resources"
         )
+
+        //Windows Config
+        imageOptions = listOf("--win-console")
     }
 
-    launcher {
-
-    }
 }
 
 application {
