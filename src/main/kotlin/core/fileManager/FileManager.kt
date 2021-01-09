@@ -41,8 +41,9 @@ private class FileManagerMac : FileManager {
 private class FileManagerWindows : FileManager {
     private val _appHomePath by lazy {
         val home = File(System.getProperty("user.home"))
-        val applicationSupport = File(home, "AppData")
-        File(applicationSupport, PACKAGE).apply {
+        val appData = File(home, "AppData")
+        val local = File(appData, "Local")
+        File(local, PACKAGE).apply {
             if (!exists()) {
                 mkdir()
             }

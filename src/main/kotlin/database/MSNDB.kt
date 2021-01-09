@@ -3,20 +3,25 @@ package database
 import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
 import com.squareup.sqldelight.db.SqlCursor
 import com.squareup.sqldelight.db.SqlDriver
+import core.fileManager.fileManager
 import me.orfeo.Account
 import me.orfeo.Database
 import me.orfeo.Database.Companion.Schema
 import me.orfeo.Database.Companion.invoke
+import java.io.File
 
 
 object MSNDB {
 
+    private const val DATABASE_FILE = "escargot.sqlite3"
+    var path = fileManager.appHomePath
     val db by lazy {
         init()
     }
 
     private fun init(): Database {
-        val driver = JdbcSqliteDriver("jdbc:sqlite:escargot.db")
+        val databasePath = File(path, DATABASE_FILE).absolutePath
+        val driver = JdbcSqliteDriver("jdbc:sqlite:$databasePath")
         val currentVer = getVersion(driver)
         if (currentVer == 0) {
             Schema.create(driver)
