@@ -1,4 +1,6 @@
+import kotlinx.coroutines.internal.artificialFrame
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.net.URL
 
 plugins {
     id("java")
@@ -67,7 +69,7 @@ runtime {
 
     jpackage {
         // MacOSX config
-        jvmArgs.add("-Duser.dir=/tmp")
+        //jvmArgs.add("-Duser.dir=/tmp")
         imageOptions = listOf("--icon", "src/main/resources/e-logo.icns")
 
         // Base Config
@@ -84,4 +86,37 @@ runtime {
 application {
     applicationName = "Escargot"
     mainClassName = "MainKt"
+}
+
+task("copyRuntimeLibs", type = Copy::class) {
+    into("build/libs")
+    from(configurations.compileClasspath)
+}
+
+task("getURLofDependencyArtifact") {
+    doFirst {
+        project.configurations.default.resolvedConfiguration.resolvedArtifacts.forEach { artifact ->
+            val a = artifact.moduleVersion.id
+            val group = a.group.replace(".","/").orEmpty()
+            val name = a.name.replace(".","/")
+            val version = a.version
+            val jarFile = "${artifact.name}-${version}.jar"
+            print(".file(createFileMetadata(\"$jarFile\",")
+            project.repositories.toList()
+                .filterIsInstance<MavenArtifactRepository>()
+                .map {
+                    val url = "${it.url}$group/$name/$version/$jarFile"
+                    try {
+                        val url = URL(url)
+                        val stream = url.openStream();
+                        if (stream != null) {
+                            print("\"$url\"))")
+                        }
+                    } catch (e: java.io.FileNotFoundException) {
+
+                    }
+                }
+            println()
+        }
+    }
 }
