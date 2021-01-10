@@ -1,6 +1,12 @@
-import kotlinx.coroutines.internal.artificialFrame
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URL
+
+buildscript {
+
+    dependencies {
+        classpath("org.update4j", "update4j", "1.5.6")
+    }
+}
 
 plugins {
     id("java")
@@ -95,28 +101,47 @@ task("copyRuntimeLibs", type = Copy::class) {
 
 task("getURLofDependencyArtifact") {
     doFirst {
+        val userDir = File(System.getProperty("user.home"), "AppData\\Local\\Escargot\\").absolutePath
+        val cb = org.update4j.Configuration.builder()
+            .property("app.name", "MyApplication")
+            .property("default.launcher.main.class", "MainKt")
+
         project.configurations.default.resolvedConfiguration.resolvedArtifacts.forEach { artifact ->
-            val a = artifact.moduleVersion.id
-            val group = a.group.replace(".","/").orEmpty()
-            val name = a.name.replace(".","/")
-            val version = a.version
-            val jarFile = "${artifact.name}-${version}.jar"
-            print(".file(createFileMetadata(\"$jarFile\",")
-            project.repositories.toList()
+            val file = artifact.file
+            val moduleVersionId = artifact.moduleVersion.id
+            val group = moduleVersionId.group.replace(".", "/").orEmpty()
+            val name = moduleVersionId.name.replace(".", "/")
+            val version = moduleVersionId.version
+            val jarFile = if (file.name.endsWith("win.jar")) {
+                "${artifact.name}-${version}-win.jar"
+            } else {
+                "${artifact.name}-${version}.jar"
+            }
+            val url = project.repositories.toList()
                 .filterIsInstance<MavenArtifactRepository>()
-                .map {
+                .mapNotNull {
                     val url = "${it.url}$group/$name/$version/$jarFile"
                     try {
-                        val url = URL(url)
-                        val stream = url.openStream();
-                        if (stream != null) {
-                            print("\"$url\"))")
+                        if (URL(url).openStream() != null) {
+                            return@mapNotNull url
                         }
                     } catch (e: java.io.FileNotFoundException) {
-
+                        println("$jarFile not found on $url")
                     }
-                }
-            println()
+                    null
+                }.first()
+            cb.file(
+                org.update4j.FileMetadata
+                    .readFrom(file.absolutePath)
+                    .path("$userDir\\${file.name}")
+                    .uri(url)
+                    .classpath()
+            )
         }
+
+        val configuration = cb.build()
+        val writer = File(buildDir, "update4jconfig.xml").writer()
+        configuration.write(writer)
+        writer.close()
     }
 }
