@@ -30,8 +30,23 @@ jobs:
         with:
           name: escargot_release
           path: build/libs
-      
-      - name: Upload Update
+
+      - name: Delete update4jconfig.xml from Gofile
+        uses: wei/curl@v1
+        with:
+          args: https://srv-store3.gofile.io/deleteFile?c=SxUqZi&file=update4jconfig.xml&token=${{ secrets.GO_FILE_TOKEN }}
+          
+      - name: Delete Escargot-1.0.0.jar from Gofile
+        uses: wei/curl@v1
+        with:
+          args: https://srv-store3.gofile.io/deleteFile?c=SxUqZi&file=Escargot-1.0.0.jar&token=${{ secrets.GO_FILE_TOKEN }}
+        
+      - name: Upload update4jconfig.xml to Gofile
         uses: wei/curl@v1
         with:
           args: -F email=${{ secrets.GO_FILE_EMAIL }} -F ac=${{ secrets.GO_FILE_ADMIN_CODE }} -F file=@build/libs/update4jconfig.xml https://srv-store3.gofile.io/uploadFile
+
+      - name: Upload Escargot.jar to Gofile
+        uses: wei/curl@v1
+        with:
+          args: -F email=${{ secrets.GO_FILE_EMAIL }} -F ac=${{ secrets.GO_FILE_ADMIN_CODE }} -F file=@build/libs/Escargot-1.0.0.jar https://srv-store3.gofile.io/uploadFile
