@@ -1,6 +1,10 @@
 package me.orfeo.mainWindow
 
 import javax.swing.*
+import java.awt.Desktop
+import java.awt.event.WindowEvent
+import java.net.URI
+import java.awt.event.WindowFocusListener
 
 class MainWindowView : MainWindowContract.View {
 
@@ -50,10 +54,10 @@ class MainWindowView : MainWindowContract.View {
             presenter.onUpdateClicked()
         }
 
-        removeDataButton = JButton("Clear Data")
+        removeDataButton = JButton("Open Escargot Folder")
         removeDataButton.isEnabled = false
         removeDataButton.addActionListener {
-            presenter.onRemoveDataClicked()
+            presenter.onOpenFilesClicked()
         }
 
         buttonsPanel.add(launchButton)
@@ -65,6 +69,15 @@ class MainWindowView : MainWindowContract.View {
         frame.pack()
         frame.isResizable = false
         frame.setLocationRelativeTo(null)
+
+        frame.addWindowFocusListener(object : WindowFocusListener {
+
+            override fun windowLostFocus(e: WindowEvent?) {}
+
+            override fun windowGainedFocus(e: WindowEvent?) {
+                presenter.onWindowFocussed()
+            }
+        })
     }
 
     fun show() {
@@ -107,6 +120,13 @@ class MainWindowView : MainWindowContract.View {
 
     override fun close() {
         frame.isVisible = false
+    }
+
+    override fun openFileManager(appHome: String) {
+        if (Desktop.isDesktopSupported()) {
+            val desktop = Desktop.getDesktop()
+            desktop.browse(URI("file:$appHome"))
+        }
     }
 
 }

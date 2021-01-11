@@ -11,12 +11,14 @@ interface MainWindowContract {
         fun setUpdateButtonEnabled(enabled: Boolean)
         fun setRemoveDataButtonEnabled(enabled: Boolean)
         fun close()
+        fun openFileManager(appHome: String)
     }
 
     interface Presenter{
         fun onCreate()
         fun onLaunchClicked()
         fun onUpdateClicked()
-        fun onRemoveDataClicked()
+        fun onOpenFilesClicked()
+        fun onWindowFocussed()
     }
 }

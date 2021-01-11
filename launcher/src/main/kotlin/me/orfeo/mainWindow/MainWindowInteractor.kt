@@ -43,9 +43,4 @@ class MainWindowInteractor {
         }
     }
 
-    fun clearData(appHome: String) {
-        val appHomeDirectory = Paths.get(appHome).toFile()
-        appHomeDirectory.deleteRecursively()
-        appHomeDirectory.mkdirs()
-    }
 }

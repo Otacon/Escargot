@@ -39,27 +39,20 @@ class MainWindowPresenter(
         )
         updateUI()
         val configuration = interactor.getConfiguration()
-        model = if (configuration == null) {
-            model.copy(
+
+        if (configuration == null) {
+            model = model.copy(
                 progress = 0,
                 error = "Unable to check for updates. Please try again."
             )
+            updateUI()
         } else {
-            val status = if (configuration.requiresUpdate()) {
-                "A new version is available."
-            } else {
-                "Escargot is up to date."
-            }
-            model.copy(
-                status = status,
-                isLaunchButtonEnabled = !configuration.requiresUpdate(),
-                isUpdateButtonEnabled = configuration.requiresUpdate(),
-                isRemoveDataButtonEnabled = true,
+            model = model.copy(
                 progress = 0,
                 configuration = configuration
             )
+            checkForUpdates()
         }
-        updateUI()
     }
 
     override fun onLaunchClicked() = executor.execute {
@@ -101,8 +94,15 @@ class MainWindowPresenter(
         updateUI()
     }
 
-    override fun onRemoveDataClicked() = executor.execute {
-        interactor.clearData(model.appHome)
+    override fun onOpenFilesClicked() {
+        view.openFileManager(model.appHome)
+    }
+
+    override fun onWindowFocussed() {
+        checkForUpdates()
+    }
+
+    private fun checkForUpdates() = executor.execute {
         val configuration = model.configuration!!
         val status = if (configuration.requiresUpdate()) {
             "A new version is available."
