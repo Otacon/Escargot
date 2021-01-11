@@ -1,5 +1,7 @@
 package me.orfeo.mainWindow
 
+import me.orfeo.utils.FileManager
+import java.io.File
 import java.nio.file.Paths
 import java.util.concurrent.Executors
 import javax.swing.SwingUtilities
@@ -7,7 +9,8 @@ import kotlin.math.roundToInt
 
 class MainWindowPresenter(
     private val view: MainWindowContract.View,
-    private val interactor: MainWindowInteractor
+    private val interactor: MainWindowInteractor,
+    private val fileManager: FileManager
 ) : MainWindowContract.Presenter {
 
     private val executor = Executors.newSingleThreadExecutor()
@@ -23,17 +26,8 @@ class MainWindowPresenter(
     )
 
     override fun onCreate() = executor.execute {
-        //TODO make this multiplatform
-        val appHome = Paths.get(
-            System.getProperty("user.home"),
-            "Library",
-            "ApplicationSupport",
-            "escargot"
-        )
-        appHome.toFile().mkdirs()
-
         model = model.copy(
-            appHome = appHome.toFile().absolutePath,
+            appHome = fileManager.appHomePath.absolutePath,
             status = "Checking for new versions...",
             progress = -1
         )
@@ -95,7 +89,7 @@ class MainWindowPresenter(
     }
 
     override fun onOpenFilesClicked() {
-        view.openFileManager(model.appHome)
+        view.openFileManager(File(model.appHome).toURI())
     }
 
     override fun onWindowFocussed() {

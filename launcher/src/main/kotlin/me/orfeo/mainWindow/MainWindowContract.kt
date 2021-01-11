@@ -1,5 +1,7 @@
 package me.orfeo.mainWindow
 
+import java.net.URI
+
 interface MainWindowContract {
 
     interface View {
@@ -11,7 +13,7 @@ interface MainWindowContract {
         fun setUpdateButtonEnabled(enabled: Boolean)
         fun setRemoveDataButtonEnabled(enabled: Boolean)
         fun close()
-        fun openFileManager(appHome: String)
+        fun openFileManager(appHome: URI)
     }
 
     interface Presenter{

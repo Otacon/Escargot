@@ -1,5 +1,6 @@
 package me.orfeo.mainWindow
 
+import me.orfeo.utils.fileManager
 import javax.swing.*
 import java.awt.Desktop
 import java.awt.event.WindowEvent
@@ -16,7 +17,11 @@ class MainWindowView : MainWindowContract.View {
     private val updateButton: JButton
     private val removeDataButton: JButton
 
-    private val presenter: MainWindowContract.Presenter = MainWindowPresenter(this, MainWindowInteractor())
+    private val presenter: MainWindowContract.Presenter = MainWindowPresenter(
+        this,
+        MainWindowInteractor(),
+        fileManager
+    )
 
     init {
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
@@ -122,10 +127,10 @@ class MainWindowView : MainWindowContract.View {
         frame.isVisible = false
     }
 
-    override fun openFileManager(appHome: String) {
+    override fun openFileManager(appHome: URI) {
         if (Desktop.isDesktopSupported()) {
             val desktop = Desktop.getDesktop()
-            desktop.browse(URI("file:$appHome"))
+            desktop.browse(appHome)
         }
     }
 

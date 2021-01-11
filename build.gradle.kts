@@ -120,7 +120,7 @@ task("generateUpdate4jConfig") {
                 url = null
             )
         }.flatMap {
-            val group = it.group.replace(".", "/").orEmpty()
+            val group = it.group.replace(".", "/")
             val name = it.name.replace(".", "/")
             val version = it.version
             val urlPrefix = "${it.name}-${version}"
@@ -169,7 +169,7 @@ task("generateUpdate4jConfig") {
                     val url = "${repository.url}${artifactInfo.url}"
                     try {
                         val input = URL(url).openStream()
-                        val fileName = Paths.get(url).last().toString()
+                        val fileName = url.substring(url.lastIndexOf('/') + 1);
                         if (input != null) {
                             Files.copy(
                                 input,
