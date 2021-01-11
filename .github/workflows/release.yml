@@ -34,4 +34,4 @@ jobs:
       - name: Upload Update
         uses: wei/curl@v1
         with:
-          args: curl -F ${{ secrets.GO_FILE_EMAIL }} -F ac={{ secrets.GO_FILE_ADMIN_CODE }} -F file=@libs/update4jconfig.xml ${{ secrets.GO_FILE_SERVER }}
+          args: curl -F ${{ secrets.GO_FILE_EMAIL }} -F ac=${{ secrets.GO_FILE_ADMIN_CODE }} -F file=@libs/update4jconfig.xml ${{ secrets.GO_FILE_SERVER }}
