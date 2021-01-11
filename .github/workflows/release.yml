@@ -22,6 +22,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
+      
       - name: Build JAR and Update4j
         run: ./gradlew generateUpdate4jConfig
       
@@ -29,3 +30,8 @@ jobs:
         with:
           name: escargot_release
           path: build/libs
+      
+      - name: Upload Update
+        uses: wei/curl@v1
+        with:
+          args: curl -F ${{ secrets.GO_FILE_EMAIL }} -F ac={{ secrets.GO_FILE_ADMIN_CODE }} -F file=@libs/update4jconfig.xml ${{ secrets.GO_FILE_SERVER }}
