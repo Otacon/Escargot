@@ -107,6 +107,7 @@ task("generateUpdate4jConfig") {
             .property("app.name", "Escargot")
             .property("default.launcher.main.class", "MainKt")
         val outputDir = File(buildDir, "update4j")
+        val configDir = File(buildDir, "libs")
         outputDir.mkdirs()
 
         val references = project.configurations.default.resolvedConfiguration.resolvedArtifacts.map { artifact ->
@@ -224,7 +225,7 @@ task("generateUpdate4jConfig") {
         cb.files(references)
 
         val configuration = cb.build()
-        val writer = File(outputDir, "update4jconfig.xml").writer()
+        val writer = File(configDir, "update4jconfig.xml").writer()
         configuration.write(writer)
         writer.close()
     }
