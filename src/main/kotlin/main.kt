@@ -17,7 +17,7 @@ class MessengerLauncher {
                 mkdir()
             }
         }
-        val dateTime = System.currentTimeMillis().toString()
+        val dateTime = System.currentTimeMillis()
         val logFile = File(logFolder, "log_$dateTime.log")
         System.setProperty("log.path", logFile.absolutePath)
         AccountsTable().apply { clearTemporaryAccounts() }
