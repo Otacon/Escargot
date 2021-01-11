@@ -97,12 +97,8 @@ application {
     mainClassName = "MainKt"
 }
 
-task("copyRuntimeLibs", type = Copy::class) {
-    into("build/libs")
-    from(configurations.compileClasspath)
-}
-
-task("getURLofDependencyArtifact") {
+task("generateUpdate4jConfig") {
+    dependsOn(tasks.withType<Jar>())
     doFirst {
         val winUserDir = File(System.getProperty("user.home"), "AppData\\Local\\escargot\\libs").absolutePath
         val macUserDir = File(System.getProperty("user.home"), "Library/ApplicationSupport/escargot/libs").absolutePath
@@ -208,19 +204,19 @@ task("getURLofDependencyArtifact") {
             org.update4j.FileMetadata
                 .readFrom(Paths.get(buildDir.absolutePath, "libs", "Escargot-1.0.0.jar"))
                 .path("$macUserDir/Escargot-1.0.0.jar")
-                .uri("http://127.0.0.1:8887/Escargot-1.0.0.jar")
+                .uri("https://srv-store3.gofile.io/download/SxUqZi/Escargot-1.0.0.jar")
                 .os(org.update4j.OS.MAC)
                 .classpath(),
             org.update4j.FileMetadata
                 .readFrom(Paths.get(buildDir.absolutePath, "libs", "Escargot-1.0.0.jar"))
                 .path("$linuxUserDir/Escargot-1.0.0.jar")
-                .uri("http://127.0.0.1:8887/Escargot-1.0.0.jar")
+                .uri("https://srv-store3.gofile.io/download/SxUqZi/Escargot-1.0.0.jar")
                 .os(org.update4j.OS.LINUX)
                 .classpath(),
             org.update4j.FileMetadata
                 .readFrom(Paths.get(buildDir.absolutePath, "libs", "Escargot-1.0.0.jar"))
                 .path("$winUserDir\\Escargot-1.0.0.jar")
-                .uri("http://127.0.0.1:8887/Escargot-1.0.0.jar")
+                .uri("https://srv-store3.gofile.io/download/SxUqZi/Escargot-1.0.0.jar")
                 .os(org.update4j.OS.WINDOWS)
                 .classpath()
         )
