@@ -27,7 +27,7 @@
             <Insets bottom="15.0" />
          </VBox.margin>
         </TextFlow>
-        <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="E-mail:" />
+        <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="E-mail address:" />
         <ComboBox fx:id="textUsername" editable="true" maxWidth="1.7976931348623157E308">
             <VBox.margin>
                 <Insets />
