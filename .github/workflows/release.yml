@@ -34,12 +34,12 @@ jobs:
       - name: Delete update4jconfig.xml from Gofile
         uses: wei/curl@v1
         with:
-          args: --request GET --url 'https://srv-store3.gofile.io/deleteFile?c=SxUqZi&file=update4jconfig.xml&token=${{ secrets.GO_FILE_TOKEN }}'
+          args: --request GET --url 'https://srv-store3.gofile.io/deleteFile?ac=${{ secrets.GO_FILE_ADMIN_CODE }}&file=update4jconfig.xml
           
       - name: Delete Escargot-1.0.0.jar from Gofile
         uses: wei/curl@v1
         with:
-          args: --request GET --url 'https://srv-store3.gofile.io/deleteFile?c=SxUqZi&file=Escargot-1.0.0.jar&token=${{ secrets.GO_FILE_TOKEN }}'
+          args: --request GET --url 'https://srv-store3.gofile.io/deleteFile?ac=${{ secrets.GO_FILE_ADMIN_CODE }}&file=Escargot-1.0.0.jar&token=${{ secrets.GO_FILE_TOKEN }}'
         
       - name: Upload update4jconfig.xml to Gofile
         uses: wei/curl@v1
