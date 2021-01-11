@@ -6,6 +6,7 @@ import java.nio.file.Paths
 import java.util.concurrent.Executors
 import javax.swing.SwingUtilities
 import kotlin.math.roundToInt
+import kotlin.system.exitProcess
 
 class MainWindowPresenter(
     private val view: MainWindowContract.View,
@@ -52,6 +53,7 @@ class MainWindowPresenter(
     override fun onLaunchClicked() = executor.execute {
         SwingUtilities.invokeLater { view.close() }
         model.configuration!!.launch()
+        exitProcess(-1)
     }
 
     override fun onUpdateClicked() = executor.execute {
