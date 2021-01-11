@@ -3,7 +3,7 @@ package core.fileManager
 import java.io.File
 import java.lang.IllegalStateException
 
-private const val PACKAGE = "Escargot"
+private const val PACKAGE = "escargot"
 
 val fileManager by lazy {
     val os = System.getProperty("os.name")

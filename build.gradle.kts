@@ -1,5 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URL
+import java.nio.file.StandardCopyOption
+import java.nio.file.Paths
+import java.nio.file.Files
 
 buildscript {
 
@@ -101,47 +104,142 @@ task("copyRuntimeLibs", type = Copy::class) {
 
 task("getURLofDependencyArtifact") {
     doFirst {
-        val userDir = File(System.getProperty("user.home"), "AppData\\Local\\Escargot\\").absolutePath
+        val winUserDir = File(System.getProperty("user.home"), "AppData\\Local\\escargot\\libs").absolutePath
+        val macUserDir = File(System.getProperty("user.home"), "Library/ApplicationSupport/escargot/libs").absolutePath
+        val linuxUserDir = File(System.getProperty("user.home"), ".escargot/libs").absolutePath
         val cb = org.update4j.Configuration.builder()
-            .property("app.name", "MyApplication")
+            .property("app.name", "Escargot")
             .property("default.launcher.main.class", "MainKt")
+        val outputDir = File(buildDir, "update4j")
+        outputDir.mkdirs()
 
-        project.configurations.default.resolvedConfiguration.resolvedArtifacts.forEach { artifact ->
-            val file = artifact.file
-            val moduleVersionId = artifact.moduleVersion.id
-            val group = moduleVersionId.group.replace(".", "/").orEmpty()
-            val name = moduleVersionId.name.replace(".", "/")
-            val version = moduleVersionId.version
-            val jarFile = if (file.name.endsWith("win.jar")) {
-                "${artifact.name}-${version}-win.jar"
+        val references = project.configurations.default.resolvedConfiguration.resolvedArtifacts.map { artifact ->
+            Update4JArtifactInfo(
+                file = artifact.file,
+                path = null,
+                group = artifact.moduleVersion.id.group,
+                name = artifact.moduleVersion.id.name,
+                version = artifact.moduleVersion.id.version,
+                osVersion = null,
+                url = null
+            )
+        }.flatMap {
+            val group = it.group.replace(".", "/").orEmpty()
+            val name = it.name.replace(".", "/")
+            val version = it.version
+            val urlPrefix = "${it.name}-${version}"
+            if (it.file.name.endsWith("win.jar") || it.file.name.endsWith("mac.jar") || it.file.name.endsWith("linux.jar")) {
+                listOf(
+                    it.copy(
+                        path = "$winUserDir\\$urlPrefix-win.jar",
+                        osVersion = "win",
+                        url = "$group/$name/$version/$urlPrefix-win.jar"
+                    ),
+                    it.copy(
+                        path = "$linuxUserDir/$urlPrefix-linux.jar",
+                        osVersion = "linux",
+                        url = "$group/$name/$version/$urlPrefix-linux.jar"
+                    ),
+                    it.copy(
+                        path = "$macUserDir/$urlPrefix-mac.jar",
+                        osVersion = "mac",
+                        url = "$group/$name/$version/$urlPrefix-mac.jar"
+                    )
+                )
             } else {
-                "${artifact.name}-${version}.jar"
+                listOf(
+                    it.copy(
+                        path = "$winUserDir\\$urlPrefix.jar",
+                        osVersion = "win",
+                        url = "$group/$name/$version/$urlPrefix.jar"
+                    ),
+                    it.copy(
+                        path = "$linuxUserDir/$urlPrefix.jar",
+                        osVersion = "linux",
+                        url = "$group/$name/$version/$urlPrefix.jar"
+                    ),
+                    it.copy(
+                        path = "$macUserDir/$urlPrefix.jar",
+                        osVersion = "mac",
+                        url = "$group/$name/$version/$urlPrefix.jar"
+                    )
+                )
+
             }
-            val url = project.repositories.toList()
+        }.map { artifactInfo ->
+            project.repositories.asSequence()
                 .filterIsInstance<MavenArtifactRepository>()
-                .mapNotNull {
-                    val url = "${it.url}$group/$name/$version/$jarFile"
+                .mapNotNull { repository ->
+                    val url = "${repository.url}${artifactInfo.url}"
                     try {
-                        if (URL(url).openStream() != null) {
-                            return@mapNotNull url
+                        val input = URL(url).openStream()
+                        val fileName = Paths.get(url).last().toString()
+                        if (input != null) {
+                            Files.copy(
+                                input,
+                                Paths.get(outputDir.absolutePath, fileName),
+                                StandardCopyOption.REPLACE_EXISTING
+                            )
+                            return@mapNotNull artifactInfo.copy(
+                                file = File(outputDir.absolutePath, fileName),
+                                url = url
+                            )
                         }
                     } catch (e: java.io.FileNotFoundException) {
-                        println("$jarFile not found on $url")
+                        println("${artifactInfo.file.name} not found on $url")
                     }
                     null
-                }.first()
-            cb.file(
-                org.update4j.FileMetadata
-                    .readFrom(file.absolutePath)
-                    .path("$userDir\\${file.name}")
-                    .uri(url)
-                    .classpath()
-            )
-        }
+                }
+                .first()
+        }.map { artifact ->
+            val os = when (artifact.osVersion) {
+                "mac" -> org.update4j.OS.MAC
+                "linux" -> org.update4j.OS.LINUX
+                "win" -> org.update4j.OS.WINDOWS
+                else -> throw IllegalArgumentException("Invalid os: $artifact.osVersion")
+            }
+            org.update4j.FileMetadata
+                .readFrom(artifact.file.absolutePath)
+                .path(artifact.path!!)
+                .uri(artifact.url!!)
+                .os(os)
+                .classpath()
+        } + listOf(
+            org.update4j.FileMetadata
+                .readFrom(Paths.get(buildDir.absolutePath, "libs", "Escargot-1.0.0.jar"))
+                .path("$macUserDir/Escargot-1.0.0.jar")
+                .uri("http://127.0.0.1:8887/Escargot-1.0.0.jar")
+                .os(org.update4j.OS.MAC)
+                .classpath(),
+            org.update4j.FileMetadata
+                .readFrom(Paths.get(buildDir.absolutePath, "libs", "Escargot-1.0.0.jar"))
+                .path("$linuxUserDir/Escargot-1.0.0.jar")
+                .uri("http://127.0.0.1:8887/Escargot-1.0.0.jar")
+                .os(org.update4j.OS.LINUX)
+                .classpath(),
+            org.update4j.FileMetadata
+                .readFrom(Paths.get(buildDir.absolutePath, "libs", "Escargot-1.0.0.jar"))
+                .path("$winUserDir\\Escargot-1.0.0.jar")
+                .uri("http://127.0.0.1:8887/Escargot-1.0.0.jar")
+                .os(org.update4j.OS.WINDOWS)
+                .classpath()
+        )
+
+        cb.files(references)
 
         val configuration = cb.build()
-        val writer = File(buildDir, "update4jconfig.xml").writer()
+        val writer = File(outputDir, "update4jconfig.xml").writer()
         configuration.write(writer)
         writer.close()
     }
 }
+
+data class Update4JArtifactInfo(
+    val file: File,
+    val path: String?,
+    val group: String,
+    val name: String,
+    val version: String,
+    val osVersion: String?,
+    val url: String?
+)
