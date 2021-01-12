@@ -6,6 +6,11 @@ import java.awt.Desktop
 import java.awt.event.WindowEvent
 import java.net.URI
 import java.awt.event.WindowFocusListener
+import java.net.URL
+import javax.swing.ImageIcon
+
+
+
 
 class MainWindowView : MainWindowContract.View {
 
@@ -73,6 +78,9 @@ class MainWindowView : MainWindowContract.View {
         frame.pack()
         frame.isResizable = false
         frame.setLocationRelativeTo(null)
+        val iconURL: URL = javaClass.getResource("/e-logo.png")
+        val icon = ImageIcon(iconURL)
+        frame.iconImage = icon.image
 
         frame.addWindowFocusListener(object : WindowFocusListener {
 

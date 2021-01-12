@@ -56,7 +56,7 @@ runtime {
                 installerType = "msi"
                 imageOptions = listOf(
                     "--win-console",
-                    "--icon", "e-logo.ico"
+                    "--icon", "src/main/resources/e-logo.ico"
                 )
                 installerOptions = listOf(
                     "--win-per-user-install",
