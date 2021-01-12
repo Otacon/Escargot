@@ -120,7 +120,7 @@ class LoginView(
             val controller = LoginView(stage)
             val root = FXMLLoader().apply {
                 setController(controller)
-                location = javaClass.getResource("Login.fxml")
+                location = javaClass.getResource("/Login.fxml")
             }.load<Scene>()
             controller.onCreate(root)
         }
