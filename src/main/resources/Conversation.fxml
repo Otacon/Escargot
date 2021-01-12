@@ -28,9 +28,8 @@
         </padding>
         <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="128.0" prefWidth="128.0" style="-fx-border-color: lightgrey; -fx-border-radius: 4;" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.valignment="TOP" GridPane.vgrow="NEVER">
             <ImageView fitHeight="128.0" fitWidth="128.0" pickOnBounds="true" preserveRatio="true">
-            <image>
-               <Image url="@blank-profile.png" />
-            </image></ImageView>
+                <Image url="@images/blank-profile.png"/>
+            </ImageView>
         </Pane>
         <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="128.0" prefWidth="128.0" style="-fx-border-color: lightgrey; -fx-border-radius: 4;" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="NEVER" GridPane.rowIndex="1" GridPane.valignment="BOTTOM" GridPane.vgrow="NEVER">
             <GridPane.margin>
@@ -41,7 +40,7 @@
                     <Rectangle2D height="128.0" width="128.0" />
                 </viewport>
             <image>
-               <Image url="@blank-profile.png" />
+               <Image url="@images/blank-profile.png" />
             </image>
             </ImageView>
         </Pane>

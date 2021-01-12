@@ -1,8 +1,5 @@
 package me.orfeo.mainWindow
 
-import me.orfeo.utils.FileManager
-import java.io.File
-import java.nio.file.Paths
 import java.util.concurrent.Executors
 import javax.swing.SwingUtilities
 import kotlin.math.roundToInt
@@ -10,13 +7,11 @@ import kotlin.system.exitProcess
 
 class MainWindowPresenter(
     private val view: MainWindowContract.View,
-    private val interactor: MainWindowInteractor,
-    private val fileManager: FileManager
+    private val interactor: MainWindowInteractor
 ) : MainWindowContract.Presenter {
 
     private val executor = Executors.newSingleThreadExecutor()
     private var model = MainWindowModel(
-        appHome = "",
         status = "",
         progress = 0,
         error = null,
@@ -28,7 +23,6 @@ class MainWindowPresenter(
 
     override fun onCreate() = executor.execute {
         model = model.copy(
-            appHome = fileManager.appHomePath.absolutePath,
             status = "Checking for new versions...",
             progress = -1
         )
@@ -67,7 +61,7 @@ class MainWindowPresenter(
             isRemoveDataButtonEnabled = false
         )
         updateUI()
-        val success = interactor.performUpdate(model.configuration!!, model.appHome) { progress ->
+        val success = interactor.performUpdate(model.configuration!!) { progress ->
             model = model.copy(progress = (progress * 100).roundToInt())
             updateUI()
         }
@@ -92,7 +86,7 @@ class MainWindowPresenter(
     }
 
     override fun onOpenFilesClicked() {
-        view.openFileManager(File(model.appHome).toURI())
+        view.openFileManager(interactor.getAppHome())
     }
 
     override fun onWindowFocussed() {

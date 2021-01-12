@@ -33,7 +33,7 @@
                   GridPane.rowSpan="2">
                 <ImageView fx:id="profile_picture" fitHeight="60.0" fitWidth="60.0" pickOnBounds="true"
                            preserveRatio="true">
-                    <Image url="@blank-profile.png"/>
+                    <Image url="@images/blank-profile.png"/>
                 </ImageView>
                 <GridPane.margin>
                     <Insets/>

@@ -19,8 +19,7 @@ class MainWindowView : MainWindowContract.View {
 
     private val presenter: MainWindowContract.Presenter = MainWindowPresenter(
         this,
-        MainWindowInteractor(),
-        fileManager
+        MainWindowInteractor(fileManager)
     )
 
     init {

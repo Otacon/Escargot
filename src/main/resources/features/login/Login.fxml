@@ -17,7 +17,7 @@
                 <Insets bottom="40.0" />
             </VBox.margin>
             <ImageView fitHeight="120.0" fitWidth="120.0" pickOnBounds="true">
-                <Image url="@images/blank-profile.png" />
+                <Image url="@/images/blank-profile.png" />
             </ImageView>
         </Pane>
         <TextFlow prefHeight="200.0" prefWidth="200.0">
