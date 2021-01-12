@@ -51,6 +51,8 @@ runtime {
             "--resource-dir", "src/main/resources"
         )
 
+        imageName = "Escargot"
+
         when {
             os.isWindows -> {
                 installerType = "msi"
@@ -67,7 +69,6 @@ runtime {
             }
             os.isMacOsX -> {
                 imageOptions = listOf(
-                    //"–-mac-bundle-name", "Escargot Launcher",
                     "--icon", "src/main/resources/e-logo.icns"
                 )
             }
@@ -76,6 +77,6 @@ runtime {
 }
 
 application {
-    applicationName = "Launcher"
+    applicationName = "Escargot Launcher"
     mainClassName = "me.orfeo.MainKt"
 }
