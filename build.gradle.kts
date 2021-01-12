@@ -16,7 +16,6 @@ plugins {
     kotlin("jvm") version "1.4.20"
     id("org.openjfx.javafxplugin") version "0.0.9"
     id("com.squareup.sqldelight") version "1.4.4"
-    id("org.beryx.runtime") version "1.12.1"
     application
 }
 
@@ -66,30 +65,6 @@ sqldelight {
     database("Database") { // This will be the name of the generated database class.
         packageName = "me.orfeo"
     }
-}
-
-runtime {
-    options.set(
-        listOf(
-            "--compress", "2",
-            "--no-man-pages"
-        )
-    )
-
-    jpackage {
-        // MacOSX config
-        //jvmArgs.add("-Duser.dir=/tmp")
-        imageOptions = listOf("--icon", "src/main/resources/e-logo.icns")
-
-        // Base Config
-        installerOptions = listOf(
-            "--resource-dir", "src/main/resources"
-        )
-
-        //Windows Config
-        imageOptions = listOf("--win-console")
-    }
-
 }
 
 application {

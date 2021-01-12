@@ -1,6 +1,6 @@
 plugins {
     kotlin("jvm")
-    id("org.beryx.runtime")
+    id("org.beryx.runtime") version "1.12.1"
     application
 }
 
@@ -13,8 +13,12 @@ repositories {
 
 dependencies {
     implementation("org.update4j", "update4j", "1.5.6")
-    implementation("com.google.code.gson", "gson", "2.8.6")
-    implementation("org.xeustechnologies", "jcl-core", "2.8")
+
+    implementation("io.github.microutils", "kotlin-logging-jvm", "2.0.2")
+
+    implementation("org.slf4j", "slf4j-api", "1.7.26")
+    implementation("ch.qos.logback", "logback-classic", "1.2.3")
+    implementation("ch.qos.logback", "logback-core", "1.2.3")
 }
 
 
@@ -25,24 +29,50 @@ runtime {
             "--no-man-pages"
         )
     )
-    launcher {
 
-    }
+    modules.addAll(
+        "java.desktop",
+        "java.xml",
+        "java.sql",
+        "java.naming",
+        "java.logging",
+        "java.management",
+        "jdk.unsupported",
+        "jdk.jfr",
+        "java.scripting",
+        "jdk.crypto.cryptoki",
+        "jdk.zipfs"
+    )
 
     jpackage {
-        // MacOSX config
-        //jvmArgs.add("-Duser.dir=/tmp")
-        imageOptions = listOf("--icon", "src/main/resources/e-logo.icns")
+        val os = org.gradle.internal.os.OperatingSystem.current()
 
-        // Base Config
         installerOptions = listOf(
             "--resource-dir", "src/main/resources"
         )
 
-        //Windows Config
-        imageOptions = listOf("--win-console")
+        when {
+            os.isWindows -> {
+                installerType = "msi"
+                imageOptions = listOf(
+                    "--win-console",
+                    "--icon", "e-logo.ico"
+                )
+                installerOptions = listOf(
+                    "--win-per-user-install",
+                    "--win-dir-chooser",
+                    "--win-menu",
+                    "--win-shortcut"
+                )
+            }
+            os.isMacOsX -> {
+                imageOptions = listOf(
+                    //"–-mac-bundle-name", "Escargot Launcher",
+                    "--icon", "src/main/resources/e-logo.icns"
+                )
+            }
+        }
     }
-
 }
 
 application {

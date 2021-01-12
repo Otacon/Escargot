@@ -38,7 +38,8 @@ class MainWindowPresenter(
         if (configuration == null) {
             model = model.copy(
                 progress = 0,
-                error = "Unable to check for updates. Please try again."
+                error = "Unable to check for updates. Please try again.",
+                isRemoveDataButtonEnabled = true
             )
             updateUI()
         } else {
