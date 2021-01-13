@@ -5,12 +5,10 @@ import javafx.scene.Scene
 import javafx.scene.control.ListView
 import javafx.scene.control.TextArea
 import javafx.scene.input.KeyCode
-import javafx.scene.media.Media
-import javafx.scene.media.MediaPlayer
 import javafx.stage.Stage
-import javafx.util.Duration
 import org.cyanotic.butterfly.core.ConversationManager
 import org.cyanotic.butterfly.core.ConversationWindowManager
+import org.cyanotic.butterfly.features.notifications.NotificationManager
 
 class ConversationView(
     val recipient: String
@@ -64,12 +62,8 @@ class ConversationView(
 
     override fun playNotification() {
         if (window.isFocused.not()) {
-            val file = javaClass.getResource("/message.mp3")
             window.toFront()
-            MediaPlayer(Media(file.toString())).apply {
-                startTime = Duration.ZERO
-                play()
-            }
+            NotificationManager.newMessage()
         }
     }
 

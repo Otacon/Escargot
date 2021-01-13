@@ -7,13 +7,15 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import org.cyanotic.butterfly.core.ConversationManager
+import org.cyanotic.butterfly.features.notifications.NotificationManager
 import org.cyanotic.butterfly.protocol.Status
 import org.cyanotic.butterfly.protocol.asStatus
 import kotlin.coroutines.CoroutineContext
 
 class ContactListPresenter(
     private val view: ContactListContract.View,
-    private val interactor: ContactListInteractor
+    private val interactor: ContactListInteractor,
+    private val notificationManager: NotificationManager
 ) : ContactListContract.Presenter, CoroutineScope {
 
     private val job = Job()
@@ -43,6 +45,18 @@ class ContactListPresenter(
                 }
                 model = model.copy(contacts = models)
                 launch(Dispatchers.JavaFx) {
+                    val notificationEnabled = when (model.status) {
+                        Status.ONLINE,
+                        Status.AWAY,
+                        Status.BE_RIGHT_BACK,
+                        Status.IDLE,
+                        Status.OUT_TO_LUNCH,
+                        Status.OFFLINE,
+                        Status.HIDDEN -> true
+                        Status.ON_THE_PHONE,
+                        Status.BUSY -> false
+                    }
+                    NotificationManager.notificationsEnabled = notificationEnabled
                     updateUI()
                 }
             }

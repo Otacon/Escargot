@@ -16,6 +16,7 @@ import org.cyanotic.butterfly.core.ConversationManager
 import org.cyanotic.butterfly.core.ConversationWindowManager
 import org.cyanotic.butterfly.features.conversation.ConversationView
 import org.cyanotic.butterfly.features.login.LoginView
+import org.cyanotic.butterfly.features.notifications.NotificationManager
 import org.cyanotic.butterfly.protocol.Status
 import org.cyanotic.butterfly.protocol.notification.NotificationTransportManager
 import kotlin.system.exitProcess
@@ -58,7 +59,8 @@ class ContactListView(
 
     private val presenter = ContactListPresenter(
         this,
-        ContactListInteractor(ContactManager, AccountManager, ConversationManager)
+        ContactListInteractor(ContactManager, AccountManager, ConversationManager),
+        NotificationManager
     )
     private val contactsRoot = TreeItem<ContactModel>(ContactModel.Root)
     private val contactsOnline = TreeItem<ContactModel>(ContactModel.Category("Available"))
