@@ -8,6 +8,7 @@ data class MainWindowModel(
     val error: String?,
     val isLaunchButtonEnabled: Boolean,
     val isUpdateButtonEnabled: Boolean,
-    val isRemoveDataButtonEnabled: Boolean,
+    val isOpenDataFolderButtonEnabled: Boolean,
+    val isCheckForUpdatesButtonEnabled: Boolean,
     val configuration: Configuration?
 )

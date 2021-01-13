@@ -17,6 +17,10 @@ val fileManager by lazy {
 interface FileManager {
 
     val appHomePath: File
+    val updateConfigFile: File
+        get() = File(appHomePath, "update4jconfig.xml")
+    val updateZip: File
+        get() = File(appHomePath, "escargot-update.zip")
 
 }
 

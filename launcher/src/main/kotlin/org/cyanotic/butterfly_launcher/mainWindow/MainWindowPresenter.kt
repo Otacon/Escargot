@@ -17,32 +17,13 @@ class MainWindowPresenter(
         error = null,
         isLaunchButtonEnabled = false,
         isUpdateButtonEnabled = false,
-        isRemoveDataButtonEnabled = false,
+        isOpenDataFolderButtonEnabled = false,
+        isCheckForUpdatesButtonEnabled = false,
         configuration = null
     )
 
     override fun onCreate() = executor.execute {
-        model = model.copy(
-            status = "Checking for new versions...",
-            progress = -1
-        )
-        updateUI()
-        val configuration = interactor.getConfiguration()
-
-        if (configuration == null) {
-            model = model.copy(
-                progress = 0,
-                error = "Unable to check for updates. Please try again.",
-                isRemoveDataButtonEnabled = true
-            )
-            updateUI()
-        } else {
-            model = model.copy(
-                progress = 0,
-                configuration = configuration
-            )
-            checkForUpdates()
-        }
+        downloadConfigurationAndCheckForUpdates()
     }
 
     override fun onLaunchClicked() = executor.execute {
@@ -58,7 +39,8 @@ class MainWindowPresenter(
             progress = -1,
             isUpdateButtonEnabled = false,
             isLaunchButtonEnabled = false,
-            isRemoveDataButtonEnabled = false
+            isOpenDataFolderButtonEnabled = false,
+            isCheckForUpdatesButtonEnabled = false
         )
         updateUI()
         val success = interactor.performUpdate(model.configuration!!) { progress ->
@@ -71,15 +53,17 @@ class MainWindowPresenter(
                 progress = 0,
                 isUpdateButtonEnabled = false,
                 isLaunchButtonEnabled = true,
-                isRemoveDataButtonEnabled = true
+                isOpenDataFolderButtonEnabled = true,
+                isCheckForUpdatesButtonEnabled = true
             )
         } else {
             model.copy(
                 status = "",
                 progress = 0,
-                error = "Unable to update Escargot. Check your connection or clear data.",
+                error = "Unable to update Escargot.\nCheck your connection or remove all files in the data folder.",
                 isUpdateButtonEnabled = true,
-                isRemoveDataButtonEnabled = true
+                isOpenDataFolderButtonEnabled = true,
+                isCheckForUpdatesButtonEnabled = true
             )
         }
         updateUI()
@@ -89,11 +73,44 @@ class MainWindowPresenter(
         view.openFileManager(interactor.getAppHome())
     }
 
-    override fun onWindowFocussed() {
+    override fun onWindowFocussed() = executor.execute {
         checkForUpdates()
     }
 
-    private fun checkForUpdates() = executor.execute {
+    override fun onCheckForUpdatesClicked() = executor.execute {
+        downloadConfigurationAndCheckForUpdates()
+    }
+
+    private fun downloadConfigurationAndCheckForUpdates() {
+        model = model.copy(
+            status = "Checking for new versions...",
+            progress = -1,
+            isLaunchButtonEnabled = false,
+            isUpdateButtonEnabled = false,
+            isOpenDataFolderButtonEnabled = false,
+            isCheckForUpdatesButtonEnabled = false,
+        )
+        updateUI()
+        val configuration = interactor.getConfiguration()
+
+        if (configuration == null) {
+            model = model.copy(
+                progress = 0,
+                error = "Unable to check for updates. Please try again.",
+                isOpenDataFolderButtonEnabled = true,
+                isCheckForUpdatesButtonEnabled = true
+            )
+            updateUI()
+        } else {
+            model = model.copy(
+                progress = 0,
+                configuration = configuration
+            )
+            checkForUpdates()
+        }
+    }
+
+    private fun checkForUpdates() {
         val configuration = model.configuration!!
         val status = if (configuration.requiresUpdate()) {
             "A new version is available."
@@ -104,7 +121,8 @@ class MainWindowPresenter(
             status = status,
             isLaunchButtonEnabled = !configuration.requiresUpdate(),
             isUpdateButtonEnabled = configuration.requiresUpdate(),
-            isRemoveDataButtonEnabled = true,
+            isOpenDataFolderButtonEnabled = true,
+            isCheckForUpdatesButtonEnabled = true,
             progress = 0,
             configuration = configuration
         )
@@ -119,7 +137,8 @@ class MainWindowPresenter(
             showError(model.error != null)
             setLaunchButtonEnabled(model.isLaunchButtonEnabled)
             setUpdateButtonEnabled(model.isUpdateButtonEnabled)
-            setRemoveDataButtonEnabled(model.isRemoveDataButtonEnabled)
+            setRemoveDataButtonEnabled(model.isOpenDataFolderButtonEnabled)
+            setCheckForUpdatesButtonEnabled(model.isCheckForUpdatesButtonEnabled)
         }
     }
 

@@ -12,6 +12,7 @@ interface MainWindowContract {
         fun setLaunchButtonEnabled(enabled: Boolean)
         fun setUpdateButtonEnabled(enabled: Boolean)
         fun setRemoveDataButtonEnabled(enabled: Boolean)
+        fun setCheckForUpdatesButtonEnabled(enabled: Boolean)
         fun close()
         fun openFileManager(appHome: URI)
     }
@@ -22,5 +23,6 @@ interface MainWindowContract {
         fun onUpdateClicked()
         fun onOpenFilesClicked()
         fun onWindowFocussed()
+        fun onCheckForUpdatesClicked()
     }
 }
