@@ -1,6 +1,6 @@
 package org.cyanotic.butterfly.features.loginLoading
 
-import org.cyanotic.butterfly.core.auth.AuthenticationResult
+import org.cyanotic.butterfly.protocol.Status
 
 
 interface LoginLoadingContract {
@@ -12,14 +12,13 @@ interface LoginLoadingContract {
         fun showOk(isVisible: Boolean)
         fun showRetry(isVisible: Boolean)
         fun showProgress(isVisible: Boolean)
-        fun closeWithFailure()
-        fun closeWithSuccess(authData: AuthenticationResult.Success)
+        fun close(result: LoginResult)
 
     }
 
     interface Presenter {
 
-        fun start(username: String, password: String)
+        fun onCreate(username: String, password: String, status: Status)
         fun onCancelClicked()
         fun onOkClicked()
         fun onRetryClicked()

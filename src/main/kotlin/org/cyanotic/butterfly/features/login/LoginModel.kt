@@ -1,5 +1,7 @@
 package org.cyanotic.butterfly.features.login
 
+import org.cyanotic.butterfly.protocol.Status
+
 data class LoginModel(
     val username: String,
     val password: String,
@@ -7,4 +9,5 @@ data class LoginModel(
     val rememberPassword: Boolean,
     val accessAutomatically: Boolean,
     val isLoginEnabled: Boolean,
+    val loginStatus: Status
 )

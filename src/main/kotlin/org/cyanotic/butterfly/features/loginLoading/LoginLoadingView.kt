@@ -11,12 +11,10 @@ import javafx.stage.Stage
 import javafx.stage.StageStyle
 import org.cyanotic.butterfly.core.AccountManager
 import org.cyanotic.butterfly.core.ContactManager
-import org.cyanotic.butterfly.core.auth.AuthenticationResult
+import org.cyanotic.butterfly.protocol.Status
 
 class LoginLoadingView(
-    private val stage: Stage,
-    private val username: String,
-    private val password: String
+    private val stage: Stage
 ) : LoginLoadingContract.View {
 
     @FXML
@@ -34,16 +32,16 @@ class LoginLoadingView(
     @FXML
     private lateinit var okButton: Button
 
-    var success: AuthenticationResult.Success? = null
+    private var loginResult: LoginResult = LoginResult.Canceled
 
     private val presenter = LoginLoadingPresenter(
         this,
         LoginLoadingInteractor(AccountManager, ContactManager)
     )
 
-    fun onCreate() {
+    fun onCreate(username: String, password: String, status: Status) {
         setupListeners()
-        presenter.start(username = username, password = password)
+        presenter.onCreate(username = username, password = password, status = status)
     }
 
     override fun setProgressText(text: String) {
@@ -66,13 +64,8 @@ class LoginLoadingView(
         progressBar.isVisible = isVisible
     }
 
-    override fun closeWithFailure() {
-        success = null
-        stage.close()
-    }
-
-    override fun closeWithSuccess(authData: AuthenticationResult.Success) {
-        success = authData
+    override fun close(result: LoginResult) {
+        loginResult = result
         stage.close()
     }
 
@@ -83,20 +76,20 @@ class LoginLoadingView(
     }
 
     companion object {
-        fun launch(stage: Stage, username: String, password: String): AuthenticationResult.Success? {
+        fun launch(stage: Stage, username: String, password: String, status: Status): LoginResult {
             val dialog = Stage(StageStyle.UTILITY)
-            val controller = LoginLoadingView(dialog, username, password)
+            val controller = LoginLoadingView(dialog)
             val root = FXMLLoader().apply {
                 setController(controller)
                 location = javaClass.getResource("/LoginLoading.fxml")
             }.load<Scene>()
-            controller.onCreate()
+            controller.onCreate(username, password, status)
             dialog.scene = root
             dialog.isResizable = false
             dialog.initOwner(stage)
             dialog.initModality(Modality.APPLICATION_MODAL)
             dialog.showAndWait()
-            return controller.success
+            return controller.loginResult
         }
     }
 

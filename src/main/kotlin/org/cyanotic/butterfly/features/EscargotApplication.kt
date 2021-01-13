@@ -14,7 +14,7 @@ class EscargotApplication : Application() {
     }
 
     override fun start(primaryStage: Stage) {
-        LoginView.launch(primaryStage)
+        LoginView.launch(primaryStage, autoLogin = true)
     }
 
 }

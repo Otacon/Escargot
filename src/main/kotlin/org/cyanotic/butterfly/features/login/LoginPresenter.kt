@@ -5,6 +5,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
+import org.cyanotic.butterfly.features.loginLoading.LoginResult
+import org.cyanotic.butterfly.protocol.Status
 import kotlin.coroutines.CoroutineContext
 
 class LoginPresenter(
@@ -18,14 +20,15 @@ class LoginPresenter(
         rememberProfile = false,
         rememberPassword = false,
         accessAutomatically = false,
-        isLoginEnabled = true
+        isLoginEnabled = true,
+        loginStatus = Status.ONLINE
     )
 
     private val job = Job()
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.Main
 
-    override fun onStart() {
+    override fun onCreate(autoLogin: Boolean) {
         launch(Dispatchers.IO) {
             val latestUsedAccounts = interactor.getSavedUsernames()
             val latestAccount = interactor.getLastUsedAccount()
@@ -42,8 +45,8 @@ class LoginPresenter(
             launch(Dispatchers.JavaFx) {
                 view.setAccountsHistory(latestUsedAccounts)
                 updateUI()
-                if (latestAccount?.auto_sigin == true) {
-                    view.goToLoading(model.username, model.password)
+                if (latestAccount?.auto_sigin == true && autoLogin) {
+                    view.goToLoading(model.username, model.password, model.loginStatus)
                 }
             }
         }
@@ -75,6 +78,10 @@ class LoginPresenter(
         updateUI()
     }
 
+    override fun onLoginStatusChanged(loginStatus: Status) {
+        model = model.copy(loginStatus = loginStatus)
+    }
+
     override fun onRememberProfileChecked(isChecked: Boolean) {
         model = model.copy(rememberProfile = isChecked)
         updateUI()
@@ -91,14 +98,14 @@ class LoginPresenter(
     }
 
     override fun onLoginClicked() {
-        view.goToLoading(model.username, model.password)
+        view.goToLoading(model.username, model.password, model.loginStatus)
     }
 
     override fun onSignupClicked() {
         view.openWebBrowser("https://escargot.log1p.xyz/register")
     }
 
-    override fun onLoginSuccessful(mspAuth: String) {
+    override fun onLoginResult(result: LoginResult) {
         launch(Dispatchers.IO) {
             interactor.updateLoginPreferences(
                 savePassword = model.rememberPassword,

@@ -1,5 +1,8 @@
 package org.cyanotic.butterfly.features.login
 
+import org.cyanotic.butterfly.features.loginLoading.LoginResult
+import org.cyanotic.butterfly.protocol.Status
+
 interface LoginContract {
 
     interface View {
@@ -11,22 +14,23 @@ interface LoginContract {
         fun setRememberPasswordChecked(isChecked: Boolean)
         fun setAccessAutomatically(isChecked: Boolean)
         fun setLoginEnabled(loginEnabled: Boolean)
-        fun goToLoading(username: String, password: String)
+        fun goToLoading(username: String, password: String, status: Status)
         fun openWebBrowser(url: String)
         fun goToContactList()
     }
 
     interface Presenter {
 
-        fun onStart()
+        fun onCreate(autoLogin: Boolean)
         fun onUsernameChanged(username: String)
         fun onPasswordChanged(password: String)
+        fun onLoginStatusChanged(loginStatus: Status)
         fun onRememberProfileChecked(isChecked: Boolean)
         fun onRememberPasswordChecked(isChecked: Boolean)
         fun onAccessAutomaticallyChecked(isChecked: Boolean)
         fun onLoginClicked()
         fun onSignupClicked()
-        fun onLoginSuccessful(mspAuth: String)
+        fun onLoginResult(result: LoginResult)
 
     }
 

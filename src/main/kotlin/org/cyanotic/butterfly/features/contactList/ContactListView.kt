@@ -126,7 +126,7 @@ class ContactListView(
 
         menuLogout.setOnAction {
             NotificationTransportManager.transport.disconnect()
-            LoginView.launch(stage)
+            LoginView.launch(stage, autoLogin = false)
         }
         menuExit.setOnAction {
             NotificationTransportManager.transport.disconnect()

@@ -21,25 +21,26 @@ class LoginLoadingPresenter constructor(
         okVisible = false,
         cancelVisible = true,
         retryVisible = false,
-        progressVisible = true
+        progressVisible = true,
+        status = Status.ONLINE
     )
 
     private val job = Job()
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.Main
 
-    override fun start(username: String, password: String) {
-        model = model.copy(username = username, password = password)
+    override fun onCreate(username: String, password: String, status: Status) {
+        model = model.copy(username = username, password = password, status = status)
         startAuthentication()
     }
 
     override fun onCancelClicked() {
         job.cancel()
-        view.closeWithFailure()
+        view.close(LoginResult.Canceled)
     }
 
     override fun onOkClicked() {
-        view.closeWithFailure()
+        view.close(LoginResult.Failed)
     }
 
     override fun onRetryClicked() {
@@ -92,9 +93,9 @@ class LoginLoadingPresenter constructor(
                     interactor.refreshContactList()
                     model = model.copy(text = "Updating status...")
                     updateUI()
-                    interactor.updateStatus(Status.ONLINE)
+                    interactor.updateStatus(model.status)
                     launch(Dispatchers.JavaFx) {
-                        view.closeWithSuccess(result)
+                        view.close(LoginResult.Success(result.token))
                     }
                     return@launch
                 }
