@@ -107,7 +107,8 @@ class NotificationTransport {
     suspend fun sendChg(request: NotificationSendCommand.CHG): NotificationReceiveCommand.CHG =
         suspendCoroutine { cont ->
             //TODO set the client's capabilities
-            val message = "CHG $sequence ${request.status} 0 0"
+            val capabilities = 0x90000000
+            val message = "CHG $sequence ${request.status} $capabilities 0"
             sendMessage(message, cont)
         }
 

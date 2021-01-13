@@ -107,6 +107,7 @@ class SwitchBoardTransport {
                                 messages.offer(MessageData(command.passport, msg.text))
                             }
                             is MsgBody.Typing -> println("Typing")
+                            MsgBody.Nudge -> println("Nudge")
                             MsgBody.Unknown -> println("No idea!")
                         }
                     }
