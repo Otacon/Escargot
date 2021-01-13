@@ -4,7 +4,7 @@ plugins {
     application
 }
 
-group = "me.orfeo"
+group = "org.cyanotic.butterfly-launcher"
 version = "1.0.0"
 
 repositories {
@@ -78,5 +78,5 @@ runtime {
 
 application {
     applicationName = "Escargot Launcher"
-    mainClassName = "me.orfeo.MainKt"
+    mainClassName = "org.cyanotic.butterfly_launcher.MainKt"
 }

@@ -19,7 +19,7 @@ plugins {
     application
 }
 
-group = "me.orfeo"
+group = "org.cyanotic.butterfly"
 version = "1.0.0"
 
 repositories {
@@ -62,14 +62,14 @@ tasks.withType<KotlinCompile>().configureEach {
 }
 
 sqldelight {
-    database("Database") { // This will be the name of the generated database class.
-        packageName = "me.orfeo"
+    database("Database") {
+        packageName = "org.cyanotic.butterfly.database"
     }
 }
 
 application {
-    applicationName = "Escargot"
-    mainClassName = "MainKt"
+    applicationName = "escargot"
+    mainClassName = "org.cyanotic.butterfly.MainKt"
 }
 
 task("generateUpdate4jConfig") {
