@@ -125,6 +125,26 @@ class NotificationTransport {
             sendMessage(message, cont)
         }
 
+    suspend fun sendAdl(email: String, list: ListType, contact: ContactType): NotificationReceiveCommand.ADL =
+        suspendCoroutine { cont ->
+            val listType = when (list) {
+                ListType.ForwardList -> 1
+                ListType.AddList -> 2
+                ListType.BlockList -> 4
+            }
+            val contactType = when (contact) {
+                ContactType.Passport -> 1
+                ContactType.Phone -> 4
+            }
+            val emailRegex = Regex("""([a-zA-Z0-9+._-]+)@([a-zA-Z0-9._-]+)""")
+            emailRegex.find(email)?.let {
+                val prefix = it.groupValues[0]
+                val domain = it.groupValues[1]
+                val body = """<ml><d n="$domain"><c n="$prefix" l="$listType" t="$contactType"/></d></ml>"""
+                sendMessage("ADL $sequence ${body.length}\r\n$body", cont)
+            } ?: cont.resumeWithException(IllegalArgumentException("Invalid email: $email"))
+        }
+
     suspend fun waitForMspAuthToken(): String =
         suspendCoroutine { cont ->
             continuationMspAuthToken = cont
@@ -302,3 +322,14 @@ data class SwitchboardInvite(
     val passport: String,
     val auth: String
 )
+
+enum class ListType {
+    AddList,
+    ForwardList,
+    BlockList
+}
+
+enum class ContactType {
+    Passport,
+    Phone
+}

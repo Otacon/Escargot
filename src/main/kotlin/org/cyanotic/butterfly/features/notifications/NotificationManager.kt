@@ -2,6 +2,9 @@ package org.cyanotic.butterfly.features.notifications
 
 import javafx.scene.media.Media
 import javafx.scene.media.MediaPlayer
+import mu.KotlinLogging
+
+private val logger = KotlinLogging.logger {}
 
 object NotificationManager {
 
@@ -14,14 +17,17 @@ object NotificationManager {
     var notificationsEnabled = true
 
     fun newMessage() {
+        logger.info { "Playing new message sound" }
         newMessage.playSound()
     }
 
     fun contactOnline() {
+        logger.info { "Playing contact online sound" }
         contactOnline.playSound()
     }
 
     fun nudge() {
+        logger.info { "Playing nudge sound" }
         nudge.playSound()
     }
 

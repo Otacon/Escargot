@@ -10,6 +10,8 @@ import org.cyanotic.butterfly.core.contactListFetcher.ContactListFetcher
 import org.cyanotic.butterfly.core.utils.httpClient
 import org.cyanotic.butterfly.database.ContactsTable
 import org.cyanotic.butterfly.database.entities.Contact
+import org.cyanotic.butterfly.protocol.notification.ContactType
+import org.cyanotic.butterfly.protocol.notification.ListType
 import org.cyanotic.butterfly.protocol.notification.NotificationTransportManager
 import kotlin.coroutines.CoroutineContext
 
@@ -22,7 +24,7 @@ object ContactManager : CoroutineScope {
     private val localContacts = ContactsTable()
     private val contactListFetcher = ContactListFetcher(httpClient)
     private val accountManager = AccountManager
-    private val notificationServiceManager = NotificationTransportManager
+    private val notificationTransportManager = NotificationTransportManager
 
     init {
         listenForNotificationContactChanges()
@@ -42,6 +44,10 @@ object ContactManager : CoroutineScope {
         localContacts.update(currentAccount.passport, newContacts)
     }
 
+    suspend fun addContact(passport: String) {
+        notificationTransportManager.transport.sendAdl(passport, ListType.AddList, ContactType.Passport)
+    }
+
     suspend fun ownContactUpdates(): Flow<Contact> {
         return localContacts.ownContactUpdates(accountManager.getCurrentAccount().passport)
     }
@@ -52,7 +58,7 @@ object ContactManager : CoroutineScope {
 
     private fun listenForNotificationContactChanges() {
         launch {
-            notificationServiceManager.transport.contactChanged().collect { profileData ->
+            notificationTransportManager.transport.contactChanged().collect { profileData ->
                 val account = accountManager.getCurrentAccount().passport
                 val updatedContact = Contact(
                     passport = profileData.passport,

@@ -88,6 +88,10 @@ sealed class NotificationReceiveCommand {
         val param: Int
     ) : NotificationReceiveCommand()
 
+    data class ADL(
+        val sequence: Int,
+    ) : NotificationReceiveCommand()
+
     data class Error(
         val code: Int,
         val sequence: Int
