@@ -138,8 +138,8 @@ class NotificationTransport {
             }
             val emailRegex = Regex("""([a-zA-Z0-9+._-]+)@([a-zA-Z0-9._-]+)""")
             emailRegex.find(email)?.let {
-                val prefix = it.groupValues[0]
-                val domain = it.groupValues[1]
+                val prefix = it.groupValues[1]
+                val domain = it.groupValues[2]
                 val body = """<ml><d n="$domain"><c n="$prefix" l="$listType" t="$contactType"/></d></ml>"""
                 sendMessage("ADL $sequence ${body.length}\r\n$body", cont)
             } ?: cont.resumeWithException(IllegalArgumentException("Invalid email: $email"))
@@ -221,6 +221,9 @@ class NotificationTransport {
                     personalMessage = null,
                 )
                 contactChanged.offer(profileData)
+            }
+            is NotificationReceiveCommand.ADL -> {
+                resumeContinuation(command.sequence, command)
             }
             is NotificationReceiveCommand.Error -> resumeErrorContinuation(command.sequence, command)
             is NotificationReceiveCommand.Unknown -> println("NT - Command not supported: $message")

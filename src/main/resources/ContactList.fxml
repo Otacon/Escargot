@@ -1,65 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.*?>
+<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.Scene?>
+
 <Scene xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
     <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="350.0">
         <MenuBar maxWidth="1.7976931348623157E308" VBox.vgrow="NEVER">
             <Menu mnemonicParsing="false" text="File">
-                <MenuItem fx:id="menuLogout" mnemonicParsing="false" text="Logout"/>
-                <SeparatorMenuItem/>
-                <MenuItem fx:id="menuExit" mnemonicParsing="false" text="Exit"/>
+                <MenuItem fx:id="menuLogout" mnemonicParsing="false" text="Logout" />
+                <SeparatorMenuItem />
+                <MenuItem fx:id="menuExit" mnemonicParsing="false" text="Exit" />
             </Menu>
         </MenuBar>
         <GridPane hgap="10.0" vgap="5.0" VBox.vgrow="NEVER">
             <columnConstraints>
-                <ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="60.0" minWidth="60.0" prefWidth="60.0"/>
-                <ColumnConstraints maxWidth="20.0" minWidth="20.0" prefWidth="20.0"/>
-                <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="-Infinity"/>
+                <ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="60.0" minWidth="60.0" prefWidth="60.0" />
+                <ColumnConstraints maxWidth="20.0" minWidth="20.0" prefWidth="20.0" />
+                <ColumnConstraints hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="-Infinity" />
             </columnConstraints>
             <rowConstraints>
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
-                <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <VBox.margin>
-                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
             </VBox.margin>
-            <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-                  prefHeight="60.0" prefWidth="60.0" style="-fx-border-color: lightgray; -fx-border-radius: 4;"
-                  GridPane.rowSpan="2">
-                <ImageView fx:id="profile_picture" fitHeight="60.0" fitWidth="60.0" pickOnBounds="true"
-                           preserveRatio="true">
-                    <Image url="@images/blank-profile.png"/>
+            <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="60.0" prefWidth="60.0" style="-fx-border-color: lightgray; -fx-border-radius: 4;" GridPane.rowSpan="2">
+                <ImageView fx:id="profile_picture" fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
+                    <Image url="@images/blank-profile.png" />
                 </ImageView>
                 <GridPane.margin>
-                    <Insets/>
+                    <Insets />
                 </GridPane.margin>
             </Pane>
-            <Button fx:id="statusButton" maxHeight="20.0" maxWidth="20.0" minHeight="20.0" minWidth="20.0" mnemonicParsing="false"
-                    prefHeight="20.0" prefWidth="20.0" GridPane.columnIndex="1" GridPane.halignment="LEFT">
+            <Button fx:id="statusButton" maxHeight="20.0" maxWidth="20.0" minHeight="20.0" minWidth="20.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="20.0" GridPane.columnIndex="1" GridPane.halignment="LEFT">
                 <GridPane.margin>
-                    <Insets/>
+                    <Insets />
                 </GridPane.margin>
             </Button>
             <TextField fx:id="nickname" GridPane.columnIndex="2" GridPane.hgrow="ALWAYS">
                 <GridPane.margin>
-                    <Insets/>
+                    <Insets />
                 </GridPane.margin>
             </TextField>
-            <TextField fx:id="personalMessage" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.hgrow="ALWAYS"
-                       GridPane.rowIndex="1"/>
+            <TextField fx:id="personalMessage" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" />
         </GridPane>
-        <Separator prefWidth="200.0"/>
-        <TextField fx:id="contactsFilter" promptText="Search for contacts...">
+        <Separator prefWidth="200.0" />
+        <HBox alignment="CENTER_LEFT">
             <VBox.margin>
-                <Insets bottom="5.0" left="15.0" right="15.0" top="5.0"/>
+                <Insets bottom="5.0" left="15.0" right="15.0" top="5.0" />
             </VBox.margin>
-        </TextField>
-        <TreeView fx:id="contactList" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
-                  VBox.vgrow="ALWAYS"/>
+            <TextField fx:id="contactsFilter" promptText="Search for contacts..." HBox.hgrow="ALWAYS">
+                <HBox.margin>
+                    <Insets right="10.0" />
+                </HBox.margin>
+            </TextField>
+            <Button fx:id="addContactButton" maxHeight="20.0" maxWidth="20.0" minHeight="20.0" minWidth="20.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="20.0" HBox.hgrow="NEVER" />
+        </HBox>
+        <TreeView fx:id="contactList" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS" />
     </VBox>
 </Scene>

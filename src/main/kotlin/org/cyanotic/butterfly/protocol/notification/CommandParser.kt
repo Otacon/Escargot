@@ -225,6 +225,18 @@ class CommandParserUux : CommandParser {
 
 }
 
+class CommandParserAdl : CommandParser {
+    private val regex = Regex("""ADL (\d+) OK""")
+
+    override fun parse(command: String): NotificationReceiveCommand {
+        return regex.find(command)?.let {
+            NotificationReceiveCommand.ADL(
+                sequence = it.groupValues[1].toInt()
+            )
+        } ?: NotificationReceiveCommand.Unknown
+    }
+}
+
 class CommandParserError : CommandParser {
 
     private val regex = Regex("""(\d+) (\d+)""")

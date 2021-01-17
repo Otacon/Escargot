@@ -10,6 +10,7 @@ import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.input.KeyCode
 import javafx.stage.Stage
+import kotlinx.coroutines.runBlocking
 import org.cyanotic.butterfly.core.AccountManager
 import org.cyanotic.butterfly.core.ContactManager
 import org.cyanotic.butterfly.core.ConversationManager
@@ -50,6 +51,9 @@ class ContactListView(
     @FXML
     private lateinit var statusButton: Button
 
+    @FXML
+    private lateinit var addContactButton: Button
+
     private val statusImage = ImageView()
 
     private val statusOnline = Image("/status-online.png")
@@ -75,9 +79,16 @@ class ContactListView(
         contactsOnline.isExpanded = true
         contactsOffline.isExpanded = true
         contactList.root = contactsRoot
+        setupStatusButton()
+        val addContactIcon = ImageView(Image("/add-contact.png"))
+        addContactIcon.fitWidth = 16.0
+        addContactIcon.fitHeight = 16.0
+        addContactButton.graphic = addContactIcon
+        addContactButton.setOnMouseClicked {
+            runBlocking { ContactManager.addContact("orfeo18@hotmail.it") }
+        }
         statusImage.requestFocus()
         presenter.start()
-        setupStatusButton()
     }
 
     private fun setupStatusButton() {

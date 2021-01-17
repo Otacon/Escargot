@@ -1,0 +1,45 @@
+Header
+SOAPAction: http://www.msn.com/webservices/AddressBook/AddMember
+
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>
+    <soap:Header>
+        <ABApplicationHeader xmlns="http://www.msn.com/webservices/AddressBook">
+            <ApplicationId>AAD9B99B-58E6-4F23-B975-D9EC1F9EC24A</ApplicationId>
+            <IsMigration>false</IsMigration>
+            <PartnerScenario>Initial</PartnerScenario>
+            <CacheKey>
+                12r1:Q_IBK8ZqKUF1n3jWLkIjMl2F-UUoaFftB5-yPFkv9GkzMQo8Jx49S6dVPfY_CvEl9wkqmJrJ_8A3r0LeH8l4eAnhOKBHEKFBSsUK1pINQbbbLSMUATp0iTvEMc3VAlgKH6u01rXHv8lkK5ql4zkSTLtZrzgBxbFF82zuET1KjO0wrTMCZ9gxJMpK1Fc-PVoK0iy4QX-THjbzyQo-6Kw-4_VCZGZoWsE20OO_Ug
+            </CacheKey>
+        </ABApplicationHeader>
+        <ABAuthHeader xmlns="http://www.msn.com/webservices/AddressBook">
+            <ManagedGroupRequest>false</ManagedGroupRequest>
+            <TicketToken>
+                t=049199eccc2bc0bbb309Y6+H31sTUOFkqjNTDYqAAFLr5Ote7BMrMnUIzpg860jh084QMgs5djRQLLQP0TVOFkKdWDwAJdEWcfsI9YL8otN9kSfhTaPHR1njHmG0H98O2NE/Ck6zrog3UJFmYlCnHidZk1g3AzUNVXmjZoyMSyVvoHLjQSzoGRpgHg3hHdi7zrFhcYKWD8XeNYdoz9wfA2YAAAgZIgF9kFvsy2AC0Fl/ezc/fSo6YgB9TwmXyoK0wm0F9nz5EfhHQLu2xxgsvMOiXUSFSpN1cZaNzEk/KGVa3Z33Mcu0qJqvXoLyv2VjQyI0VLH6YlW5E+GMwWcQurXB9hT/DnddM5Ggzk3nX8uMSV4kV+AgF1EWpiCdLViRI6DmwwYDtUJU6W6wQXsfyTm6CNMv0eE0wFXmZvoKaL24fggkp99dX+m1vgMQJ39JblVH9cmnnkBQcKkV8lnQJ003fd6iIFzGpgPBW5Z3T1Bp7uzSGMWnHmrEw8eOpKC5ny4x8uoViXDmA2UId23xYSoJ/GQrMjqB+NslqnuVsOBE1oWpNrmfSKhGU1X0kR4Eves56t5i5n3XU+7ne0MkcUzlrMi89n2j8aouf0zeuD7o+ngqvfRCsOqjaU71XWtuD4ogu2X7/Ajtwkxg/UJDFGAnCxFTTd4dqrrEpKyMK8eWBMaartFxwwrH39HMpx1T9JgknJ1hFWELzG8b302sKy64nCseOTGaZrdH63pjGkT7vzyIxVH/b+yJwDRmy/PlLz7fmUj6zpTBNmCtl1EGFOEFdtI2R04EprIkLXbtpoIPA7m0TPZURpnWufCSsDtD91ChxR8j/FnQ/gOOyKg/EJrTcHvM1e50PMRmoRZGlltBRRwBV+ArPO64On6zygr5zud5o/aADF1laBjkuYkjvUVsXwgnaIKbTLN2+sr/WjogxT1Yins79jPa1+3dDenxZtE/rHA/6qsdJmo5BJZqNYQUFrnpkU428LryMnBaNp2BW51JRsWXPAA7yCi0wDlHzEDxpqaOnhI4Ol87ra+VAg==&amp;p=
+            </TicketToken>
+        </ABAuthHeader>
+    </soap:Header>
+    <soap:Body>
+        <AddMember xmlns="http://www.msn.com/webservices/AddressBook">
+            <serviceHandle>
+                <Id>0</Id>
+                <Type>Messenger</Type>
+                <ForeignId></ForeignId>
+            </serviceHandle>
+            <memberships>
+                <Membership>
+                    <MemberRole>Allow</MemberRole>
+                    <Members>
+                        <Member xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="PassportMember">
+                            <Type>Passport</Type>
+                            <State>Accepted</State>
+                            <PassportName>brooklyn@hideaddress.net</PassportName>
+                        </Member>
+                    </Members>
+                </Membership>
+            </memberships>
+        </AddMember>
+    </soap:Body>
+</soap:Envelope>
