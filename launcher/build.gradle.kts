@@ -72,6 +72,13 @@ runtime {
                     "--icon", "src/main/resources/e-logo.icns"
                 )
             }
+            os.isLinux -> {
+                imageOptions = listOf(
+                    "--icon", "src/main.resources/e-logo.png",
+                    "--type", "deb",
+                    "--vendor", "Cyanotic.dev"
+                )
+            }
         }
     }
 }
