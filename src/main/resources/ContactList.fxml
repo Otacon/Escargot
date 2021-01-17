@@ -58,7 +58,7 @@
                     <Insets right="10.0" />
                 </HBox.margin>
             </TextField>
-            <Button fx:id="addContactButton" maxHeight="20.0" maxWidth="20.0" minHeight="20.0" minWidth="20.0" mnemonicParsing="false" prefHeight="20.0" prefWidth="20.0" HBox.hgrow="NEVER" />
+            <Button fx:id="addContactButton" mnemonicParsing="false" HBox.hgrow="NEVER" />
         </HBox>
         <TreeView fx:id="contactList" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS" />
     </VBox>
