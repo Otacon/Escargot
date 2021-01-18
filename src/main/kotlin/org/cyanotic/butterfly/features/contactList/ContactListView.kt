@@ -15,6 +15,7 @@ import org.cyanotic.butterfly.core.AccountManager
 import org.cyanotic.butterfly.core.ContactManager
 import org.cyanotic.butterfly.core.ConversationManager
 import org.cyanotic.butterfly.core.ConversationWindowManager
+import org.cyanotic.butterfly.features.add_contact.AddContactView
 import org.cyanotic.butterfly.features.conversation.ConversationView
 import org.cyanotic.butterfly.features.login.LoginView
 import org.cyanotic.butterfly.features.notifications.NotificationManager
@@ -81,11 +82,11 @@ class ContactListView(
         contactList.root = contactsRoot
         setupStatusButton()
         val addContactIcon = ImageView(Image("/add-contact.png"))
-        addContactIcon.fitWidth = 16.0
-        addContactIcon.fitHeight = 16.0
+        addContactIcon.fitWidth = 18.0
+        addContactIcon.fitHeight = 18.0
         addContactButton.graphic = addContactIcon
         addContactButton.setOnMouseClicked {
-            runBlocking { ContactManager.addContact("orfeo18@hotmail.it") }
+            AddContactView.launch(stage)
         }
         statusImage.requestFocus()
         presenter.start()
