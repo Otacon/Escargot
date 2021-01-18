@@ -61,7 +61,7 @@ private class FileManagerWindows : FileManager {
 private class FileManagerLinux : FileManager {
     private val _appHomePath by lazy {
         val home = File(System.getProperty("user.home"))
-        File(home, PACKAGE).apply {
+        File(home, ".$PACKAGE").apply {
             if (!exists()) {
                 mkdir()
             }
