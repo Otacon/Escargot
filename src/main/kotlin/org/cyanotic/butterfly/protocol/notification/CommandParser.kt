@@ -237,6 +237,30 @@ class CommandParserAdl : CommandParser {
     }
 }
 
+class CommandParserAdlAccept : CommandParser {
+    private val regex = Regex("""ADL 0 (\d+)""")
+
+    override fun parse(command: String): NotificationReceiveCommand {
+        return regex.find(command)?.let {
+            NotificationReceiveCommand.ADLAccept(
+                length = it.groupValues[1].toInt()
+            )
+        } ?: NotificationReceiveCommand.Unknown
+    }
+}
+
+class CommandParserNot : CommandParser {
+    private val regex = Regex("""NOT (\d+)""")
+
+    override fun parse(command: String): NotificationReceiveCommand {
+        return regex.find(command)?.let {
+            NotificationReceiveCommand.NOT(
+                length = it.groupValues[1].toInt()
+            )
+        } ?: NotificationReceiveCommand.Unknown
+    }
+}
+
 class CommandParserError : CommandParser {
 
     private val regex = Regex("""(\d+) (\d+)""")

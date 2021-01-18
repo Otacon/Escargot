@@ -10,6 +10,7 @@ import org.cyanotic.butterfly.core.contactListFetcher.ContactListFetcher
 import org.cyanotic.butterfly.core.utils.httpClient
 import org.cyanotic.butterfly.database.ContactsTable
 import org.cyanotic.butterfly.database.entities.Contact
+import org.cyanotic.butterfly.protocol.notification.ContactRequest
 import org.cyanotic.butterfly.protocol.notification.ContactType
 import org.cyanotic.butterfly.protocol.notification.ListType
 import org.cyanotic.butterfly.protocol.notification.NotificationTransportManager
@@ -28,6 +29,7 @@ object ContactManager : CoroutineScope {
 
     init {
         listenForNotificationContactChanges()
+        listenForContactRequests()
     }
 
     suspend fun refreshContactList() {
@@ -72,6 +74,13 @@ object ContactManager : CoroutineScope {
                     status = profileData.status
                 )
                 localContacts.update(account, listOf(updatedContact))
+            }
+        }
+    }
+    private fun listenForContactRequests() {
+        launch {
+            notificationTransportManager.transport.contactRequests().collect { contactRequest ->
+                println("Received invite from $contactRequest")
             }
         }
     }

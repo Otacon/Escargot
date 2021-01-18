@@ -16,6 +16,8 @@ class ReceiveCommandParser : CommandParser {
         CommandParserFln(),
         CommandParserUux(),
         CommandParserAdl(),
+        CommandParserAdlAccept(),
+        CommandParserNot(),
         CommandParserError()
     )
 

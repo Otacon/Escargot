@@ -31,6 +31,7 @@ class NotificationTransport {
     private var continuationMspAuthToken: Continuation<String>? = null
     private var sequence: Int = 1
     private val contactChanged = Channel<ProfileData>(capacity = Channel.UNLIMITED)
+    private val contactRequest = Channel<ContactRequest>(capacity = Channel.UNLIMITED)
     private val switchboardInvites = Channel<SwitchboardInvite>(capacity = Channel.UNLIMITED)
 
     fun connect() {
@@ -154,6 +155,10 @@ class NotificationTransport {
         return contactChanged.consumeAsFlow()
     }
 
+    fun contactRequests(): Flow<ContactRequest>{
+        return contactRequest.consumeAsFlow()
+    }
+
     fun switchboardInvites(): Flow<SwitchboardInvite> {
         return switchboardInvites.consumeAsFlow()
     }
@@ -224,6 +229,23 @@ class NotificationTransport {
             }
             is NotificationReceiveCommand.ADL -> {
                 resumeContinuation(command.sequence, command)
+            }
+            is NotificationReceiveCommand.ADLAccept -> {
+                if(command.length > 0){
+                    val body = socket.readRaw(command.length)
+                    val newContact = AdlBodyParser().parse(body)
+                    val invite = ContactRequest(
+                        passport = "${newContact.data.contact.name}@${newContact.data.emailDomain}",
+                        nickname = newContact.data.contact.displayName
+                    )
+                    contactRequest.offer(invite)
+                }
+            }
+            is NotificationReceiveCommand.NOT -> {
+                if(command.length > 0){
+                    socket.readRaw(command.length)
+                }
+                println("NT - NOT command received. Undocumented behaviour: SKIPPING.")
             }
             is NotificationReceiveCommand.Error -> resumeErrorContinuation(command.sequence, command)
             is NotificationReceiveCommand.Unknown -> println("NT - Command not supported: $message")
@@ -316,6 +338,11 @@ data class ProfileData(
     val nickname: String?,
     val personalMessage: String?,
     val status: String?
+)
+
+data class ContactRequest(
+    val passport: String,
+    val nickname: String?
 )
 
 data class SwitchboardInvite(
