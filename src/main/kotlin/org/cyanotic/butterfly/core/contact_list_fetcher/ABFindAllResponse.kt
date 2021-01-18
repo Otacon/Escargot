@@ -1,4 +1,4 @@
-package org.cyanotic.butterfly.core.contactListFetcher
+package org.cyanotic.butterfly.core.contact_list_fetcher
 
 import org.simpleframework.xml.Element
 import org.simpleframework.xml.ElementList

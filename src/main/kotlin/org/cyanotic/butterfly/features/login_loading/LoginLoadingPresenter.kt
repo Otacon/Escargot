@@ -1,4 +1,4 @@
-package org.cyanotic.butterfly.features.loginLoading
+package org.cyanotic.butterfly.features.login_loading
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

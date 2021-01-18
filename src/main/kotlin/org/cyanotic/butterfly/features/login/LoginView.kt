@@ -1,7 +1,5 @@
 package org.cyanotic.butterfly.features.login
 
-import javafx.beans.value.ChangeListener
-import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
@@ -10,8 +8,8 @@ import javafx.scene.image.Image
 import javafx.stage.Stage
 import org.cyanotic.butterfly.core.AccountManager
 import org.cyanotic.butterfly.features.appInstance
-import org.cyanotic.butterfly.features.contactList.ContactListView
-import org.cyanotic.butterfly.features.loginLoading.LoginLoadingView
+import org.cyanotic.butterfly.features.contact_list.ContactListView
+import org.cyanotic.butterfly.features.login_loading.LoginLoadingView
 import org.cyanotic.butterfly.protocol.Status
 
 class LoginView(

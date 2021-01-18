@@ -1,4 +1,4 @@
-package org.cyanotic.butterfly.core.contactListFetcher
+package org.cyanotic.butterfly.core.contact_list_fetcher
 
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient

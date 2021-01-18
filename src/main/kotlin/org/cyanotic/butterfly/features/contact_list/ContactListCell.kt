@@ -1,4 +1,4 @@
-package org.cyanotic.butterfly.features.contactList
+package org.cyanotic.butterfly.features.contact_list
 
 import javafx.fxml.FXMLLoader
 import javafx.scene.control.Label

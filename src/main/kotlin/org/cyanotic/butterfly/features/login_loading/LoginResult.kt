@@ -1,4 +1,4 @@
-package org.cyanotic.butterfly.features.loginLoading
+package org.cyanotic.butterfly.features.login_loading
 
 sealed class LoginResult {
     data class Success(

@@ -6,11 +6,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import org.cyanotic.butterfly.core.contactListFetcher.ContactListFetcher
+import org.cyanotic.butterfly.core.contact_list_fetcher.ContactListFetcher
 import org.cyanotic.butterfly.core.utils.httpClient
 import org.cyanotic.butterfly.database.ContactsTable
 import org.cyanotic.butterfly.database.entities.Contact
-import org.cyanotic.butterfly.protocol.notification.ContactRequest
 import org.cyanotic.butterfly.protocol.notification.ContactType
 import org.cyanotic.butterfly.protocol.notification.ListType
 import org.cyanotic.butterfly.protocol.notification.NotificationTransportManager

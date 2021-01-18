@@ -1,4 +1,4 @@
-package org.cyanotic.butterfly.features.contactList
+package org.cyanotic.butterfly.features.contact_list
 
 import javafx.application.Platform
 import javafx.fxml.FXML
@@ -10,7 +10,6 @@ import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.input.KeyCode
 import javafx.stage.Stage
-import kotlinx.coroutines.runBlocking
 import org.cyanotic.butterfly.core.AccountManager
 import org.cyanotic.butterfly.core.ContactManager
 import org.cyanotic.butterfly.core.ConversationManager

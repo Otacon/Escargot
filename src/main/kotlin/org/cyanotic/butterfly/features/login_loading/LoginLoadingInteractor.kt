@@ -1,4 +1,4 @@
-package org.cyanotic.butterfly.features.loginLoading
+package org.cyanotic.butterfly.features.login_loading
 
 import org.cyanotic.butterfly.core.AccountManager
 import org.cyanotic.butterfly.core.ContactManager

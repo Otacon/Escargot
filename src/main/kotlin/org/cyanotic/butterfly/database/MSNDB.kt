@@ -3,7 +3,7 @@ package org.cyanotic.butterfly.database
 import com.squareup.sqldelight.db.SqlCursor
 import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
-import org.cyanotic.butterfly.core.fileManager.fileManager
+import org.cyanotic.butterfly.core.file_manager.fileManager
 import org.cyanotic.butterfly.database.Database.Companion.Schema
 import org.cyanotic.butterfly.database.Database.Companion.invoke
 import org.cyanotic.butterfly.database.entities.Account

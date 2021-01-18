@@ -1,4 +1,4 @@
-package org.cyanotic.butterfly.features.contactList
+package org.cyanotic.butterfly.features.contact_list
 
 import kotlinx.coroutines.flow.Flow
 import org.cyanotic.butterfly.core.AccountManager

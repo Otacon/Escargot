@@ -1,6 +1,6 @@
 package org.cyanotic.butterfly.features.login
 
-import org.cyanotic.butterfly.features.loginLoading.LoginResult
+import org.cyanotic.butterfly.features.login_loading.LoginResult
 import org.cyanotic.butterfly.protocol.Status
 
 interface LoginContract {

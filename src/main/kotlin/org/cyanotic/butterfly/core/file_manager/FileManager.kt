@@ -1,4 +1,4 @@
-package org.cyanotic.butterfly.core.fileManager
+package org.cyanotic.butterfly.core.file_manager
 
 import java.io.File
 
@@ -57,7 +57,7 @@ private class FileManagerWindows : FileManager {
 private class FileManagerLinux : FileManager {
     private val _appHomePath by lazy {
         val home = File(System.getProperty("user.home"))
-        File(home, PACKAGE).apply {
+        File(home, ".$PACKAGE").apply {
             if (!exists()) {
                 mkdir()
             }

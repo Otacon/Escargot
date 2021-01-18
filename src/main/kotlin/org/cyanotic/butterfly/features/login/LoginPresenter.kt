@@ -5,7 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
-import org.cyanotic.butterfly.features.loginLoading.LoginResult
+import org.cyanotic.butterfly.features.login_loading.LoginResult
 import org.cyanotic.butterfly.protocol.Status
 import kotlin.coroutines.CoroutineContext
 
