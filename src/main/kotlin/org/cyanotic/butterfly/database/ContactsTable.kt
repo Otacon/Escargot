@@ -36,4 +36,8 @@ class ContactsTable {
     fun otherContactsUpdates(passport: String): Flow<List<Contact>> {
         return queries.getAll(passport).asFlow().mapToList()
     }
+
+    fun getByPassport(account: String, passport: String): Contact {
+        return queries.getByPassport(account, passport).executeAsOne()
+    }
 }

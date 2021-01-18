@@ -46,6 +46,10 @@ object ContactManager : CoroutineScope {
 
     suspend fun addContact(passport: String) {
         notificationTransportManager.transport.sendAdl(passport, ListType.AddList, ContactType.Passport)
+        val currentAccount = accountManager.getCurrentAccount()
+        val ownContact = localContacts.getByPassport(currentAccount.passport, currentAccount.passport)
+        val nickname = ownContact.nickname ?: currentAccount.passport
+        contactListFetcher.addContact(passport, currentAccount.mspauth!!, nickname)
     }
 
     suspend fun ownContactUpdates(): Flow<Contact> {

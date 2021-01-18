@@ -5,9 +5,17 @@ import org.cyanotic.butterfly.core.fileManager.fileManager
 import org.cyanotic.butterfly.database.AccountsTable
 import org.cyanotic.butterfly.features.EscargotApplication
 import java.io.File
+import java.net.InetAddress
 
 
 fun main() {
+    val computerName = try {
+        InetAddress.getLocalHost().hostName
+    } catch(e: Exception) {
+        println(e)
+        null
+    }
+    println("Computer name: $computerName")
     MessengerLauncher().start()
 }
 
