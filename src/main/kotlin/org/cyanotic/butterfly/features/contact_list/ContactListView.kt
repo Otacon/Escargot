@@ -63,8 +63,7 @@ class ContactListView(
 
     private val presenter = ContactListPresenter(
         this,
-        ContactListInteractor(ContactManager, AccountManager, ConversationManager),
-        NotificationManager
+        ContactListInteractor(ContactManager, AccountManager, ConversationManager)
     )
     private val contactsRoot = TreeItem<ContactModel>(ContactModel.Root)
     private val contactsOnline = TreeItem<ContactModel>(ContactModel.Category("Available"))
@@ -85,7 +84,8 @@ class ContactListView(
         addContactIcon.fitHeight = 18.0
         addContactButton.graphic = addContactIcon
         addContactButton.setOnMouseClicked {
-            AddContactView.launch(stage)
+            val result = AddContactView.launch(stage)
+            presenter.onAddContactClosed(result)
         }
         statusImage.requestFocus()
         presenter.start()

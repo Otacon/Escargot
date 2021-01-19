@@ -9,6 +9,7 @@ import javafx.scene.layout.Pane
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
+import org.cyanotic.butterfly.core.ContactManager
 
 class AddContactView(
     private val stage: Stage
@@ -39,8 +40,11 @@ class AddContactView(
     private lateinit var okButtonSuccess: Button
 
     private val presenter = AddContactPresenter(
-        this
+        this,
+        AddContactInteractor(ContactManager)
     )
+
+    private var result : AddContactResult = AddContactResult.Canceled
 
     fun onCreate() {
         setupListeners()
@@ -69,7 +73,13 @@ class AddContactView(
         okButtonForm.isDisable = enabled.not()
     }
 
-    override fun close() {
+    override fun closeWithSuccess() {
+        result = AddContactResult.Added
+        stage.close()
+    }
+
+    override fun closeWithCancel() {
+        result = AddContactResult.Canceled
         stage.close()
     }
 
@@ -77,6 +87,7 @@ class AddContactView(
         cancelButtonForm.setOnMouseClicked { presenter.onCancelClicked() }
         okButtonForm.setOnMouseClicked { presenter.onAddContactClicked() }
         okButtonSuccess.setOnMouseClicked { presenter.onOkSuccessClicked() }
+        cancelButtonLoading.setOnMouseClicked { presenter.onCancelLoadingClicked() }
         passportTextForm.textProperty().addListener { _, old, new ->
             if (old != new) {
                 presenter.onPassportChanged(new)
@@ -85,7 +96,7 @@ class AddContactView(
     }
 
     companion object {
-        fun launch(stage: Stage) {
+        fun launch(stage: Stage) : AddContactResult {
             val dialog = Stage(StageStyle.UTILITY)
             val controller = AddContactView(dialog)
             val root = FXMLLoader().apply {
@@ -98,7 +109,8 @@ class AddContactView(
             dialog.isResizable = false
             dialog.initOwner(stage)
             dialog.initModality(Modality.APPLICATION_MODAL)
-            dialog.show()
+            dialog.showAndWait()
+            return controller.result
         }
     }
 

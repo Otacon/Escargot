@@ -28,4 +28,8 @@ class ContactListInteractor(
     suspend fun newMessagesForConversation(): Flow<Conversation> {
         return conversationManager.newMessage()
     }
+
+    suspend fun refreshContactList() {
+        contactManager.refreshContactList()
+    }
 }

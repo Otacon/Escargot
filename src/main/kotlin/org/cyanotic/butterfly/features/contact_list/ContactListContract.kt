@@ -1,5 +1,6 @@
 package org.cyanotic.butterfly.features.contact_list
 
+import org.cyanotic.butterfly.features.add_contact.AddContactResult
 import org.cyanotic.butterfly.protocol.Status
 
 interface ContactListContract {
@@ -23,6 +24,7 @@ interface ContactListContract {
         fun onStatusChanged(status: Status)
         fun onPersonalMessageChanged(text: String)
         fun onCancelPersonalMessage()
+        fun onAddContactClosed(result: AddContactResult)
 
     }
 

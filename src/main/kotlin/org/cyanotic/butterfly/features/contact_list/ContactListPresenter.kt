@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import org.cyanotic.butterfly.core.ConversationManager
+import org.cyanotic.butterfly.features.add_contact.AddContactResult
 import org.cyanotic.butterfly.features.notifications.NotificationManager
 import org.cyanotic.butterfly.protocol.Status
 import org.cyanotic.butterfly.protocol.asStatus
@@ -14,8 +15,7 @@ import kotlin.coroutines.CoroutineContext
 
 class ContactListPresenter(
     private val view: ContactListContract.View,
-    private val interactor: ContactListInteractor,
-    private val notificationManager: NotificationManager
+    private val interactor: ContactListInteractor
 ) : ContactListContract.Presenter, CoroutineScope {
 
     private val job = Job()
@@ -108,6 +108,14 @@ class ContactListPresenter(
 
     override fun onCancelPersonalMessage() {
         view.setPersonalMessage(model.personalMessage)
+    }
+
+    override fun onAddContactClosed(result: AddContactResult) {
+        launch(Dispatchers.IO){
+            if(result == AddContactResult.Added) {
+                interactor.refreshContactList()
+            }
+        }
     }
 
     private fun updateUI() = launch(Dispatchers.JavaFx) {

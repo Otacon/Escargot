@@ -6,6 +6,7 @@ import kotlin.coroutines.CoroutineContext
 
 class AddContactPresenter constructor(
     private val view: AddContactContract.View,
+    private val interactor: AddContactInteractor
 ) : AddContactContract.Presenter, CoroutineScope {
 
     private var model = AddContactModel(
@@ -18,17 +19,17 @@ class AddContactPresenter constructor(
         get() = job + Dispatchers.Main
 
     override fun onCreate() {
-
+        updateUI()
     }
 
     override fun onCancelClicked() {
-        view.close()
+        view.closeWithCancel()
     }
 
     override fun onAddContactClicked() {
         view.showLoading()
         launch(Dispatchers.IO){
-            delay(5000)
+            interactor.addContact(model.passport)
             launch(Dispatchers.JavaFx){
                 view.showSuccess()
             }
@@ -36,11 +37,19 @@ class AddContactPresenter constructor(
     }
 
     override fun onPassportChanged(passport: String) {
-        model = model.copy(passport = passport)
+        model = model.copy(
+            passport = passport,
+            isAddContactButtonEnabled = passport.isNotBlank()
+        )
+        updateUI()
     }
 
     override fun onOkSuccessClicked() {
-        view.close()
+        view.closeWithSuccess()
+    }
+
+    override fun onCancelLoadingClicked() {
+        view.closeWithCancel()
     }
 
     private fun updateUI() = launch(Dispatchers.JavaFx) {
