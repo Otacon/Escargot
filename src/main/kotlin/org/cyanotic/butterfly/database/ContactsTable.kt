@@ -40,4 +40,14 @@ class ContactsTable {
     fun getByPassport(account: String, passport: String): Contact {
         return queries.getByPassport(account, passport).executeAsOne()
     }
+
+    fun getAll(account: String): List<Contact> {
+        return queries.getAll(passport = account).executeAsList()
+    }
+
+    fun removeAll(account: String, removedPassports: List<String>) {
+        removedPassports.forEach {
+            queries.remove(account, it)
+        }
+    }
 }

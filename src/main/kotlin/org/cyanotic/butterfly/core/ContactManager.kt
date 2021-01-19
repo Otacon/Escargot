@@ -33,16 +33,26 @@ object ContactManager : CoroutineScope {
 
     suspend fun refreshContactList() {
         val currentAccount = accountManager.getCurrentAccount()
+        val accountPassport = currentAccount.passport
         val newContacts = contactListFetcher.getContacts(currentAccount.mspauth!!).map {
             Contact(
                 passport = it.contactInfo.passportName,
-                account = currentAccount.passport,
+                account = accountPassport,
                 nickname = it.contactInfo.displayName,
                 personalMessage = null,
                 status = null
             )
         }
-        localContacts.update(currentAccount.passport, newContacts)
+        val removedPassports = localContacts.getAll(accountPassport).mapNotNull { localContact ->
+            val existingLocalContact = newContacts.firstOrNull { it.passport == localContact.passport }
+            if(existingLocalContact == null){
+                localContact.passport
+            } else {
+                null
+            }
+        }
+        localContacts.removeAll(accountPassport, removedPassports)
+        localContacts.update(accountPassport, newContacts)
     }
 
     suspend fun addContact(passport: String) {
