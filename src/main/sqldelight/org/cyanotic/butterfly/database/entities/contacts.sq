@@ -26,3 +26,8 @@ WHERE account = :account AND passport = :passport;
 getAllFiltered:
 SELECT * FROM contact
 WHERE account = ? AND (passport LIKE '%?%' OR nickname LIKE '%?%');
+
+setAllOffline:
+UPDATE contact
+SET status = 'FLN'
+WHERE account = ?;

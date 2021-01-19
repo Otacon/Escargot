@@ -32,6 +32,11 @@ object ContactManager : CoroutineScope {
         listenForNotificationContactChanges()
     }
 
+    suspend fun setAllContactsOffline(){
+        val accountPassport = accountManager.getCurrentAccount().passport
+        localContacts.setAllOffline(accountPassport)
+    }
+
     suspend fun refreshContactList() {
         val currentAccount = accountManager.getCurrentAccount()
         val accountPassport = currentAccount.passport

@@ -8,11 +8,11 @@ private val logger = KotlinLogging.logger {}
 
 object NotificationManager {
 
-    private val newMessage: MediaPlayer by lazy { loadMediaPlayer("/message.mp3") }
+    private val newMessage: MediaPlayer by lazy { loadMediaPlayer("/sounds/message.mp3") }
 
-    private val nudge: MediaPlayer by lazy { loadMediaPlayer("/message.mp3") }
+    private val nudge: MediaPlayer by lazy { loadMediaPlayer("/sounds/message.mp3") }
 
-    private val contactOnline: MediaPlayer by lazy { loadMediaPlayer("/message.mp3") }
+    private val contactOnline: MediaPlayer by lazy { loadMediaPlayer("/sounds/message.mp3") }
 
     var notificationsEnabled = true
 

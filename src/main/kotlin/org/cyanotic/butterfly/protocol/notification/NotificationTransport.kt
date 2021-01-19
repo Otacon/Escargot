@@ -124,7 +124,9 @@ class NotificationTransport {
             val body = "<Data><PSM>$text</PSM><CurrentMedia></CurrentMedia></Data>"
             val bodyLength = body.toByteArray().size
             val message = "UUX $sequence ${bodyLength}\r\n$body"
-            sendMessage(message, cont)
+            continuations[sequence] = cont as Continuation<NotificationReceiveCommand>
+            socket.sendMessage(message, sendNewLine = false)
+            sequence++
         }
 
     suspend fun sendAdl(email: String, list: ListType, contact: ContactType): NotificationReceiveCommand.ADL =

@@ -56,10 +56,10 @@ class ContactListView(
 
     private val statusImage = ImageView()
 
-    private val statusOnline = Image("/status-online.png")
-    private val statusAway = Image("/status-away.png")
-    private val statusBusy = Image("/status-busy.png")
-    private val statusOffline = Image("/status-offline.png")
+    private val statusOnline = Image("/images/status-online.png")
+    private val statusAway = Image("/images/status-away.png")
+    private val statusBusy = Image("/images/status-busy.png")
+    private val statusOffline = Image("/images/status-offline.png")
 
     private val presenter = ContactListPresenter(
         this,

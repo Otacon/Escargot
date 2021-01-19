@@ -81,7 +81,7 @@ class ConversationPresenter(
         val conversationId = model.conversationId
         if(message.isNotBlank()) {
             launch(Dispatchers.IO) {
-                interactor.sendMessage(conversationId, message)
+                interactor.sendMessage(conversationId, message.trim())
             }
         }
         model = model.copy(messageText = "")

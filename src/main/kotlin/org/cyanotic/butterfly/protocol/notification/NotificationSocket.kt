@@ -23,8 +23,11 @@ class NotificationSocket {
         logger.info("Done!")
     }
 
-    fun sendMessage(message: String) {
-        writer.write("$message\r\n")
+    fun sendMessage(message: String, sendNewLine: Boolean = true) {
+        writer.write(message)
+        if (sendNewLine) {
+            writer.write("\r\n")
+        }
         writer.flush()
         logger.info("NT >> $message")
     }

@@ -10,7 +10,7 @@ class ContactsTable {
 
     private val queries = MSNDB.db.contactsQueries
 
-    suspend fun update(account: String, newContacts: List<Contact>) {
+    fun update(account: String, newContacts: List<Contact>) {
         newContacts.map { updatedContact ->
             val existingContact = queries.getByPassport(account, updatedContact.passport).executeAsOneOrNull()
             existingContact?.copy(
@@ -49,5 +49,9 @@ class ContactsTable {
         removedPassports.forEach {
             queries.remove(account, it)
         }
+    }
+
+    fun setAllOffline(account: String) {
+        queries.setAllOffline(account)
     }
 }

@@ -86,9 +86,9 @@ class SwitchBoardTransport {
         val body = "MIME-Version: 1.0\r\n" +
                 "Content-Type: text/x-msnmsgr-datacast\r\n\r\n" +
                 "ID: ${command.id}\r\n"
-        val length = body.toByteArray(StandardCharsets.UTF_8).size
-        val message = "MSG $sequence N $length\r\n$body"
-        socket.sendMessage(message, sendNewLine = true)
+        val bodyLength = body.toByteArray(StandardCharsets.UTF_8).size
+        val message = "MSG $sequence U $bodyLength\r\n$body"
+        socket.sendMessage(message, false)
         sequence++
     }
 

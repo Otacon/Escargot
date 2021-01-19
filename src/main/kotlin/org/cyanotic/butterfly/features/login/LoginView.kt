@@ -46,7 +46,7 @@ class LoginView(
         stage.title = "Escargot 0.1 (In-Dev)"
         stage.scene = root
         stage.isResizable = false
-        stage.icons.add(Image(javaClass.getResourceAsStream("/e-logo.png")))
+        stage.icons.add(Image(javaClass.getResourceAsStream("/images/e-logo.png")))
         setupStatusComboBox()
         setupListeners()
         stage.show()

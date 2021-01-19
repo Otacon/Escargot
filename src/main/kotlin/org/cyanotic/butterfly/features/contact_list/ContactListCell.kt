@@ -46,15 +46,15 @@ class ContactListCell : TreeCell<ContactModel>() {
                 }
 
                 val icon = when (item.status) {
-                    ONLINE -> "/status-online.png"
-                    AWAY -> "/status-away.png"
-                    BE_RIGHT_BACK -> "/status-away.png"
-                    IDLE -> "/status-away.png"
-                    OUT_TO_LUNCH -> "/status-away.png"
-                    ON_THE_PHONE -> "/status-away.png"
-                    BUSY -> "/status-busy.png"
-                    OFFLINE -> "/status-offline.png"
-                    HIDDEN -> "/status-offline.png"
+                    ONLINE -> "/images/status-online.png"
+                    AWAY -> "/images/status-away.png"
+                    BE_RIGHT_BACK -> "/images/status-away.png"
+                    IDLE -> "/images/status-away.png"
+                    OUT_TO_LUNCH -> "/images/status-away.png"
+                    ON_THE_PHONE -> "/images/status-away.png"
+                    BUSY -> "/images/status-busy.png"
+                    OFFLINE -> "/images/status-offline.png"
+                    HIDDEN -> "/images/status-offline.png"
                 }
 
                 status.image = Image(javaClass.getResourceAsStream(icon))

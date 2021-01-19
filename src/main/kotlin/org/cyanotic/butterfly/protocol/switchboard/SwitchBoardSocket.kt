@@ -20,13 +20,13 @@ class SwitchBoardSocket {
     }
 
     fun sendMessage(message: String, sendNewLine: Boolean = true) {
-        print("SB >> ")
-        writer.write(message)
-        if (sendNewLine) {
-            writer.write("\r\n")
-        }
+        val open = if(!socket.isClosed) "O" else "X"
+        val connected = if(socket.isConnected) "C" else "D"
+        print("SB ($open$connected) >> ")
+        val messageToSend = if(sendNewLine) "$message\r\n" else message
+        writer.write(messageToSend)
         writer.flush()
-        println(message)
+        println(messageToSend)
     }
 
     fun readMessage(): String {
