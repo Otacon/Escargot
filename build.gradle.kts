@@ -28,22 +28,27 @@ repositories {
 }
 
 dependencies {
+    // HTTP
     implementation("com.squareup.okhttp3", "okhttp", "4.2.2")
     implementation("com.squareup.okhttp3", "logging-interceptor", "4.2.2")
     implementation("org.simpleframework", "simple-xml", "2.7.1")
 
+    // Coroutines
     implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.4.2")
     implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-javafx", "1.4.2")
     implementation("org.jetbrains.kotlinx", "kotlinx-datetime-jvm", "0.1.1")
 
+    // Database
     implementation("com.squareup.sqldelight", "sqlite-driver", "1.4.4")
     implementation("com.squareup.sqldelight", "coroutines-extensions", "1.2.1")
     implementation("io.github.microutils", "kotlin-logging-jvm", "2.0.2")
 
+    // Logging
     implementation("org.slf4j", "slf4j-api", "1.7.26")
     implementation("ch.qos.logback", "logback-classic", "1.2.3")
     implementation("ch.qos.logback", "logback-core", "1.2.3")
 
+    // Test
     testImplementation("junit", "junit", "4.12")
 }
 
