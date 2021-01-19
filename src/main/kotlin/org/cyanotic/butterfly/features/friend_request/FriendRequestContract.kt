@@ -4,13 +4,15 @@ interface FriendRequestContract {
 
     interface View {
 
-        fun close()
+        fun closeWithReject()
+        fun closeWithAccept()
+        fun setMessage(message: String)
 
     }
 
     interface Presenter {
 
-        fun onCreate()
+        fun onCreate(passport: String)
         fun onIgnoreClicked()
         fun onAcceptClicked()
 

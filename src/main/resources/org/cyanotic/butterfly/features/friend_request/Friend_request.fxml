@@ -23,7 +23,7 @@
             </Label>
         </top>
         <center>
-            <Text text="example@email.com would like to start chatting with you."/>
+            <Label fx:id="descriptionText" text="example@email.com would like to start chatting with you."/>
         </center>
         <bottom>
             <HBox alignment="CENTER_RIGHT" spacing="15.0" BorderPane.alignment="BOTTOM_CENTER">

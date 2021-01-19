@@ -16,8 +16,8 @@ import org.cyanotic.butterfly.core.ConversationManager
 import org.cyanotic.butterfly.core.ConversationWindowManager
 import org.cyanotic.butterfly.features.add_contact.AddContactView
 import org.cyanotic.butterfly.features.conversation.ConversationView
+import org.cyanotic.butterfly.features.friend_request.FriendRequestView
 import org.cyanotic.butterfly.features.login.LoginView
-import org.cyanotic.butterfly.features.notifications.NotificationManager
 import org.cyanotic.butterfly.protocol.Status
 import org.cyanotic.butterfly.protocol.notification.NotificationTransportManager
 import kotlin.system.exitProcess
@@ -193,6 +193,11 @@ class ContactListView(
             Status.HIDDEN -> statusOffline
         }
         statusImage.image = image
+    }
+
+    override fun openContactRequest(passport: String) {
+        val result = FriendRequestView.launch(stage, passport)
+        presenter.onContactRequestResult(result)
     }
 
     companion object {

@@ -8,6 +8,7 @@ import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import org.cyanotic.butterfly.core.ConversationManager
 import org.cyanotic.butterfly.features.add_contact.AddContactResult
+import org.cyanotic.butterfly.features.friend_request.FriendRequestResult
 import org.cyanotic.butterfly.features.notifications.NotificationManager
 import org.cyanotic.butterfly.protocol.Status
 import org.cyanotic.butterfly.protocol.asStatus
@@ -81,6 +82,14 @@ class ContactListPresenter(
                 }
             }
         }
+        launch(Dispatchers.IO) {
+            interactor.newContactRequests().collect { contact ->
+                println("Presenter: Contact Request received: $contact")
+                launch(Dispatchers.JavaFx) {
+                    view.openContactRequest(contact.passport)
+                }
+            }
+        }
         ConversationManager.start()
     }
 
@@ -111,8 +120,16 @@ class ContactListPresenter(
     }
 
     override fun onAddContactClosed(result: AddContactResult) {
-        launch(Dispatchers.IO){
-            if(result == AddContactResult.Added) {
+        launch(Dispatchers.IO) {
+            if (result == AddContactResult.Added) {
+                interactor.refreshContactList()
+            }
+        }
+    }
+
+    override fun onContactRequestResult(result: FriendRequestResult) {
+        launch(Dispatchers.IO) {
+            if (result == FriendRequestResult.Accepted) {
                 interactor.refreshContactList()
             }
         }

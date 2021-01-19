@@ -6,6 +6,7 @@ import org.cyanotic.butterfly.core.ContactManager
 import org.cyanotic.butterfly.core.ConversationManager
 import org.cyanotic.butterfly.database.entities.Conversation
 import org.cyanotic.butterfly.protocol.Status
+import org.cyanotic.butterfly.protocol.notification.ContactRequest
 
 class ContactListInteractor(
     private val contactManager: ContactManager,
@@ -32,4 +33,6 @@ class ContactListInteractor(
     suspend fun refreshContactList() {
         contactManager.refreshContactList()
     }
+
+    suspend fun newContactRequests() = contactManager.contactRequestReceived()
 }

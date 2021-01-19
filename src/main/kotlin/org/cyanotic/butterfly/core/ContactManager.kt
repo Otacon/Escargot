@@ -5,11 +5,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import org.cyanotic.butterfly.core.contact_list_fetcher.ContactListFetcher
 import org.cyanotic.butterfly.core.utils.httpClient
 import org.cyanotic.butterfly.database.ContactsTable
 import org.cyanotic.butterfly.database.entities.Contact
+import org.cyanotic.butterfly.protocol.notification.ContactRequest
 import org.cyanotic.butterfly.protocol.notification.ContactType
 import org.cyanotic.butterfly.protocol.notification.ListType
 import org.cyanotic.butterfly.protocol.notification.NotificationTransportManager
@@ -28,7 +30,6 @@ object ContactManager : CoroutineScope {
 
     init {
         listenForNotificationContactChanges()
-        listenForContactRequests()
     }
 
     suspend fun refreshContactList() {
@@ -45,7 +46,7 @@ object ContactManager : CoroutineScope {
         }
         val removedPassports = localContacts.getAll(accountPassport).mapNotNull { localContact ->
             val existingLocalContact = newContacts.firstOrNull { it.passport == localContact.passport }
-            if(existingLocalContact == null){
+            if (existingLocalContact == null) {
                 localContact.passport
             } else {
                 null
@@ -59,7 +60,7 @@ object ContactManager : CoroutineScope {
         notificationTransportManager.transport.sendAdl(passport, ListType.AddList, ContactType.Passport)
         val currentAccount = accountManager.getCurrentAccount()
         val ownContact = localContacts.getByPassport(currentAccount.passport, currentAccount.passport)
-        val nickname = ownContact.nickname ?: currentAccount.passport
+        val nickname = ownContact!!.nickname ?: currentAccount.passport
         contactListFetcher.addContact(passport, currentAccount.mspauth!!, nickname)
     }
 
@@ -69,6 +70,18 @@ object ContactManager : CoroutineScope {
 
     suspend fun otherContactsUpdates(): Flow<List<Contact>> {
         return localContacts.otherContactsUpdates(accountManager.getCurrentAccount().passport)
+    }
+
+    suspend fun contactRequestReceived(): Flow<ContactRequest> {
+        return notificationTransportManager.transport.contactRequests().mapNotNull {
+            val currentAccount = accountManager.getCurrentAccount()
+            val contact = localContacts.getByPassport(currentAccount.passport, it.passport)
+            if(contact == null){
+                it
+            } else {
+                null
+            }
+        }
     }
 
     private fun listenForNotificationContactChanges() {
@@ -83,13 +96,6 @@ object ContactManager : CoroutineScope {
                     status = profileData.status
                 )
                 localContacts.update(account, listOf(updatedContact))
-            }
-        }
-    }
-    private fun listenForContactRequests() {
-        launch {
-            notificationTransportManager.transport.contactRequests().collect { contactRequest ->
-                println("Received invite from $contactRequest")
             }
         }
     }

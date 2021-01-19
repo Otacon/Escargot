@@ -37,8 +37,8 @@ class ContactsTable {
         return queries.getAll(passport).asFlow().mapToList()
     }
 
-    fun getByPassport(account: String, passport: String): Contact {
-        return queries.getByPassport(account, passport).executeAsOne()
+    fun getByPassport(account: String, passport: String): Contact? {
+        return queries.getByPassport(account, passport).executeAsOneOrNull()
     }
 
     fun getAll(account: String): List<Contact> {

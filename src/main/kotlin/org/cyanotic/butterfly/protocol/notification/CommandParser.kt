@@ -263,7 +263,7 @@ class CommandParserNot : CommandParser {
 
 class CommandParserError : CommandParser {
 
-    private val regex = Regex("""(\d+) (\d+)""")
+    private val regex = Regex("""^(\d+) (\d+)""")
 
     override fun parse(command: String): NotificationReceiveCommand {
         return regex.find(command)?.let {
