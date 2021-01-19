@@ -79,7 +79,7 @@ class ContactListView(
         contactsOffline.isExpanded = true
         contactList.root = contactsRoot
         setupStatusButton()
-        val addContactIcon = ImageView(Image("/add-contact.png"))
+        val addContactIcon = ImageView(Image("/images/add-contact.png"))
         addContactIcon.fitWidth = 18.0
         addContactIcon.fitHeight = 18.0
         addContactButton.graphic = addContactIcon
@@ -176,7 +176,7 @@ class ContactListView(
 
     override fun openConversation(recipient: String) {
         if (!ConversationWindowManager.isWindowOpen(recipient)) {
-            ConversationView(recipient)
+            ConversationView.launch(recipient)
         }
     }
 

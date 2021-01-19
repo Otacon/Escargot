@@ -122,7 +122,8 @@ class NotificationTransport {
     suspend fun sendUux(text: String): NotificationReceiveCommand.UUX =
         suspendCoroutine { cont ->
             val body = "<Data><PSM>$text</PSM><CurrentMedia></CurrentMedia></Data>"
-            val message = "UUX $sequence ${body.length}\r\n$body"
+            val bodyLength = body.toByteArray().size
+            val message = "UUX $sequence ${bodyLength}\r\n$body"
             sendMessage(message, cont)
         }
 

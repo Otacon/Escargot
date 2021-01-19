@@ -11,22 +11,34 @@ import kotlin.coroutines.CoroutineContext
 
 class ConversationPresenter(
     private val view: ConversationContract.View,
-    private val recipient: String,
     private val interactor: ConversationInteractor
 ) : ConversationContract.Presenter, CoroutineScope {
 
     private val job = Job()
 
     private var model =
-        ConversationModel(account = "", conversationId = 0, messages = emptyList(), isOtherTyping = false)
+        ConversationModel(
+            nickname = "",
+            personalMessage = "",
+            account = "",
+            conversationId = 0,
+            messages = emptyList(),
+            messageText = "",
+            sendEnabled = false,
+            isOtherTyping = false,
+        )
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.Main
 
-    override fun start() {
+    override fun onCreate(recipient: String) {
         launch(Dispatchers.IO) {
             val account = AccountManager.getCurrentAccount().passport
             val conversation = interactor.getConversation(recipient)
-            model = model.copy(account = account, conversationId = conversation.id)
+            val other = interactor.getContact(recipient)
+            val nickname = other?.nickname ?: recipient
+            val personalMessage = other?.personalMessage ?: ""
+            model = model.copy(nickname = nickname, personalMessage = personalMessage, account = account, conversationId = conversation.id)
+            updateUi()
             interactor.newMessages(conversation.id).collect { msg ->
                 val message = if (msg.sender != account) {
                     playNotification()
@@ -40,20 +52,49 @@ class ConversationPresenter(
         }
     }
 
-    override fun onSendMessage(message: String) {
-        view.clearMessageInput()
-        launch(Dispatchers.IO) {
-            interactor.sendMessage(model.conversationId, message.trim())
-        }
-    }
-
     override fun onDestroy() {
         job.cancel()
     }
 
+    override fun onMessageChanged(message: String) {
+        val cappedText = message.take(400)
+        model = model.copy(messageText = cappedText, sendEnabled = cappedText.isNotBlank())
+        updateUi()
+    }
+
+    override fun onSendClicked() {
+        sendMessage()
+    }
+
+    override fun onEnterPressed() {
+        sendMessage()
+    }
+
+    override fun onNudgeClicked() {
+        launch(Dispatchers.IO){
+            interactor.sendNudge(model.conversationId)
+        }
+    }
+
+    private fun sendMessage(){
+        val message = model.messageText
+        val conversationId = model.conversationId
+        if(message.isNotBlank()) {
+            launch(Dispatchers.IO) {
+                interactor.sendMessage(conversationId, message)
+            }
+        }
+        model = model.copy(messageText = "")
+        updateUi()
+    }
+
     private fun updateUi() = launch(Dispatchers.JavaFx) {
         view.setWindowTitle("Conversation")
+        view.setNickname(model.nickname)
+        view.setPersonalMessage(model.personalMessage)
+        view.setMessageText(model.messageText)
         view.setHistory(model.messages)
+        view.setSendButtonEnabled(model.sendEnabled)
     }
 
     private fun playNotification() = launch(Dispatchers.JavaFx) {
@@ -61,13 +102,6 @@ class ConversationPresenter(
     }
 
 }
-
-data class ConversationModel(
-    val account: String,
-    val conversationId: Long,
-    val messages: List<ConversationMessageModel>,
-    val isOtherTyping: Boolean
-)
 
 sealed class ConversationMessageModel {
     data class OwnMessage(val timestamp: Long, val message: String) : ConversationMessageModel()

@@ -99,4 +99,9 @@ object ContactManager : CoroutineScope {
             }
         }
     }
+
+    suspend fun getContact(passport: String): Contact? {
+        val account = accountManager.getCurrentAccount().passport
+        return localContacts.getByPassport(account, passport)
+    }
 }

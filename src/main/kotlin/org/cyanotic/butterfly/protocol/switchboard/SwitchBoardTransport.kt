@@ -4,6 +4,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
+import java.nio.charset.StandardCharsets
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -75,9 +76,19 @@ class SwitchBoardTransport {
                 "Content-Type: text/plain; charset=UTF-8\r\n" +
                 "X-MMS-IM-Format: FN=MS%20Sans%20Serif; EF=; CO=0; CS=0; PF=0\r\n\r\n" +
                 command.message
-        val length = body.length
-        val message = "MSG $sequence U $length\r\n$body"
+        val bodyLength = body.toByteArray(StandardCharsets.UTF_8).size
+        val message = "MSG $sequence U $bodyLength\r\n$body"
         socket.sendMessage(message, sendNewLine = false)
+        sequence++
+    }
+
+    suspend fun sendMSGDatacast(command: SwitchBoardSendCommand.MSGDatacast) {
+        val body = "MIME-Version: 1.0\r\n" +
+                "Content-Type: text/x-msnmsgr-datacast\r\n\r\n" +
+                "ID: ${command.id}\r\n"
+        val length = body.toByteArray(StandardCharsets.UTF_8).size
+        val message = "MSG $sequence N $length\r\n$body"
+        socket.sendMessage(message, sendNewLine = true)
         sequence++
     }
 

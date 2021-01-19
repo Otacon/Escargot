@@ -74,4 +74,14 @@ object ConversationManager : CoroutineScope {
         conversations.markAsRead(conversationId)
     }
 
+    suspend fun sendNudge(conversationId: Long) {
+        val account = accountManager.getCurrentAccount().passport
+        val conversation = conversations.getConversationById(conversationId)
+        val recipient = conversation.recipient
+        //TODO support different message types
+        // messages.addMessage(conversationId, account, System.currentTimeMillis(), message)
+        val switchboard = switchboardManager.getSwitchboard(recipient)
+        switchboard.sendMSGDatacast(SwitchBoardSendCommand.MSGDatacast(1))
+    }
+
 }
