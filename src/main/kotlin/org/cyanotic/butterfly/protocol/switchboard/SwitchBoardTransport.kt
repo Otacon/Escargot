@@ -92,6 +92,16 @@ class SwitchBoardTransport {
         sequence++
     }
 
+    suspend fun sendMSGControl(command: SwitchBoardSendCommand.MSGControl){
+        val body = "MIME-Version: 1.0\r\n" +
+                "Content-Type: text/x-msmsgscontrol\r\n\r\n" +
+                "TypingUser: ${command.typingUser}\r\n"
+        val bodyLength = body.toByteArray(StandardCharsets.UTF_8).size
+        val message = "MSG $sequence U $bodyLength\r\n$body"
+        socket.sendMessage(message, false)
+        sequence++
+    }
+
     private fun sendMessage(message: String, continuation: Continuation<*>) {
         continuations[sequence] = continuation as Continuation<SwitchBoardReceiveCommand>
         socket.sendMessage(message)

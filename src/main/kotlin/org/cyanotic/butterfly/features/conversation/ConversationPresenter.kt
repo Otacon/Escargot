@@ -3,7 +3,10 @@ package org.cyanotic.butterfly.features.conversation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
 import org.cyanotic.butterfly.core.AccountManager
@@ -30,6 +33,8 @@ class ConversationPresenter(
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.Main
 
+    private val userTyping = Channel<Unit>(Channel.RENDEZVOUS)
+
     override fun onCreate(recipient: String) {
         launch(Dispatchers.IO) {
             val account = AccountManager.getCurrentAccount().passport
@@ -50,6 +55,11 @@ class ConversationPresenter(
                 updateUi()
             }
         }
+        launch(Dispatchers.IO){
+            userTyping.consumeAsFlow()
+                .debounce(5000)
+                .collect { interactor.sendTyping(model.conversationId) }
+        }
     }
 
     override fun onDestroy() {
@@ -58,6 +68,7 @@ class ConversationPresenter(
 
     override fun onMessageChanged(message: String) {
         val cappedText = message.take(400)
+        userTyping.offer(Unit)
         model = model.copy(messageText = cappedText, sendEnabled = cappedText.isNotBlank())
         updateUi()
     }

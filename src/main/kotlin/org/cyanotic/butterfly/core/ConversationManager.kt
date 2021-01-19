@@ -84,4 +84,12 @@ object ConversationManager : CoroutineScope {
         switchboard.sendMSGDatacast(SwitchBoardSendCommand.MSGDatacast(1))
     }
 
+    suspend fun sendTyping(conversationId: Long) {
+        val account = accountManager.getCurrentAccount().passport
+        val conversation = conversations.getConversationById(conversationId)
+        val recipient = conversation.recipient
+        val switchboard = switchboardManager.getSwitchboard(recipient)
+        switchboard.sendMSGControl(SwitchBoardSendCommand.MSGControl(account))
+    }
+
 }

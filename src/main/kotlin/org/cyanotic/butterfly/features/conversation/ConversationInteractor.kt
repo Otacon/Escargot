@@ -36,4 +36,8 @@ class ConversationInteractor(
         conversationManager.sendNudge(conversationId)
     }
 
+    suspend fun sendTyping(conversationId: Long) {
+        conversationManager.sendTyping(conversationId)
+    }
+
 }
