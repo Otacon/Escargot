@@ -9,7 +9,7 @@ import javafx.scene.layout.Pane
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
-import org.cyanotic.butterfly.core.ContactManager
+import org.cyanotic.butterfly.core.ButterflyClient
 
 class AddContactView(
     private val stage: Stage
@@ -41,7 +41,7 @@ class AddContactView(
 
     private val presenter = AddContactPresenter(
         this,
-        AddContactInteractor(ContactManager)
+        AddContactInteractor(ButterflyClient)
     )
 
     private var result : AddContactResult = AddContactResult.Canceled

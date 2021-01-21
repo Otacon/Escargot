@@ -3,22 +3,21 @@ package org.cyanotic.butterfly.database
 import com.squareup.sqldelight.db.SqlCursor
 import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
-import org.cyanotic.butterfly.core.file_manager.fileManager
 import org.cyanotic.butterfly.database.Database.Companion.Schema
 import org.cyanotic.butterfly.database.Database.Companion.invoke
 import org.cyanotic.butterfly.database.entities.Account
 import java.io.File
 
+const val DATABASE_FILE = "userdb.sqlite3"
 
-object MSNDB {
+class MsnDB(
+    path: File
+) {
 
-    private const val DATABASE_FILE = "escargot.sqlite3"
-    var path = fileManager.appHomePath
-    val db by lazy {
-        init()
-    }
+    private val db: Database
+    private val driver: JdbcSqliteDriver
 
-    private fun init(): Database {
+    init {
         val databasePath = File(path, DATABASE_FILE).absolutePath
         val driver = JdbcSqliteDriver("jdbc:sqlite:$databasePath")
         val currentVer = getVersion(driver)
@@ -32,12 +31,22 @@ object MSNDB {
                 setVersion(driver, schemaVer)
             }
         }
-        return invoke(
+        this.driver = driver
+        db = invoke(
             driver,
             Account.Adapter(
                 StatusAdapter()
             )
         )
+    }
+
+    val contacts: ContactsTable by lazy { ContactsTable(db.contactsQueries) }
+    val accounts: AccountsTable by lazy { AccountsTable(db.accountsQueries) }
+    val messages: MessagesTable by lazy { MessagesTable(db.messagesQueries) }
+    val conversations: ConversationsTable by lazy { ConversationsTable(db.conversationQueries) }
+
+    fun close() {
+        driver.close()
     }
 
     private fun getVersion(driver: SqlDriver): Int {

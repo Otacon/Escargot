@@ -17,6 +17,14 @@ val fileManager by lazy {
 interface FileManager {
 
     val appHomePath: File
+    val settingsFile: File
+        get() = File(appHomePath, "settings.json")
+
+    fun getAccountFolder(passport: String): File {
+        return File(appHomePath, passport).apply {
+            mkdirs()
+        }
+    }
 
 }
 

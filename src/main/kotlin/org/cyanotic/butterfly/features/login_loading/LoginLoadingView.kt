@@ -9,8 +9,7 @@ import javafx.scene.text.Text
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
-import org.cyanotic.butterfly.core.AccountManager
-import org.cyanotic.butterfly.core.ContactManager
+import org.cyanotic.butterfly.core.ButterflyClient
 import org.cyanotic.butterfly.protocol.Status
 
 class LoginLoadingView(
@@ -36,7 +35,7 @@ class LoginLoadingView(
 
     private val presenter = LoginLoadingPresenter(
         this,
-        LoginLoadingInteractor(AccountManager, ContactManager)
+        LoginLoadingInteractor(ButterflyClient)
     )
 
     fun onCreate(username: String, password: String, status: Status) {

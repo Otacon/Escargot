@@ -37,7 +37,7 @@ class ConversationPresenter(
 
     override fun onCreate(recipient: String) {
         launch(Dispatchers.IO) {
-            val account = AccountManager.getCurrentAccount().passport
+            val account = interactor.getAccount()
             val conversation = interactor.getConversation(recipient)
             val other = interactor.getContact(recipient)
             val nickname = other?.nickname ?: recipient

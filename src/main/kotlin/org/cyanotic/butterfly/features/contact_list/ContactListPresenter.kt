@@ -6,7 +6,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
-import org.cyanotic.butterfly.core.ConversationManager
 import org.cyanotic.butterfly.features.add_contact.AddContactResult
 import org.cyanotic.butterfly.features.friend_request.FriendRequestResult
 import org.cyanotic.butterfly.features.notifications.NotificationManager
@@ -66,9 +65,8 @@ class ContactListPresenter(
             interactor.ownContactUpdates().collect { contact ->
                 model = model.copy(
                     nickname = contact.nickname,
-                    passport = contact.passport,
-                    personalMessage = contact.personalMessage ?: "",
-                    status = contact.status?.asStatus() ?: Status.OFFLINE
+                    personalMessage = contact.personalMessage,
+                    status = contact.status
                 )
                 launch(Dispatchers.JavaFx) {
                     updateUI()
@@ -90,7 +88,6 @@ class ContactListPresenter(
                 }
             }
         }
-        ConversationManager.start()
     }
 
     override fun onContactClick(selectedContact: ContactModel.Contact) {
@@ -133,6 +130,20 @@ class ContactListPresenter(
                 interactor.refreshContactList()
             }
         }
+    }
+
+    override fun onLogoutClicked() {
+        launch(Dispatchers.IO){
+            interactor.disconnect()
+        }
+        view.openLogin()
+    }
+
+    override fun onExitClicked() {
+        launch(Dispatchers.IO){
+            interactor.disconnect()
+        }
+        view.exit()
     }
 
     private fun updateUI() = launch(Dispatchers.JavaFx) {

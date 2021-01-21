@@ -5,10 +5,11 @@ import com.squareup.sqldelight.runtime.coroutines.mapToList
 import com.squareup.sqldelight.runtime.coroutines.mapToOneNotNull
 import kotlinx.coroutines.flow.Flow
 import org.cyanotic.butterfly.database.entities.Contact
+import org.cyanotic.butterfly.database.entities.ContactsQueries
 
-class ContactsTable {
-
-    private val queries = MSNDB.db.contactsQueries
+class ContactsTable(
+    private val queries : ContactsQueries
+) {
 
     fun update(account: String, newContacts: List<Contact>) {
         newContacts.map { updatedContact ->

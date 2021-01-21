@@ -1,106 +1,110 @@
 package org.cyanotic.butterfly.core
 
-import org.cyanotic.butterfly.core.auth.AuthenticationResult
-import org.cyanotic.butterfly.core.auth.MSNPAuthenticatorFactory
-import org.cyanotic.butterfly.database.AccountsTable
-import org.cyanotic.butterfly.database.ContactsTable
-import org.cyanotic.butterfly.database.StatusEntity
-import org.cyanotic.butterfly.database.entities.Account
-import org.cyanotic.butterfly.database.entities.Contact
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.consumeAsFlow
+import mu.KotlinLogging
 import org.cyanotic.butterfly.protocol.Status
 import org.cyanotic.butterfly.protocol.asString
-import org.cyanotic.butterfly.protocol.notification.NotificationSendCommand
-import org.cyanotic.butterfly.protocol.notification.NotificationTransportManager
+import org.cyanotic.butterfly.protocol.notification.NotificationTransport
 import org.cyanotic.butterfly.protocol.notification.TransportException
 
-object AccountManager {
 
-    private val localAccounts = AccountsTable()
-    private val localContacts = ContactsTable()
-    private val authenticator = MSNPAuthenticatorFactory().createAuthenticator()
-    private val notificationService = NotificationTransportManager.transport
+private val logger = KotlinLogging.logger(name = "AccountManager")
 
-    private var currentAccount: String? = null
+class AccountManager(
+    val account: String,
+    val mspAuth: String,
+    private val notification: NotificationTransport
+) {
 
-    suspend fun authenticate(username: String, password: String): AuthenticationResult {
-        return when (val result = authenticator.authenticate(username, password)) {
-            AuthenticationResult.UnsupportedProtocol,
-            AuthenticationResult.InvalidPassword,
-            AuthenticationResult.InvalidUser,
-            AuthenticationResult.ServerError -> result
-            is AuthenticationResult.Success -> {
-                currentAccount = username.toLowerCase()
-                localAccounts.add(
-                    passport = username,
-                    mspAuth = result.token
-                )
-                result
-            }
-        }
-    }
+    private var status = Status.OFFLINE
+    private var nickname = account
+    private var personalMessage = ""
 
-    suspend fun saveLoginPreferences(password: String?, temporary: Boolean, autoSignIn: Boolean) {
-        localAccounts.updateLoginPreferences(
-            passport = currentAccount!!,
-            password = password,
-            temporary = temporary,
-            autoSignIn = autoSignIn
-        )
-    }
+    private val statusChannel = BroadcastChannel<AccountUpdate>(Channel.CONFLATED)
+    val accountUpdates = statusChannel
+        .openSubscription()
+        .consumeAsFlow()
+
+    fun getStatus() = status
+
+    fun getNickname() = nickname
+
+    fun getPersonalMessage() = personalMessage
 
     suspend fun setStatus(status: Status) {
-        val passport = currentAccount!!
-        val entity = when (status) {
-            Status.ONLINE -> StatusEntity.ONLINE
-            Status.AWAY -> StatusEntity.AWAY
-            Status.BE_RIGHT_BACK -> StatusEntity.BE_RIGHT_BACK
-            Status.IDLE -> StatusEntity.IDLE
-            Status.OUT_TO_LUNCH -> StatusEntity.OUT_TO_LUNCH
-            Status.ON_THE_PHONE -> StatusEntity.ON_THE_PHONE
-            Status.BUSY -> StatusEntity.BUSY
-            Status.OFFLINE -> StatusEntity.OFFLINE
-            Status.HIDDEN -> StatusEntity.HIDDEN
-        }
-        val originalStatus = localAccounts.getByPassport(passport).status
-        localAccounts.updateStatus(passport, entity)
+        logger.info { "Setting status to $status" }
+        val oldStatus = this.status
+        this.status = status
+        triggerAccountUpdate()
         try {
-            val command = NotificationSendCommand.CHG(status.asString())
-            notificationService.sendChg(command)
+            if (status != Status.OFFLINE) {
+                notification.sendChg(status.asString())
+            } else {
+                val networkId = ""
+                notification.sendFln(account, networkId)
+            }
         } catch (e: TransportException) {
-            localAccounts.updateStatus(passport, originalStatus)
+            logger.error { "Failed to set status to $status" }
+            this.status = oldStatus
+            triggerAccountUpdate()
             e.printStackTrace()
         }
     }
 
     suspend fun setNickname(nickname: String) {
-
+        logger.info { "Setting nickname to $nickname" }
+        val oldNickname = nickname
+        this.nickname = nickname
+        triggerAccountUpdate()
+        try {
+            //TODO update nickname
+        } catch (e: TransportException) {
+            logger.error { "Failed to set nickname to $nickname" }
+            this.nickname = oldNickname
+            triggerAccountUpdate()
+            e.printStackTrace()
+        }
     }
 
     suspend fun setPersonalMessage(personalMessage: String) {
-        val account = currentAccount!!
-        val update = Contact(
-            passport = account,
-            account = account,
-            nickname = null,
-            personalMessage = personalMessage,
-            status = null
+        logger.info { "Setting personal message to $personalMessage" }
+        val oldPersonalMessage = this.personalMessage
+        this.personalMessage = personalMessage
+        triggerAccountUpdate()
+        try {
+            notification.sendUux(personalMessage)
+        } catch (e: TransportException) {
+            logger.error { "Failed to set personal message to $personalMessage" }
+            this.personalMessage = oldPersonalMessage
+            triggerAccountUpdate()
+        }
+    }
+
+    //TODO this has to be hidden to the user, somehow.
+    suspend fun accountUpdated(status: Status? = null, nickname: String? = null, personalMessage: String? = null) {
+        status?.let { this.status = status }
+        nickname?.let { this.nickname = nickname }
+        personalMessage?.let { this.personalMessage = personalMessage }
+        logger.debug { "Account Updated: Status=${this.status}, Nickname=${this.nickname}, Personal Message=${this.personalMessage}" }
+        triggerAccountUpdate()
+    }
+
+    private fun triggerAccountUpdate() {
+        statusChannel.offer(
+            AccountUpdate(
+                status = this.status,
+                nickname = this.nickname,
+                personalMessage = this.personalMessage
+            )
         )
-        notificationService.sendUux(personalMessage)
-        localContacts.update(account, listOf(update))
     }
-
-    suspend fun getCurrentAccount(): Account {
-        return localAccounts.getByPassport(currentAccount!!)
-    }
-
-    suspend fun getAccounts(): List<Account> {
-        return localAccounts.getAllOrderedByLastLogin()
-    }
-
-    suspend fun logout() {
-        currentAccount = null
-    }
-
-    suspend fun updates() = localAccounts.updates(currentAccount!!)
 
 }
+
+data class AccountUpdate(
+    val status: Status,
+    val nickname: String,
+    val personalMessage: String
+)

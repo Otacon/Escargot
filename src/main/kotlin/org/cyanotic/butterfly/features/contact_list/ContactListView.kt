@@ -10,16 +10,12 @@ import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.input.KeyCode
 import javafx.stage.Stage
-import org.cyanotic.butterfly.core.AccountManager
-import org.cyanotic.butterfly.core.ContactManager
-import org.cyanotic.butterfly.core.ConversationManager
-import org.cyanotic.butterfly.core.ConversationWindowManager
+import org.cyanotic.butterfly.core.*
 import org.cyanotic.butterfly.features.add_contact.AddContactView
 import org.cyanotic.butterfly.features.conversation.ConversationView
 import org.cyanotic.butterfly.features.friend_request.FriendRequestView
 import org.cyanotic.butterfly.features.login.LoginView
 import org.cyanotic.butterfly.protocol.Status
-import org.cyanotic.butterfly.protocol.notification.NotificationTransportManager
 import kotlin.system.exitProcess
 
 
@@ -63,7 +59,7 @@ class ContactListView(
 
     private val presenter = ContactListPresenter(
         this,
-        ContactListInteractor(ContactManager, AccountManager, ConversationManager)
+        ContactListInteractor(ButterflyClient)
     )
     private val contactsRoot = TreeItem<ContactModel>(ContactModel.Root)
     private val contactsOnline = TreeItem<ContactModel>(ContactModel.Category("Available"))
@@ -138,13 +134,10 @@ class ContactListView(
         }
 
         menuLogout.setOnAction {
-            NotificationTransportManager.transport.disconnect()
-            LoginView.launch(stage, autoLogin = false)
+            presenter.onLogoutClicked()
         }
         menuExit.setOnAction {
-            NotificationTransportManager.transport.disconnect()
-            Platform.exit()
-            exitProcess(0)
+            presenter.onExitClicked()
         }
     }
 
@@ -198,6 +191,15 @@ class ContactListView(
     override fun openContactRequest(passport: String) {
         val result = FriendRequestView.launch(stage, passport)
         presenter.onContactRequestResult(result)
+    }
+
+    override fun openLogin() {
+        LoginView.launch(stage, autoLogin = false)
+    }
+
+    override fun exit() {
+        Platform.exit()
+        exitProcess(0)
     }
 
     companion object {

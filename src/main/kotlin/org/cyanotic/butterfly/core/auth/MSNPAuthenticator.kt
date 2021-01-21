@@ -28,13 +28,6 @@ class MSNPAuthenticator(
     var clientVersion = "1.0 (in-dev)"
 
     suspend fun authenticate(username: String, password: String): AuthenticationResult {
-        transport.connect()
-
-        val verResponse = transport.sendVer(protocols = listOf(ProtocolVersion.MSNP18))
-        if (verResponse.protocols.size == 1 && verResponse.protocols[0] == ProtocolVersion.UNKNOWN) {
-            return AuthenticationResult.UnsupportedProtocol
-        }
-
         val systemInfo = systemInfoRetriever.getSystemInfo()
 
         val usrResponse = try {
@@ -94,7 +87,6 @@ class MSNPAuthenticator(
 
 sealed class AuthenticationResult {
 
-    object UnsupportedProtocol : AuthenticationResult()
     object InvalidPassword : AuthenticationResult()
     object InvalidUser : AuthenticationResult()
     object ServerError : AuthenticationResult()

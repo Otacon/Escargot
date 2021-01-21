@@ -8,7 +8,7 @@ import javafx.scene.control.Label
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
-import org.cyanotic.butterfly.core.ContactManager
+import org.cyanotic.butterfly.core.ButterflyClient
 
 class FriendRequestView(
     private val stage: Stage
@@ -25,7 +25,7 @@ class FriendRequestView(
 
     private val presenter = FriendRequestPresenter(
         this,
-        FriendRequestInteractor(ContactManager)
+        FriendRequestInteractor(ButterflyClient)
     )
 
     private var result: FriendRequestResult = FriendRequestResult.Rejected

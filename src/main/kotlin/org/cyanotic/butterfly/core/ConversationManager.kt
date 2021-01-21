@@ -15,24 +15,23 @@ import org.cyanotic.butterfly.database.entities.Message
 import org.cyanotic.butterfly.protocol.switchboard.SwitchBoardSendCommand
 import kotlin.coroutines.CoroutineContext
 
-object ConversationManager : CoroutineScope {
+class ConversationManager(
+    private val accountManager: AccountManager,
+    private val switchboardManager: SwitchboardManager,
+    private val conversations: ConversationsTable,
+    private val messages: MessagesTable
+) : CoroutineScope {
 
     private val job = Job()
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.IO
 
-    private val switchboardManager = SwitchboardManager()
-    private val accountManager = AccountManager
-    private val conversations = ConversationsTable()
-    private val messages = MessagesTable()
-
-    fun start() {
-        switchboardManager.start()
+    init {
         receiveNewMessages()
     }
 
     suspend fun getConversation(recipient: String): Conversation {
-        val account = accountManager.getCurrentAccount().passport
+        val account = accountManager.account
         val conversation = conversations.getConversationByRecipient(account, recipient)
         return conversation ?: conversations.createConversation(account, recipient)
     }
@@ -42,12 +41,12 @@ object ConversationManager : CoroutineScope {
     }
 
     suspend fun newMessage(): Flow<Conversation> {
-        val account = accountManager.getCurrentAccount().passport
+        val account = accountManager.account
         return messages.newOtherMessages(account).map { conversations.getConversationById(it.conversation_id) }
     }
 
     suspend fun sendMessage(conversationId: Long, message: String) {
-        val account = accountManager.getCurrentAccount().passport
+        val account = accountManager.account
         val conversation = conversations.getConversationById(conversationId)
         val recipient = conversation.recipient
         messages.addMessage(conversationId, account, System.currentTimeMillis(), message)
@@ -56,7 +55,7 @@ object ConversationManager : CoroutineScope {
     }
 
     private fun receiveNewMessages() = launch {
-        val account = accountManager.getCurrentAccount().passport
+        val account = accountManager.account
         switchboardManager.messages.consumeAsFlow().collect { message ->
             val recipient = if (message.recipient == account) message.sender else message.recipient
             val conversation = conversations.getConversationByRecipient(
@@ -75,7 +74,7 @@ object ConversationManager : CoroutineScope {
     }
 
     suspend fun sendNudge(conversationId: Long) {
-        val account = accountManager.getCurrentAccount().passport
+        val account = accountManager.account
         val conversation = conversations.getConversationById(conversationId)
         val recipient = conversation.recipient
         //TODO support different message types
@@ -85,7 +84,7 @@ object ConversationManager : CoroutineScope {
     }
 
     suspend fun sendTyping(conversationId: Long) {
-        val account = accountManager.getCurrentAccount().passport
+        val account = accountManager.account
         val conversation = conversations.getConversationById(conversationId)
         val recipient = conversation.recipient
         val switchboard = switchboardManager.getSwitchboard(recipient)

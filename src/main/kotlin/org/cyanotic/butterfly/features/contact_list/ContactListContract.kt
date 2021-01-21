@@ -15,6 +15,8 @@ interface ContactListContract {
         fun openConversation(recipient: String)
         fun setStatus(status: Status)
         fun openContactRequest(passport: String)
+        fun openLogin()
+        fun exit()
 
     }
 
@@ -28,6 +30,8 @@ interface ContactListContract {
         fun onCancelPersonalMessage()
         fun onAddContactClosed(result: AddContactResult)
         fun onContactRequestResult(result: FriendRequestResult)
+        fun onLogoutClicked()
+        fun onExitClicked()
 
     }
 

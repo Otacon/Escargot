@@ -1,26 +1,25 @@
 package org.cyanotic.butterfly.features.login_loading
 
-import org.cyanotic.butterfly.core.AccountManager
-import org.cyanotic.butterfly.core.ContactManager
+import org.cyanotic.butterfly.core.ButterflyClient
 import org.cyanotic.butterfly.core.auth.AuthenticationResult
 import org.cyanotic.butterfly.protocol.Status
 
 class LoginLoadingInteractor(
-    private val accountManager: AccountManager,
-    private val contactManager: ContactManager
+    private val client: ButterflyClient
 ) {
 
     suspend fun login(username: String, password: String): AuthenticationResult {
-        return accountManager.authenticate(username, password)
+        client.connect()
+        return client.authenticate(username, password)
     }
 
     suspend fun updateStatus(online: Status) {
-        accountManager.setStatus(online)
+        client.getAccountManager().setStatus(online)
     }
 
     suspend fun refreshContactList() {
-        contactManager.setAllContactsOffline()
-        contactManager.refreshContactList()
+        client.getContactManager().setAllContactsOffline()
+        client.getContactManager().refreshContactList()
     }
 
 }

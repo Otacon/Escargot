@@ -7,6 +7,7 @@ import javafx.scene.control.*
 import javafx.scene.image.Image
 import javafx.stage.Stage
 import org.cyanotic.butterfly.core.AccountManager
+import org.cyanotic.butterfly.core.global_settings.GlobalSettingsManager
 import org.cyanotic.butterfly.features.appInstance
 import org.cyanotic.butterfly.features.contact_list.ContactListView
 import org.cyanotic.butterfly.features.login_loading.LoginLoadingView
@@ -40,7 +41,7 @@ class LoginView(
     @FXML
     private lateinit var signupHyperlink: Hyperlink
 
-    private val presenter = LoginPresenter(this, LoginInteractor(AccountManager))
+    private val presenter = LoginPresenter(this, LoginInteractor(GlobalSettingsManager))
 
     fun onCreate(root: Scene, autoLogin: Boolean) {
         stage.title = "Escargot 0.1 (In-Dev)"

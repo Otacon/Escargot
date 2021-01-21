@@ -1,10 +1,11 @@
 package org.cyanotic.butterfly.database
 
 import org.cyanotic.butterfly.database.entities.Conversation
+import org.cyanotic.butterfly.database.entities.ConversationQueries
 
-class ConversationsTable {
-
-    private val queries = MSNDB.db.conversationQueries
+class ConversationsTable(
+    private val queries: ConversationQueries
+) {
 
     suspend fun getConversationById(id: Long): Conversation {
         return queries.getById(id).executeAsOne()

@@ -35,17 +35,17 @@ class LoginPresenter(
             latestAccount?.let {
                 model = model.copy(
                     username = latestAccount.passport,
-                    password = latestAccount.password ?: "",
-                    rememberProfile = latestAccount.temporary.not(),
-                    rememberPassword = latestAccount.password != null,
-                    accessAutomatically = latestAccount.auto_sigin
+                    password = latestAccount.password,
+                    rememberProfile = latestAccount.rememberPassport,
+                    rememberPassword = latestAccount.rememberPassword,
+                    accessAutomatically = latestAccount.loginAutomatically
                 )
             }
 
             launch(Dispatchers.JavaFx) {
                 view.setAccountsHistory(latestUsedAccounts)
                 updateUI()
-                if (latestAccount?.auto_sigin == true && autoLogin) {
+                if (latestAccount?.loginAutomatically == true && autoLogin) {
                     view.goToLoading(model.username, model.password, model.loginStatus)
                 }
             }
@@ -58,10 +58,10 @@ class LoginPresenter(
             if (account != null) {
                 model = model.copy(
                     username = account.passport,
-                    password = account.password ?: "",
-                    rememberProfile = account.temporary.not(),
-                    rememberPassword = account.password != null,
-                    accessAutomatically = account.auto_sigin
+                    password = account.password,
+                    rememberProfile = account.rememberPassport,
+                    rememberPassword = account.rememberPassword,
+                    accessAutomatically = account.loginAutomatically
                 )
                 launch(Dispatchers.JavaFx) {
                     updateUI()
@@ -83,17 +83,29 @@ class LoginPresenter(
     }
 
     override fun onRememberProfileChecked(isChecked: Boolean) {
-        model = model.copy(rememberProfile = isChecked)
+        model = if (isChecked) {
+            model.copy(rememberProfile = isChecked)
+        } else {
+            model.copy(rememberProfile = false, rememberPassword = false, accessAutomatically = false)
+        }
         updateUI()
     }
 
     override fun onRememberPasswordChecked(isChecked: Boolean) {
-        model = model.copy(rememberPassword = isChecked)
+        model = if (isChecked) {
+            model.copy(rememberPassword = true, rememberProfile = true)
+        } else {
+            model.copy(rememberPassword = false, accessAutomatically = false)
+        }
         updateUI()
     }
 
     override fun onAccessAutomaticallyChecked(isChecked: Boolean) {
-        model = model.copy(accessAutomatically = isChecked)
+        model = if (isChecked) {
+            model.copy(rememberPassword = true, rememberProfile = true, accessAutomatically = true)
+        } else {
+            model.copy(accessAutomatically = false)
+        }
         updateUI()
     }
 
@@ -107,14 +119,24 @@ class LoginPresenter(
 
     override fun onLoginResult(result: LoginResult) {
         launch(Dispatchers.IO) {
-            interactor.updateLoginPreferences(
-                savePassword = model.rememberPassword,
-                password = model.password,
-                rememberUser = model.rememberProfile,
-                autoSignin = model.accessAutomatically
-            )
-            launch(Dispatchers.JavaFx) {
-                view.goToContactList()
+            when (result) {
+                is LoginResult.Success -> {
+                    if (model.rememberProfile) {
+                        interactor.updateLoginPreferences(
+                            passport = model.username,
+                            password = model.password,
+                            savePassword = model.rememberPassword,
+                            rememberUser = model.rememberProfile,
+                            autoSignin = model.accessAutomatically
+                        )
+                    }
+                    launch(Dispatchers.JavaFx) {
+                        view.goToContactList()
+                    }
+                }
+                LoginResult.Failed,
+                LoginResult.Canceled -> {
+                }
             }
         }
     }

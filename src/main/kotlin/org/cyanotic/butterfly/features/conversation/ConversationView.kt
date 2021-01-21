@@ -11,9 +11,8 @@ import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.input.KeyCode
 import javafx.stage.Stage
-import org.cyanotic.butterfly.core.ContactManager
-import org.cyanotic.butterfly.core.ConversationManager
 import org.cyanotic.butterfly.core.ConversationWindowManager
+import org.cyanotic.butterfly.core.ButterflyClient
 import org.cyanotic.butterfly.features.notifications.NotificationManager
 
 class ConversationView(
@@ -40,7 +39,7 @@ class ConversationView(
 
     private val presenter = ConversationPresenter(
         this,
-        ConversationInteractor(ConversationManager, ContactManager)
+        ConversationInteractor(ButterflyClient)
     )
 
     lateinit var recipient: String

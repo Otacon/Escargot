@@ -30,7 +30,7 @@ class MessengerLauncher {
         val dateTime = System.currentTimeMillis()
         val logFile = File(logFolder, "log_$dateTime.log")
         System.setProperty("log.path", logFile.absolutePath)
-        AccountsTable().apply { clearTemporaryAccounts() }
+        //AccountsTable().apply { clearTemporaryAccounts() }
         try {
             launch(EscargotApplication::class.java)
         } catch (e: Exception) {

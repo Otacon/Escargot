@@ -4,25 +4,41 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.flow.collect
-import org.cyanotic.butterfly.protocol.notification.NotificationTransportManager
+import org.cyanotic.butterfly.protocol.notification.NotificationTransport
 import org.cyanotic.butterfly.protocol.switchboard.SwitchBoardSendCommand
 import org.cyanotic.butterfly.protocol.switchboard.SwitchBoardTransport
 import kotlin.coroutines.CoroutineContext
 
-class SwitchboardManager : CoroutineScope {
+class SwitchboardManager(
+    private val accountManager: AccountManager,
+    private val notification: NotificationTransport
+) : CoroutineScope {
 
     private val job = Job()
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.IO
 
-    private val accountManager = AccountManager
+    init {
+        launch {
+            notification.switchboardInvites().collect {
+                val invite = SwitchboardOperation.AcceptInvite(
+                    address = it.address,
+                    port = it.port,
+                    auth = it.auth,
+                    sessionId = it.sessionId,
+                    passport = it.passport
+                )
+                switchboardActor.send(invite)
+            }
+        }
+    }
 
     val messages = Channel<SwitchboardMessage>(Channel.UNLIMITED)
 
     private val switchboardActor = GlobalScope.actor<SwitchboardOperation> {
         val switchboards = mutableSetOf<SwitchboardElement>()
         for (msg in channel) {
-            val passport = accountManager.getCurrentAccount().passport
+            val passport = accountManager.account
             when (msg) {
                 is SwitchboardOperation.AcceptInvite -> {
                     val switchboard = SwitchBoardTransport().apply {
@@ -36,7 +52,7 @@ class SwitchboardManager : CoroutineScope {
                     val existingSwitchboard = switchboards.firstOrNull { it.recipient == msg.recipient }
                     if (existingSwitchboard == null) {
                         val switchboard = SwitchBoardTransport().apply {
-                            val switchboardParams = NotificationTransportManager.transport.sendXfr()
+                            val switchboardParams = notification.sendXfr()
                             connect(switchboardParams.address, switchboardParams.port)
                             sendUsr(SwitchBoardSendCommand.USR(passport, switchboardParams.auth))
                             sendCal(SwitchBoardSendCommand.CAL(msg.recipient))
@@ -50,36 +66,35 @@ class SwitchboardManager : CoroutineScope {
                     }
                 }
                 is SwitchboardOperation.CloseSwitchboard -> {
-                    switchboards.removeIf { it.switchboard == msg.switchboard }
+                    switchboards.firstOrNull { it.switchboard == msg.switchboard }?.let {
+                        it.switchboard.disconnect()
+                        switchboards.remove(it)
+                    }
+                }
+                is SwitchboardOperation.CloseAll -> {
+                    switchboards.forEach { it.switchboard.disconnect() }
+                    switchboards.clear()
+                    msg.continuation.complete(Unit)
                 }
             }
         }
     }
 
     private fun SwitchBoardTransport.receiveNewMessages() = launch {
-        val passport = accountManager.getCurrentAccount().passport
+        val passport = accountManager.account
         messageReceived().collect { messages.offer(SwitchboardMessage(it.contact, passport, it.text)) }
-    }
-
-    fun start() {
-        launch {
-            NotificationTransportManager.transport.switchboardInvites().collect {
-                val invite = SwitchboardOperation.AcceptInvite(
-                    address = it.address,
-                    port = it.port,
-                    auth = it.auth,
-                    sessionId = it.sessionId,
-                    passport = it.passport
-                )
-                switchboardActor.send(invite)
-            }
-        }
     }
 
     suspend fun getSwitchboard(recipient: String): SwitchBoardTransport {
         val completion = CompletableDeferred<SwitchBoardTransport>()
         switchboardActor.send(SwitchboardOperation.GetSwitchboard(recipient, completion))
         return completion.await()
+    }
+
+    suspend fun disconnectAll() {
+        val completion = CompletableDeferred<Unit>()
+        switchboardActor.send(SwitchboardOperation.CloseAll(completion))
+        completion.await()
     }
 
 }
@@ -100,6 +115,10 @@ private sealed class SwitchboardOperation {
 
     data class CloseSwitchboard(
         val switchboard: SwitchBoardTransport
+    ) : SwitchboardOperation()
+
+    data class CloseAll(
+        val continuation: CompletableDeferred<Unit>
     ) : SwitchboardOperation()
 }
 

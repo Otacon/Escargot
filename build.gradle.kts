@@ -43,6 +43,9 @@ dependencies {
     implementation("com.squareup.sqldelight", "coroutines-extensions", "1.2.1")
     implementation("io.github.microutils", "kotlin-logging-jvm", "2.0.2")
 
+    //JSon
+    implementation("com.google.code.gson", "gson", "2.8.6")
+
     // Logging
     implementation("org.slf4j", "slf4j-api", "1.7.26")
     implementation("ch.qos.logback", "logback-classic", "1.2.3")

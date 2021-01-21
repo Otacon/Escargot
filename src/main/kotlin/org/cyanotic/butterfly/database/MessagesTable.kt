@@ -5,10 +5,11 @@ import com.squareup.sqldelight.runtime.coroutines.mapToOneNotNull
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.cyanotic.butterfly.database.entities.Message
+import org.cyanotic.butterfly.database.entities.MessagesQueries
 
-class MessagesTable {
-
-    private val queries = MSNDB.db.messagesQueries
+class MessagesTable(
+    private val queries : MessagesQueries
+) {
 
     fun newConversationMessages(conversationId: Long): Flow<Message> {
         return queries.selectNewConversationMessages(conversationId)

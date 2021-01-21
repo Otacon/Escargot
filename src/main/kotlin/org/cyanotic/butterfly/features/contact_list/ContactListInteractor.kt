@@ -1,38 +1,38 @@
 package org.cyanotic.butterfly.features.contact_list
 
 import kotlinx.coroutines.flow.Flow
-import org.cyanotic.butterfly.core.AccountManager
-import org.cyanotic.butterfly.core.ContactManager
-import org.cyanotic.butterfly.core.ConversationManager
+import org.cyanotic.butterfly.core.ButterflyClient
 import org.cyanotic.butterfly.database.entities.Conversation
 import org.cyanotic.butterfly.protocol.Status
-import org.cyanotic.butterfly.protocol.notification.ContactRequest
 
 class ContactListInteractor(
-    private val contactManager: ContactManager,
-    private val accountManager: AccountManager,
-    private val conversationManager: ConversationManager
+    private val client: ButterflyClient
 ) {
 
-    suspend fun otherContactsUpdates() = contactManager.otherContactsUpdates()
+    suspend fun otherContactsUpdates() = client.getContactManager().otherContactsUpdates()
 
-    suspend fun ownContactUpdates() = contactManager.ownContactUpdates()
+    suspend fun ownContactUpdates() = client.getAccountManager().accountUpdates
 
     suspend fun changeStatus(status: Status) {
-        accountManager.setStatus(status)
+        client.getAccountManager().setStatus(status)
     }
 
     suspend fun updatePersonalMessage(text: String) {
-        accountManager.setPersonalMessage(text)
+        client.getAccountManager().setPersonalMessage(text)
     }
 
     suspend fun newMessagesForConversation(): Flow<Conversation> {
-        return conversationManager.newMessage()
+        return client.getConversationManager().newMessage()
     }
 
     suspend fun refreshContactList() {
-        contactManager.refreshContactList()
+        client.getContactManager().refreshContactList()
     }
 
-    suspend fun newContactRequests() = contactManager.contactRequestReceived()
+    suspend fun newContactRequests() = client.getContactManager().contactRequestReceived()
+
+    suspend fun disconnect() {
+        client.getAccountManager().setStatus(Status.OFFLINE)
+        client.disconnect()
+    }
 }

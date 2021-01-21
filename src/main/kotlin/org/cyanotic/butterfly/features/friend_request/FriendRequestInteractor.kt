@@ -1,11 +1,11 @@
 package org.cyanotic.butterfly.features.friend_request
 
-import org.cyanotic.butterfly.core.ContactManager
+import org.cyanotic.butterfly.core.ButterflyClient
 
 class FriendRequestInteractor(
-    private val contactManager: ContactManager
+    private val client: ButterflyClient
 ) {
     suspend fun addContact(passport: String) {
-        contactManager.addContact(passport)
+        client.getContactManager().addContact(passport)
     }
 }

@@ -59,13 +59,6 @@ class LoginLoadingPresenter constructor(
         launch(Dispatchers.IO) {
             val result = interactor.login(model.username, model.password)
             model = when (result) {
-                AuthenticationResult.UnsupportedProtocol -> model.copy(
-                    text = "This application is incompatible with the server. Please consider updating.",
-                    okVisible = true,
-                    cancelVisible = false,
-                    retryVisible = false,
-                    progressVisible = false
-                )
                 AuthenticationResult.InvalidPassword -> model.copy(
                     text = "Invalid password. Please check your details and try again",
                     okVisible = true,

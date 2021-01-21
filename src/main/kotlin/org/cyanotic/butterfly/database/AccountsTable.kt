@@ -3,10 +3,11 @@ package org.cyanotic.butterfly.database
 import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToOne
 import org.cyanotic.butterfly.database.entities.Account
+import org.cyanotic.butterfly.database.entities.AccountsQueries
 
-class AccountsTable {
-
-    private val queries = MSNDB.db.accountsQueries
+class AccountsTable(
+    private val queries: AccountsQueries
+) {
 
     fun getAllOrderedByLastLogin(): List<Account> {
         return queries.selectAllOrderedByLastLogin().executeAsList()

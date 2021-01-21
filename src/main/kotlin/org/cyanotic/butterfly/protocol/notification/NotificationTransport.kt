@@ -5,6 +5,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
+import mu.KotlinLogging
 import org.cyanotic.butterfly.protocol.ProtocolVersion
 import org.cyanotic.butterfly.protocol.utils.Arch
 import org.cyanotic.butterfly.protocol.utils.LocaleId
@@ -15,13 +16,11 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-object NotificationTransportManager {
-    val transport = NotificationTransport()
-}
-
 class TransportException(
     val code: Int
 ) : Exception()
+
+private val logger = KotlinLogging.logger("Notification")
 
 class NotificationTransport {
 
@@ -34,15 +33,16 @@ class NotificationTransport {
     private val contactRequest = Channel<ContactRequest>(capacity = Channel.UNLIMITED)
     private val switchboardInvites = Channel<SwitchboardInvite>(capacity = Channel.UNLIMITED)
 
-    fun connect() {
-        socket.connect()
+    fun connect(endpoint: String, port: Int) {
+        socket.connect(endpoint, port)
         GlobalScope.launch {
             var reading = true
             while (reading) {
-                try {
-                    readNext()
-                } catch (e: Exception) {
-                    e.printStackTrace()
+                val message = socket.readMessage()
+                if(message != null) {
+                    processMessage(message)
+                } else {
+                    logger.warn { "Notification socket closed." }
                     reading = false
                 }
             }
@@ -105,11 +105,11 @@ class NotificationTransport {
             sendMessage(message, cont)
         }
 
-    suspend fun sendChg(request: NotificationSendCommand.CHG): NotificationReceiveCommand.CHG =
+    suspend fun sendChg(status: String): NotificationReceiveCommand.CHG =
         suspendCoroutine { cont ->
             //TODO set the client's capabilities
             val capabilities = 0x90000000
-            val message = "CHG $sequence ${request.status} $capabilities 0"
+            val message = "CHG $sequence $status $capabilities 0"
             sendMessage(message, cont)
         }
 
@@ -149,6 +149,10 @@ class NotificationTransport {
             } ?: cont.resumeWithException(IllegalArgumentException("Invalid email: $email"))
         }
 
+    suspend fun sendFln(account: String, networkId: String){
+        //TODO
+    }
+
     suspend fun waitForMspAuthToken(): String =
         suspendCoroutine { cont ->
             continuationMspAuthToken = cont
@@ -158,7 +162,7 @@ class NotificationTransport {
         return contactChanged.consumeAsFlow()
     }
 
-    fun contactRequests(): Flow<ContactRequest>{
+    fun contactRequests(): Flow<ContactRequest> {
         return contactRequest.consumeAsFlow()
     }
 
@@ -172,8 +176,7 @@ class NotificationTransport {
         sequence++
     }
 
-    private suspend fun readNext() {
-        val message = socket.readMessage()
+    private suspend fun processMessage(message: String) {
         when (val command = parser.parse(message)) {
             is NotificationReceiveCommand.VER -> resumeContinuation(command.sequence, command)
             is NotificationReceiveCommand.USRSSOStatus -> resumeContinuation(command.sequence, command)
@@ -234,7 +237,7 @@ class NotificationTransport {
                 resumeContinuation(command.sequence, command)
             }
             is NotificationReceiveCommand.ADLAccept -> {
-                if(command.length > 0){
+                if (command.length > 0) {
                     val body = socket.readRaw(command.length)
                     val newContact = AdlBodyParser().parse(body)
                     val invite = ContactRequest(
@@ -245,7 +248,7 @@ class NotificationTransport {
                 }
             }
             is NotificationReceiveCommand.NOT -> {
-                if(command.length > 0){
+                if (command.length > 0) {
                     socket.readRaw(command.length)
                 }
                 println("NT - NOT command received. Undocumented behaviour: SKIPPING.")
