@@ -18,7 +18,6 @@ class LoginLoadingInteractor(
     }
 
     suspend fun refreshContactList() {
-        client.getContactManager().setAllContactsOffline()
         client.getContactManager().refreshContactList()
     }
 

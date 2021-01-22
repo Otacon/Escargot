@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
-import org.cyanotic.butterfly.core.AccountManager
+import org.cyanotic.butterfly.core.ConversationMessage
 import kotlin.coroutines.CoroutineContext
 
 class ConversationPresenter(
@@ -24,7 +24,7 @@ class ConversationPresenter(
             nickname = "",
             personalMessage = "",
             account = "",
-            conversationId = 0,
+            conversation = null,
             messages = emptyList(),
             messageText = "",
             sendEnabled = false,
@@ -42,24 +42,43 @@ class ConversationPresenter(
             val other = interactor.getContact(recipient)
             val nickname = other?.nickname ?: recipient
             val personalMessage = other?.personalMessage ?: ""
-            model = model.copy(nickname = nickname, personalMessage = personalMessage, account = account, conversationId = conversation.id)
+            model = model.copy(
+                nickname = nickname,
+                personalMessage = personalMessage,
+                account = account,
+                conversation = conversation
+            )
             updateUi()
-            interactor.newMessages(conversation.id).collect { msg ->
-                val message = if (msg.sender != account) {
-                    playNotification()
-                    ConversationMessageModel.OtherMessage(msg.timestamp, recipient, msg.text)
-                } else {
-                    ConversationMessageModel.OwnMessage(System.currentTimeMillis(), msg.text)
+            launch(Dispatchers.IO) {
+                interactor.newMessages(conversation).collect { msg ->
+                    val message = when (msg) {
+                        is ConversationMessage.Nudge -> {
+                            if (!msg.sender.equals(account, true)) {
+                                playNotification()
+                            }
+                            ConversationMessageModel.Nudge(msg.sender)
+                        }
+                        is ConversationMessage.Typing -> {
+                            ConversationMessageModel.Message(msg.sender, "Typing...")
+                        }
+                        is ConversationMessage.Text -> {
+                            if (!msg.sender.equals(account, true)) {
+                                playNotification()
+                            }
+                            ConversationMessageModel.Message(msg.sender, msg.body)
+                        }
+                    }
+                    model = model.copy(messages = model.messages + message)
+                    updateUi()
                 }
-                model = model.copy(messages = model.messages + message)
-                updateUi()
+            }
+            launch(Dispatchers.IO) {
+                userTyping.consumeAsFlow()
+                    .debounce(5000)
+                    .collect { interactor.sendTyping(model.conversation!!) }
             }
         }
-        launch(Dispatchers.IO){
-            userTyping.consumeAsFlow()
-                .debounce(5000)
-                .collect { interactor.sendTyping(model.conversationId) }
-        }
+
     }
 
     override fun onDestroy() {
@@ -82,20 +101,20 @@ class ConversationPresenter(
     }
 
     override fun onNudgeClicked() {
-        launch(Dispatchers.IO){
-            interactor.sendNudge(model.conversationId)
+        launch(Dispatchers.IO) {
+            interactor.sendNudge(model.conversation!!)
         }
     }
 
-    private fun sendMessage(){
+    private fun sendMessage() {
         val message = model.messageText
-        val conversationId = model.conversationId
-        if(message.isNotBlank()) {
+        if (message.isNotBlank()) {
             launch(Dispatchers.IO) {
-                interactor.sendMessage(conversationId, message.trim())
+                interactor.sendMessage(model.conversation!!, message.trim())
             }
         }
-        model = model.copy(messageText = "")
+        val newMessage = ConversationMessageModel.Message(sender = model.account, message = message.trim())
+        model = model.copy(messageText = "", messages = model.messages + newMessage)
         updateUi()
     }
 
@@ -115,7 +134,7 @@ class ConversationPresenter(
 }
 
 sealed class ConversationMessageModel {
-    data class OwnMessage(val timestamp: Long, val message: String) : ConversationMessageModel()
-    data class OtherMessage(val timestamp: Long, val nickname: String, val message: String) : ConversationMessageModel()
+    data class Message(val sender: String, val message: String) : ConversationMessageModel()
+    data class Nudge(val sender: String) : ConversationMessageModel()
     data class Error(val text: String) : ConversationMessageModel()
 }

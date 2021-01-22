@@ -16,7 +16,7 @@ class SwitchBoardTransport {
     private val parser = SwitchBoardCommandParser()
     private var sequence: Int = 1
     private var joinContinuation: Continuation<Unit>? = null
-    private val messages = Channel<MessageData>(Channel.UNLIMITED)
+    private val messages = Channel<MSGBody>(Channel.UNLIMITED)
     private val socketClosed = Channel<Unit>()
 
     var isOpen = false
@@ -34,6 +34,7 @@ class SwitchBoardTransport {
                     socketClosed.offer(Unit)
                     socketClosed.close()
                     messages.close()
+                    println("SB: Done.")
                     reading = false
                 }
             }
@@ -92,7 +93,7 @@ class SwitchBoardTransport {
         sequence++
     }
 
-    suspend fun sendMSGControl(command: SwitchBoardSendCommand.MSGControl){
+    suspend fun sendMSGControl(command: SwitchBoardSendCommand.MSGControl) {
         val body = "MIME-Version: 1.0\r\n" +
                 "Content-Type: text/x-msmsgscontrol\r\n\r\n" +
                 "TypingUser: ${command.typingUser}\r\n"
@@ -125,10 +126,14 @@ class SwitchBoardTransport {
                         val body = socket.readRaw(command.length)
                         when (val msg = MsgBodyParser().parse(body)) {
                             is MsgBody.Message -> {
-                                messages.offer(MessageData(command.passport, msg.text))
+                                messages.offer(MSGBody.Text(command.passport, msg.text))
                             }
-                            is MsgBody.Typing -> println("Typing")
-                            MsgBody.Nudge -> println("Nudge")
+                            is MsgBody.Typing -> {
+                                messages.offer(MSGBody.Typing(command.passport))
+                            }
+                            MsgBody.Nudge -> {
+                                messages.offer(MSGBody.Nudge(command.passport))
+                            }
                             MsgBody.Unknown -> println("No idea!")
                         }
                     }
@@ -148,7 +153,20 @@ class SwitchBoardTransport {
     }
 }
 
-data class MessageData(
-    val contact: String,
-    val text: String
-)
+
+sealed class MSGBody {
+
+    data class Text(
+        val sender: String,
+        val text: String
+    ) : MSGBody()
+
+    data class Nudge(
+        val sender: String
+    ) : MSGBody()
+
+    data class Typing(
+        val sender: String
+    ) : MSGBody()
+
+}

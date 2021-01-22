@@ -1,13 +1,22 @@
 package org.cyanotic.butterfly.core
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.cyanotic.butterfly.protocol.Status
+import org.cyanotic.butterfly.protocol.asStatus
 import org.cyanotic.butterfly.protocol.asString
 import org.cyanotic.butterfly.protocol.notification.NotificationTransport
 import org.cyanotic.butterfly.protocol.notification.TransportException
+import kotlin.coroutines.CoroutineContext
 
 
 private val logger = KotlinLogging.logger(name = "AccountManager")
@@ -16,16 +25,21 @@ class AccountManager(
     val account: String,
     val mspAuth: String,
     private val notification: NotificationTransport
-) {
+) : CoroutineScope {
+
+    private val job = Job()
+    override val coroutineContext: CoroutineContext
+        get() = job + Dispatchers.IO
 
     private var status = Status.OFFLINE
     private var nickname = account
     private var personalMessage = ""
 
-    private val statusChannel = BroadcastChannel<AccountUpdate>(Channel.CONFLATED)
-    val accountUpdates = statusChannel
-        .openSubscription()
-        .consumeAsFlow()
+    private val accountUpdateChannel = BroadcastChannel<AccountUpdate>(Channel.CONFLATED)
+
+    init {
+        listenForAccountChanges()
+    }
 
     fun getStatus() = status
 
@@ -68,6 +82,8 @@ class AccountManager(
         }
     }
 
+    fun accountUpdates() = accountUpdateChannel.asFlow()
+
     suspend fun setPersonalMessage(personalMessage: String) {
         logger.info { "Setting personal message to $personalMessage" }
         val oldPersonalMessage = this.personalMessage
@@ -82,23 +98,28 @@ class AccountManager(
         }
     }
 
-    //TODO this has to be hidden to the user, somehow.
-    suspend fun accountUpdated(status: Status? = null, nickname: String? = null, personalMessage: String? = null) {
-        status?.let { this.status = status }
-        nickname?.let { this.nickname = nickname }
-        personalMessage?.let { this.personalMessage = personalMessage }
-        logger.debug { "Account Updated: Status=${this.status}, Nickname=${this.nickname}, Personal Message=${this.personalMessage}" }
-        triggerAccountUpdate()
+    private fun listenForAccountChanges() {
+        launch {
+            notification.contactChanged().collect { profileData ->
+                logger.debug { "Account Changed $profileData" }
+                if (profileData.passport.equals(account, true)) {
+                    status = profileData.status?.asStatus() ?: status
+                    nickname = profileData.nickname ?: nickname
+                    personalMessage = profileData.personalMessage ?: personalMessage
+                    triggerAccountUpdate()
+                }
+            }
+        }
     }
 
     private fun triggerAccountUpdate() {
-        statusChannel.offer(
-            AccountUpdate(
-                status = this.status,
-                nickname = this.nickname,
-                personalMessage = this.personalMessage
-            )
+        val accountUpdate = AccountUpdate(
+            status = this.status,
+            nickname = this.nickname,
+            personalMessage = this.personalMessage
         )
+        logger.debug { "Account Updated: $accountUpdate" }
+        accountUpdateChannel.offer(accountUpdate)
     }
 
 }

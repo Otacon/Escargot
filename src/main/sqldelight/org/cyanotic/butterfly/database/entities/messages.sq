@@ -1,37 +1,36 @@
-CREATE TABLE message(
+import java.lang.Integer;
+
+CREATE TABLE MessageEntity(
     id INTEGER as Long PRIMARY KEY AUTOINCREMENT,
-    conversation_id INTEGER NOT NULL,
-    sender TEXT NOT NULL,
+    sender_passport TEXT NOT NULL,
+    sender_nickname TEXT,
+    recipient_passport TEXT NOT NULL,
+    recipient_nickname TEXT,
     timestamp INTEGER as Long NOT NULL,
-    text TEXT NOT NULL,
-    FOREIGN KEY(conversation_id) REFERENCES conversation(id)
+    message_type INTEGER as Integer NOT NULL,
+    text TEXT
 );
 
 getById:
-SELECT * FROM message
+SELECT * FROM MessageEntity
 WHERE id = ?;
 
-add:
-INSERT INTO message(conversation_id, sender, timestamp, text)
-VALUES (?,?,?,?);
+insert:
+INSERT INTO MessageEntity
+VALUES ?;
 
-selectAllByConversationId:
-SELECT * FROM message
-WHERE conversation_id = ?
+selectAllByRecipient:
+SELECT * FROM MessageEntity
+WHERE recipient_passport = :recipient OR sender_passport = :recipient
 ORDER BY timestamp ASC;
 
-selectNewConversationMessages:
-SELECT * FROM message
-INNER JOIN conversation ON conversation.id = message.conversation_id
-WHERE message.conversation_id = ?
-AND timestamp > conversation.last_read_time
-ORDER BY timestamp DESC
-LIMIT 1;
+selectAllBySender:
+SELECT * FROM MessageEntity
+WHERE sender_passport = ?
+ORDER BY timestamp ASC;
 
-selectNewOtherMessages:
-SELECT * FROM message
-INNER JOIN conversation ON conversation.id = message.conversation_id
-WHERE sender != :account AND account = :account
-AND timestamp > conversation.last_read_time
-ORDER BY timestamp DESC
-LIMIT 1;
+selectAllLimit:
+SELECT * FROM MessageEntity
+WHERE recipient_passport = :recipient OR sender_passport = :recipient
+ORDER BY timestamp ASC
+LIMIT :limit;

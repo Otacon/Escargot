@@ -3,20 +3,24 @@ package org.cyanotic.butterfly.core
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import mu.KotlinLogging
+import okhttp3.internal.checkOffsetAndCount
 import org.cyanotic.butterfly.core.contact_list_fetcher.ContactListFetcher
 import org.cyanotic.butterfly.database.ContactsTable
-import org.cyanotic.butterfly.features.Contact
+import org.cyanotic.butterfly.database.entities.ContactEntity
+import org.cyanotic.butterfly.protocol.Status
 import org.cyanotic.butterfly.protocol.asStatus
-import org.cyanotic.butterfly.database.entities.Contact as ContactEntity
 import org.cyanotic.butterfly.protocol.notification.ContactRequest
 import org.cyanotic.butterfly.protocol.notification.ContactType
 import org.cyanotic.butterfly.protocol.notification.ListType
 import org.cyanotic.butterfly.protocol.notification.NotificationTransport
 import kotlin.coroutines.CoroutineContext
+
+private val logger = KotlinLogging.logger("ContactManager")
 
 class ContactManager(
     private val accountManager: AccountManager,
@@ -30,57 +34,50 @@ class ContactManager(
         get() = job + Dispatchers.IO
 
     init {
-        listenForNotificationContactChanges()
+        listenForContactChanges()
     }
 
-    private val contacts: List<Contact> = mutableListOf()
-
-    suspend fun setAllContactsOffline() {
-        localContacts.setAllOffline(accountManager.account)
-    }
+    private var contacts: List<Contact> = listOf()
+    private val contactsUpdateChannel = BroadcastChannel<List<Contact>>(Channel.CONFLATED)
 
     suspend fun refreshContactList() {
-        val accountPassport = accountManager.account
-        val newContacts = contactListFetcher.getContacts(accountManager.mspAuth).map {
-            if(it.contactInfo.contactType.equals("me",true)){
-                accountManager.accountUpdated(null,it.contactInfo.displayName,null)
-            }
-            ContactEntity(
-                passport = it.contactInfo.passportName,
-                account = accountPassport,
-                nickname = it.contactInfo.displayName,
-                personalMessage = null,
-                status = null
-            )
-        }
-        val removedPassports = localContacts.getAll(accountPassport).mapNotNull { localContact ->
-            val existingLocalContact = newContacts.firstOrNull { it.passport == localContact.passport }
-            if (existingLocalContact == null) {
-                localContact.passport
-            } else {
+        logger.info { "Refreshing contact list..." }
+        val newContacts = contactListFetcher.getContacts(accountManager.mspAuth).mapNotNull {
+            if (it.contactInfo.contactType.equals("me", true)) {
                 null
+            } else {
+                Contact(
+                    passport = it.contactInfo.passportName,
+                    nickname = it.contactInfo.displayName,
+                    personalMessage = "",
+                    status = Status.OFFLINE
+                )
             }
         }
-        localContacts.removeAll(accountPassport, removedPassports)
-        localContacts.update(accountPassport, newContacts)
+        logger.debug { "Added/updated contacts: $newContacts" }
+        contacts = newContacts
+        contactsUpdateChannel.offer(contacts)
+    }
+
+    suspend fun getContacts(): List<Contact> {
+        return contacts
     }
 
     suspend fun addContact(passport: String) {
+        logger.info { "Adding new contact: $passport" }
         notification.sendAdl(passport, ListType.AddList, ContactType.Passport)
         val currentAccount = accountManager.account
         val mspAuth = accountManager.mspAuth
-        val ownContact = localContacts.getByPassport(currentAccount, currentAccount)
+        val ownContact = localContacts.getByPassport(currentAccount)
         val nickname = ownContact!!.nickname ?: currentAccount
         contactListFetcher.addContact(currentAccount, mspAuth, nickname)
     }
 
-    suspend fun otherContactsUpdates(): Flow<List<ContactEntity>> {
-        return localContacts.otherContactsUpdates(accountManager.account)
-    }
+    fun otherContactsUpdates(): Flow<List<Contact>> = this.contactsUpdateChannel.asFlow()
 
-    suspend fun contactRequestReceived(): Flow<ContactRequest> {
+    fun contactRequestReceived(): Flow<ContactRequest> {
         return notification.contactRequests().mapNotNull {
-            val contact = localContacts.getByPassport(accountManager.account, it.passport)
+            val contact = localContacts.getByPassport(it.passport)
             if (contact == null) {
                 it
             } else {
@@ -89,31 +86,38 @@ class ContactManager(
         }
     }
 
-    private fun listenForNotificationContactChanges() {
+    private fun listenForContactChanges() {
         launch {
             notification.contactChanged().collect { profileData ->
-                if(profileData.passport.equals(accountManager.account,true)){
-                    accountManager.accountUpdated(
-                        profileData.status?.asStatus(),
-                        profileData.nickname,
-                        profileData.personalMessage
-                    )
+                logger.debug { "Contact Changed: $profileData" }
+                if (!profileData.passport.equals(accountManager.account, true)) {
+                    contacts = contacts.map {
+                        if (it.passport.equals(profileData.passport, true)) {
+                            val newContact = Contact(
+                                passport = profileData.passport,
+                                nickname = profileData.nickname ?: it.nickname,
+                                personalMessage = profileData.personalMessage ?: it.personalMessage,
+                                status = profileData.status?.asStatus() ?: it.status
+                            )
+                            newContact
+                        } else {
+                            it
+                        }
+                    }
+                    contactsUpdateChannel.offer(contacts)
                 }
-                val account = accountManager.account
-                val updatedContact = ContactEntity(
-                    passport = profileData.passport,
-                    account = account,
-                    nickname = profileData.nickname,
-                    personalMessage = profileData.personalMessage,
-                    status = profileData.status
-                )
-                localContacts.update(account, listOf(updatedContact))
             }
         }
     }
 
     suspend fun getContact(passport: String): ContactEntity? {
-        val account = accountManager.account
-        return localContacts.getByPassport(account, passport)
+        return localContacts.getByPassport(passport)
     }
 }
+
+data class Contact(
+    val passport: String,
+    val nickname: String,
+    val personalMessage: String,
+    val status: Status
+)

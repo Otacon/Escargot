@@ -1,9 +1,9 @@
 package org.cyanotic.butterfly.protocol.notification
 
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.cyanotic.butterfly.protocol.ProtocolVersion
@@ -29,9 +29,9 @@ class NotificationTransport {
     private val continuations: MutableMap<Int, Continuation<NotificationReceiveCommand>> = mutableMapOf()
     private var continuationMspAuthToken: Continuation<String>? = null
     private var sequence: Int = 1
-    private val contactChanged = Channel<ProfileData>(capacity = Channel.UNLIMITED)
-    private val contactRequest = Channel<ContactRequest>(capacity = Channel.UNLIMITED)
-    private val switchboardInvites = Channel<SwitchboardInvite>(capacity = Channel.UNLIMITED)
+    private val contactChanged = BroadcastChannel<ProfileData>(capacity = Channel.CONFLATED)
+    private val contactRequest = BroadcastChannel<ContactRequest>(capacity = Channel.CONFLATED)
+    private val switchboardInvites = BroadcastChannel<SwitchboardInvite>(capacity = Channel.CONFLATED)
 
     fun connect(endpoint: String, port: Int) {
         socket.connect(endpoint, port)
@@ -39,7 +39,7 @@ class NotificationTransport {
             var reading = true
             while (reading) {
                 val message = socket.readMessage()
-                if(message != null) {
+                if (message != null) {
                     processMessage(message)
                 } else {
                     logger.warn { "Notification socket closed." }
@@ -149,7 +149,7 @@ class NotificationTransport {
             } ?: cont.resumeWithException(IllegalArgumentException("Invalid email: $email"))
         }
 
-    suspend fun sendFln(account: String, networkId: String){
+    suspend fun sendFln(account: String, networkId: String) {
         //TODO
     }
 
@@ -158,17 +158,11 @@ class NotificationTransport {
             continuationMspAuthToken = cont
         }
 
-    fun contactChanged(): Flow<ProfileData> {
-        return contactChanged.consumeAsFlow()
-    }
+    fun contactChanged() = contactChanged.asFlow()
 
-    fun contactRequests(): Flow<ContactRequest> {
-        return contactRequest.consumeAsFlow()
-    }
+    fun contactRequests() = contactRequest.asFlow()
 
-    fun switchboardInvites(): Flow<SwitchboardInvite> {
-        return switchboardInvites.consumeAsFlow()
-    }
+    fun switchboardInvites() = switchboardInvites.asFlow()
 
     private fun sendMessage(message: String, continuation: Continuation<*>) {
         continuations[sequence] = continuation as Continuation<NotificationReceiveCommand>

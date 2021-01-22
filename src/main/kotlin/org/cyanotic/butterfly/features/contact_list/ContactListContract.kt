@@ -22,7 +22,7 @@ interface ContactListContract {
 
     interface Presenter {
 
-        fun start()
+        fun onCreate()
         fun onContactClick(selectedContact: ContactModel.Contact)
         fun onContactFilterChanged(filter: String)
         fun onStatusChanged(status: Status)

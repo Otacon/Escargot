@@ -64,6 +64,7 @@ class ContactListView(
     private val contactsRoot = TreeItem<ContactModel>(ContactModel.Root)
     private val contactsOnline = TreeItem<ContactModel>(ContactModel.Category("Available"))
     private val contactsOffline = TreeItem<ContactModel>(ContactModel.Category("Offline"))
+    private val openedConversations = mutableSetOf<ConversationView>()
 
     fun onCreate() {
         setupListeners()
@@ -84,7 +85,7 @@ class ContactListView(
             presenter.onAddContactClosed(result)
         }
         statusImage.requestFocus()
-        presenter.start()
+        presenter.onCreate()
     }
 
     private fun setupStatusButton() {
@@ -168,8 +169,13 @@ class ContactListView(
     }
 
     override fun openConversation(recipient: String) {
-        if (!ConversationWindowManager.isWindowOpen(recipient)) {
-            ConversationView.launch(recipient)
+        val existingConversation = openedConversations.firstOrNull { it.recipient.equals(recipient,true) }
+        if(existingConversation == null) {
+            val conversationView = ConversationView.launch(recipient)
+            openedConversations.add(conversationView)
+            conversationView.onWindowClose = {
+                openedConversations.remove(conversationView)
+            }
         }
     }
 

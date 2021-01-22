@@ -2,7 +2,6 @@ package org.cyanotic.butterfly
 
 import javafx.application.Application.launch
 import org.cyanotic.butterfly.core.file_manager.fileManager
-import org.cyanotic.butterfly.database.AccountsTable
 import org.cyanotic.butterfly.features.EscargotApplication
 import java.io.File
 import java.net.InetAddress

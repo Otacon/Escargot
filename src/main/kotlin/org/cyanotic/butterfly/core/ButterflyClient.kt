@@ -2,6 +2,7 @@ package org.cyanotic.butterfly.core
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.actor
+import kotlinx.coroutines.flow.collect
 import mu.KotlinLogging
 import org.cyanotic.butterfly.core.auth.AuthenticationResult
 import org.cyanotic.butterfly.core.auth.MSNPAuthenticator
@@ -28,12 +29,9 @@ object ButterflyClient : CoroutineScope {
         var accounts: AccountManager? = null
         var contacts: ContactManager? = null
         var conversation: ConversationManager? = null
-        var conversationWindows: ConversationWindowManager? = null
-        var switchboard: SwitchboardManager? = null
         var notification: NotificationTransport? = null
         var database: MsnDB? = null
         for (msg in channel) {
-            logger.info { "Received ${msg.javaClass.simpleName}" }
             when (msg) {
                 is ClientOperation.Connect -> {
                     if (notification != null) {
@@ -56,10 +54,9 @@ object ButterflyClient : CoroutineScope {
                     notification = null
                     accounts = null
                     contacts = null
-                    conversation = null
-                    conversationWindows = null
                     logger.info { "Disconnecting all switchboards..." }
-                    switchboard?.disconnectAll()
+                    conversation?.closeAll()
+                    conversation = null
                     authenticator = null
                     logger.info { "Closing database..." }
                     database?.close()
@@ -83,36 +80,36 @@ object ButterflyClient : CoroutineScope {
                                     launch(Dispatchers.IO) { disconnect() }
                                 }
                                 is AuthenticationResult.Success -> {
+                                    logger.info { "Initialising user database" }
                                     val db = MsnDB(path = fileManager.getAccountFolder(msg.username))
+                                    logger.info { "Initialising AccountManager..." }
                                     val accountManager = AccountManager(
                                         account = msg.username,
                                         mspAuth = result.token,
                                         notification = notification!!
                                     )
-
+                                    logger.info { "Initialising ContactManager..." }
                                     val contactManager = ContactManager(
                                         accountManager = accountManager,
                                         localContacts = db.contacts,
                                         notification = notification,
                                         contactListFetcher = ContactListFetcher(httpClient)
                                     )
-
-                                    val switchboardManager = SwitchboardManager(
+                                    logger.info { "Initialising ConversationManager..." }
+                                    val conversationManager = ConversationManager(
                                         accountManager = accountManager,
                                         notification = notification
                                     )
-
-                                    val conversationManager = ConversationManager(
-                                        accountManager = accountManager,
-                                        switchboardManager = switchboardManager,
-                                        conversations = db.conversations,
-                                        messages = db.messages
-                                    )
+                                    launch(Dispatchers.IO){
+                                        notification.switchboardInvites().collect { invite ->
+                                            val conversation = conversationManager.getConversation(invite.passport)
+                                            conversation.inviteReceived(invite)
+                                        }
+                                    }
 
                                     accounts = accountManager
                                     contacts = contactManager
                                     conversation = conversationManager
-                                    switchboard = switchboardManager
                                     database = db
                                 }
                             }

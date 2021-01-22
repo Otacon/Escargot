@@ -6,11 +6,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.javafx.JavaFx
 import kotlinx.coroutines.launch
+import org.cyanotic.butterfly.core.Contact
+import org.cyanotic.butterfly.core.ConversationMessage
 import org.cyanotic.butterfly.features.add_contact.AddContactResult
 import org.cyanotic.butterfly.features.friend_request.FriendRequestResult
 import org.cyanotic.butterfly.features.notifications.NotificationManager
 import org.cyanotic.butterfly.protocol.Status
-import org.cyanotic.butterfly.protocol.asStatus
 import kotlin.coroutines.CoroutineContext
 
 class ContactListPresenter(
@@ -32,17 +33,10 @@ class ContactListPresenter(
         contacts = emptyList()
     )
 
-    override fun start() {
+    override fun onCreate() {
         launch(Dispatchers.IO) {
             interactor.otherContactsUpdates().collect { contacts ->
-                val models = contacts.map { contact ->
-                    ContactModel.Contact(
-                        nickname = contact.nickname,
-                        passport = contact.passport,
-                        personalMessage = contact.personalMessage ?: "",
-                        status = contact.status?.asStatus() ?: Status.OFFLINE
-                    )
-                }
+                val models = contacts.map { it.toModel() }
                 model = model.copy(contacts = models)
                 launch(Dispatchers.JavaFx) {
                     val notificationEnabled = when (model.status) {
@@ -74,17 +68,22 @@ class ContactListPresenter(
             }
         }
         launch(Dispatchers.IO) {
-            interactor.newMessagesForConversation().collect { conversation ->
+            interactor.newContactRequests().collect { contact ->
                 launch(Dispatchers.JavaFx) {
-                    view.openConversation(conversation.recipient)
+                    view.openContactRequest(contact.passport)
                 }
             }
         }
         launch(Dispatchers.IO) {
-            interactor.newContactRequests().collect { contact ->
-                println("Presenter: Contact Request received: $contact")
+            interactor.allIncomingMessages().collect { message ->
                 launch(Dispatchers.JavaFx) {
-                    view.openContactRequest(contact.passport)
+                    when (message) {
+                        is ConversationMessage.Nudge -> view.openConversation(message.sender)
+                        is ConversationMessage.Typing -> {
+                            //Do Nothing
+                        }
+                        is ConversationMessage.Text -> view.openConversation(message.sender)
+                    }
                 }
             }
         }
@@ -133,14 +132,14 @@ class ContactListPresenter(
     }
 
     override fun onLogoutClicked() {
-        launch(Dispatchers.IO){
+        launch(Dispatchers.IO) {
             interactor.disconnect()
         }
         view.openLogin()
     }
 
     override fun onExitClicked() {
-        launch(Dispatchers.IO){
+        launch(Dispatchers.IO) {
             interactor.disconnect()
         }
         view.exit()
@@ -163,4 +162,13 @@ class ContactListPresenter(
 
         view.setContacts(online, offline)
     }
+}
+
+private fun Contact.toModel(): ContactModel.Contact {
+    return ContactModel.Contact(
+        nickname = nickname,
+        passport = passport,
+        personalMessage = personalMessage,
+        status = status
+    )
 }

@@ -2,7 +2,7 @@ package org.cyanotic.butterfly.core
 
 import org.cyanotic.butterfly.features.conversation.ConversationView
 
-object ConversationWindowManager {
+class ConversationWindowManager {
 
     private val conversations = mutableSetOf<ConversationView>()
 
@@ -16,6 +16,13 @@ object ConversationWindowManager {
 
     fun onConversationWindowClosed(window: ConversationView) {
         conversations.remove(window)
+    }
+
+    fun openConversation(recipient: String) {
+        val conversation = conversations.firstOrNull { it.recipient == recipient }
+        if(conversation == null){
+
+        }
     }
 
 }

@@ -5,7 +5,6 @@ import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
 import org.cyanotic.butterfly.database.Database.Companion.Schema
 import org.cyanotic.butterfly.database.Database.Companion.invoke
-import org.cyanotic.butterfly.database.entities.Account
 import java.io.File
 
 const val DATABASE_FILE = "userdb.sqlite3"
@@ -32,18 +31,11 @@ class MsnDB(
             }
         }
         this.driver = driver
-        db = invoke(
-            driver,
-            Account.Adapter(
-                StatusAdapter()
-            )
-        )
+        db = invoke(driver)
     }
 
     val contacts: ContactsTable by lazy { ContactsTable(db.contactsQueries) }
-    val accounts: AccountsTable by lazy { AccountsTable(db.accountsQueries) }
     val messages: MessagesTable by lazy { MessagesTable(db.messagesQueries) }
-    val conversations: ConversationsTable by lazy { ConversationsTable(db.conversationQueries) }
 
     fun close() {
         driver.close()

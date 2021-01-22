@@ -43,15 +43,15 @@ class ConversationView(
     )
 
     lateinit var recipient: String
+    var onWindowClose : (() -> Unit)? = null
 
     fun onCreate(recipient: String){
         this.recipient = recipient
-        ConversationWindowManager.onConversationWindowOpened(this)
         setupListeners()
         setupButtons()
         presenter.onCreate(recipient)
         window.setOnCloseRequest {
-            ConversationWindowManager.onConversationWindowClosed(this)
+            onWindowClose?.invoke()
             presenter.onDestroy()
         }
     }
@@ -63,8 +63,8 @@ class ConversationView(
     override fun setHistory(messages: List<ConversationMessageModel>) {
         val messagesStr = messages.map {
             when (it) {
-                is ConversationMessageModel.OwnMessage -> "You:\n${it.message}"
-                is ConversationMessageModel.OtherMessage -> "${it.nickname}:\n${it.message}"
+                is ConversationMessageModel.Message -> "${it.sender}:\n${it.message}"
+                is ConversationMessageModel.Nudge -> "${it.sender} has sent you a nudge!"
                 is ConversationMessageModel.Error -> "Error:\n${it.text}"
             }
         }
@@ -129,7 +129,7 @@ class ConversationView(
 
     companion object {
 
-        fun launch(recipient: String) {
+        fun launch(recipient: String) : ConversationView {
             val window = Stage()
             val controller = ConversationView(window)
             val root = FXMLLoader().apply {
@@ -139,6 +139,7 @@ class ConversationView(
             window.scene = root
             window.show()
             controller.onCreate(recipient)
+            return controller
         }
 
     }

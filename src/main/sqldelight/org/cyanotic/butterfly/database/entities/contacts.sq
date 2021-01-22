@@ -1,33 +1,28 @@
-CREATE TABLE contact(
+CREATE TABLE ContactEntity(
     passport TEXT PRIMARY KEY,
-    account TEXT NOT NULL,
     nickname TEXT,
-    personalMessage TEXT,
-    status TEXT,
-    FOREIGN KEY(account) REFERENCES account(passport)
+    personalMessage TEXT
 );
 
 insertOrUpdate:
-INSERT OR REPLACE INTO contact
+INSERT OR REPLACE INTO ContactEntity
 VALUES ?;
 
 remove:
-DELETE FROM contact
-WHERE account = ? AND passport = ?;
+DELETE FROM ContactEntity
+WHERE passport = ?;
 
 getAll:
-SELECT * FROM contact
-WHERE account = :passport AND passport != :passport;
+SELECT * FROM ContactEntity;
+
+getAllExceptMe:
+SELECT * FROM ContactEntity
+WHERE passport != ?;
 
 getByPassport:
-SELECT * FROM contact
-WHERE account = :account AND passport = :passport;
+SELECT * FROM ContactEntity
+WHERE passport = :passport;
 
 getAllFiltered:
-SELECT * FROM contact
-WHERE account = ? AND (passport LIKE '%?%' OR nickname LIKE '%?%');
-
-setAllOffline:
-UPDATE contact
-SET status = 'FLN'
-WHERE account = ?;
+SELECT * FROM ContactEntity
+WHERE (passport LIKE '%?%' OR nickname LIKE '%?%');

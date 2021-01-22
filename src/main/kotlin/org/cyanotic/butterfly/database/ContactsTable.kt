@@ -4,55 +4,48 @@ import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
 import com.squareup.sqldelight.runtime.coroutines.mapToOneNotNull
 import kotlinx.coroutines.flow.Flow
-import org.cyanotic.butterfly.database.entities.Contact
+import org.cyanotic.butterfly.database.entities.ContactEntity
 import org.cyanotic.butterfly.database.entities.ContactsQueries
 
 class ContactsTable(
     private val queries : ContactsQueries
 ) {
 
-    fun update(account: String, newContacts: List<Contact>) {
+    fun update(account: String, newContacts: List<ContactEntity>) {
         newContacts.map { updatedContact ->
-            val existingContact = queries.getByPassport(account, updatedContact.passport).executeAsOneOrNull()
+            val existingContact = queries.getByPassport(updatedContact.passport).executeAsOneOrNull()
             existingContact?.copy(
                 nickname = updatedContact.nickname ?: existingContact.nickname,
-                personalMessage = updatedContact.personalMessage ?: existingContact.personalMessage,
-                status = updatedContact.status ?: existingContact.status
-            ) ?: Contact(
+                personalMessage = updatedContact.personalMessage ?: existingContact.personalMessage
+            ) ?: ContactEntity(
                 passport = updatedContact.passport,
-                account = updatedContact.account,
                 nickname = updatedContact.nickname,
                 personalMessage = updatedContact.personalMessage,
-                status = updatedContact.status
             )
         }.forEach {
             queries.insertOrUpdate(it)
         }
     }
 
-    fun ownContactUpdates(passport: String): Flow<Contact> {
-        return queries.getByPassport(passport, passport).asFlow().mapToOneNotNull()
+    fun ownContactUpdates(passport: String): Flow<ContactEntity> {
+        return queries.getByPassport(passport).asFlow().mapToOneNotNull()
     }
 
-    fun otherContactsUpdates(passport: String): Flow<List<Contact>> {
-        return queries.getAll(passport).asFlow().mapToList()
+    fun otherContactsUpdates(): Flow<List<ContactEntity>> {
+        return queries.getAll().asFlow().mapToList()
     }
 
-    fun getByPassport(account: String, passport: String): Contact? {
-        return queries.getByPassport(account, passport).executeAsOneOrNull()
+    fun getByPassport(passport: String): ContactEntity? {
+        return queries.getByPassport(passport).executeAsOneOrNull()
     }
 
-    fun getAll(account: String): List<Contact> {
-        return queries.getAll(passport = account).executeAsList()
+    fun getAll(): List<ContactEntity> {
+        return queries.getAll().executeAsList()
     }
 
-    fun removeAll(account: String, removedPassports: List<String>) {
+    fun removeAll(removedPassports: List<String>) {
         removedPassports.forEach {
-            queries.remove(account, it)
+            queries.remove(it)
         }
-    }
-
-    fun setAllOffline(account: String) {
-        queries.setAllOffline(account)
     }
 }
