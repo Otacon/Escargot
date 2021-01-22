@@ -10,7 +10,7 @@ object NotificationManager {
 
     private val newMessage: MediaPlayer by lazy { loadMediaPlayer("/sounds/message.mp3") }
 
-    private val nudge: MediaPlayer by lazy { loadMediaPlayer("/sounds/message.mp3") }
+    private val nudge: MediaPlayer by lazy { loadMediaPlayer("/sounds/nudge.mp3") }
 
     private val contactOnline: MediaPlayer by lazy { loadMediaPlayer("/sounds/message.mp3") }
 

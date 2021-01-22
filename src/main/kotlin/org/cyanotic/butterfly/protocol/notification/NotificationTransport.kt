@@ -1,5 +1,7 @@
 package org.cyanotic.butterfly.protocol.notification
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
@@ -22,6 +24,8 @@ class TransportException(
 
 private val logger = KotlinLogging.logger("Notification")
 
+@ExperimentalCoroutinesApi
+@FlowPreview
 class NotificationTransport {
 
     private val socket: NotificationSocket = NotificationSocket()
@@ -170,7 +174,7 @@ class NotificationTransport {
         sequence++
     }
 
-    private suspend fun processMessage(message: String) {
+    private fun processMessage(message: String) {
         when (val command = parser.parse(message)) {
             is NotificationReceiveCommand.VER -> resumeContinuation(command.sequence, command)
             is NotificationReceiveCommand.USRSSOStatus -> resumeContinuation(command.sequence, command)

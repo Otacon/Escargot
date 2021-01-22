@@ -10,6 +10,7 @@ interface ConversationContract {
         fun setPersonalMessage(personalMessage: String)
         fun setMessageText(messageText: String)
         fun setSendButtonEnabled(sendEnabled: Boolean)
+        fun setFooterText(text: String)
     }
 
     interface Presenter {

@@ -1,13 +1,10 @@
 package org.cyanotic.butterfly.core
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.cyanotic.butterfly.protocol.notification.NotificationTransport
 import org.cyanotic.butterfly.protocol.notification.SwitchboardInvite
@@ -29,49 +26,81 @@ class Conversation(
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.IO
 
-    private var switchboard: SwitchBoardTransport? = null
-    private val incomingMessages = Channel<ConversationMessage>(Channel.UNLIMITED)
-
-    suspend fun inviteReceived(invite: SwitchboardInvite) {
-        val newSwitchboard = SwitchBoardTransport().apply {
-            connect(invite.address, invite.port)
-            sendAns(SwitchBoardSendCommand.ANS(accountManager.account, invite.auth, invite.sessionId))
-        }
-        this.switchboard = configureSwitchboard(newSwitchboard)
-    }
-
-    suspend fun send(message: ConversationMessage) {
-        val switchboard = this.switchboard.let {
-            if (it == null) {
-                val xfrResponse = notification.sendXfr()
-                val newSwitchboard = SwitchBoardTransport().apply {
-                    connect(xfrResponse.address, xfrResponse.port)
-                    sendUsr(SwitchBoardSendCommand.USR(accountManager.account, xfrResponse.auth))
-                    sendCal(SwitchBoardSendCommand.CAL(recipient))
-                    waitToJoin()
+    private val actor = GlobalScope.actor<ConversationOperation> {
+        var switchboard: SwitchBoardTransport? = null
+        for (msg in channel) {
+            when (msg) {
+                is ConversationOperation.InviteReceived -> {
+                    val newSwitchboard = SwitchBoardTransport().apply {
+                        connect(msg.address, msg.port)
+                        sendAns(SwitchBoardSendCommand.ANS(accountManager.account, msg.auth, msg.sessionId))
+                    }
+                    switchboard = configureSwitchboard(newSwitchboard)
                 }
-                configureSwitchboard(newSwitchboard)
-            } else {
-                it
+                is ConversationOperation.SendMessage -> {
+                    switchboard = switchboard.checkConnection()
+                    switchboard.sendMsg(SwitchBoardSendCommand.MSG(msg.text))
+                }
+                ConversationOperation.SendNudge -> {
+                    switchboard = switchboard.checkConnection()
+                    switchboard.sendMSGDatacast(SwitchBoardSendCommand.MSGDatacast(1))
+                }
+                ConversationOperation.SendTyping -> {
+                    switchboard?.sendMSGControl(SwitchBoardSendCommand.MSGControl(accountManager.account))
+                }
+                ConversationOperation.Close -> {
+                    switchboard?.disconnect()
+                    incomingMessages.close()
+                }
+
             }
         }
-        when (message) {
-            is ConversationMessage.Nudge -> switchboard.sendMSGDatacast(SwitchBoardSendCommand.MSGDatacast(1))
-            is ConversationMessage.Typing -> switchboard.sendMSGControl(SwitchBoardSendCommand.MSGControl(accountManager.account))
-            is ConversationMessage.Text -> switchboard.sendMsg(SwitchBoardSendCommand.MSG(message.body))
-        }
-        this.switchboard = switchboard
     }
 
     fun incomingMessages() = incomingMessages.receiveAsFlow()
 
+    private val incomingMessages = Channel<ConversationMessage>(Channel.UNLIMITED)
+
+    fun inviteReceived(invite: SwitchboardInvite) {
+        val command = ConversationOperation.InviteReceived(
+            sessionId = invite.sessionId,
+            address = invite.address,
+            port = invite.port,
+            passport = invite.passport,
+            auth = invite.auth
+        )
+        actor.offer(command)
+    }
+
+    fun send(message: ConversationMessage) {
+        when (message) {
+            is ConversationMessage.Nudge -> actor.offer(ConversationOperation.SendNudge)
+            is ConversationMessage.Typing -> actor.offer(ConversationOperation.SendTyping)
+            is ConversationMessage.Text -> actor.offer(ConversationOperation.SendMessage(message.body))
+        }
+    }
+
     fun close() {
-        switchboard?.disconnect()
-        incomingMessages.close()
+        actor.offer(ConversationOperation.Close)
+    }
+
+    private suspend fun SwitchBoardTransport?.checkConnection(): SwitchBoardTransport {
+        return if (this == null) {
+            val xfrResponse = notification.sendXfr()
+            val newSwitchboard = SwitchBoardTransport().apply {
+                connect(xfrResponse.address, xfrResponse.port)
+                sendUsr(SwitchBoardSendCommand.USR(accountManager.account, xfrResponse.auth))
+                sendCal(SwitchBoardSendCommand.CAL(recipient))
+                waitToJoin()
+            }
+            configureSwitchboard(newSwitchboard)
+        } else {
+            this
+        }
     }
 
     private fun configureSwitchboard(switchboard: SwitchBoardTransport): SwitchBoardTransport {
-        launch{
+        launch {
             switchboard.messageReceived().collect {
                 val conversationMessage = when (it) {
                     is MSGBody.Text -> ConversationMessage.Text(it.sender, it.text)
@@ -87,4 +116,22 @@ class Conversation(
         return switchboard
     }
 
+}
+
+private sealed class ConversationOperation {
+    data class InviteReceived(
+        val sessionId: String,
+        val address: String,
+        val port: Int,
+        val passport: String,
+        val auth: String
+    ) : ConversationOperation()
+
+    data class SendMessage(
+        val text: String
+    ) : ConversationOperation()
+
+    object SendNudge : ConversationOperation()
+    object SendTyping : ConversationOperation()
+    object Close : ConversationOperation()
 }

@@ -11,7 +11,6 @@ import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.scene.input.KeyCode
 import javafx.stage.Stage
-import org.cyanotic.butterfly.core.ConversationWindowManager
 import org.cyanotic.butterfly.core.ButterflyClient
 import org.cyanotic.butterfly.features.notifications.NotificationManager
 
@@ -29,6 +28,9 @@ class ConversationView(
     private lateinit var historyListView: ListView<String>
 
     @FXML
+    private lateinit var historyFooter: Label
+
+    @FXML
     private lateinit var typingTextArea: TextArea
 
     @FXML
@@ -39,7 +41,8 @@ class ConversationView(
 
     private val presenter = ConversationPresenter(
         this,
-        ConversationInteractor(ButterflyClient)
+        ConversationInteractor(ButterflyClient),
+        NotificationManager
     )
 
     lateinit var recipient: String
@@ -95,6 +98,10 @@ class ConversationView(
 
     override fun setSendButtonEnabled(sendEnabled: Boolean) {
         sendButton.isDisable = sendEnabled.not()
+    }
+
+    override fun setFooterText(text: String) {
+        historyFooter.text = text
     }
 
     private fun setupButtons() {

@@ -1,20 +1,19 @@
 package org.cyanotic.butterfly.features.conversation
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.javafx.JavaFx
-import kotlinx.coroutines.launch
 import org.cyanotic.butterfly.core.ConversationMessage
+import org.cyanotic.butterfly.features.notifications.NotificationManager
+import org.cyanotic.butterfly.features.throttle
 import kotlin.coroutines.CoroutineContext
 
 class ConversationPresenter(
     private val view: ConversationContract.View,
-    private val interactor: ConversationInteractor
+    private val interactor: ConversationInteractor,
+    private val notifications: NotificationManager
 ) : ConversationContract.Presenter, CoroutineScope {
 
     private val job = Job()
@@ -34,6 +33,7 @@ class ConversationPresenter(
         get() = job + Dispatchers.Main
 
     private val userTyping = Channel<Unit>(Channel.RENDEZVOUS)
+    private var recipientTypingResetJob: Job? = null
 
     override fun onCreate(recipient: String) {
         launch(Dispatchers.IO) {
@@ -54,27 +54,30 @@ class ConversationPresenter(
                     val message = when (msg) {
                         is ConversationMessage.Nudge -> {
                             if (!msg.sender.equals(account, true)) {
-                                playNotification()
+                                notifications.nudge()
                             }
                             ConversationMessageModel.Nudge(msg.sender)
                         }
                         is ConversationMessage.Typing -> {
-                            ConversationMessageModel.Message(msg.sender, "Typing...")
+                            showTyping()
+                            null
                         }
                         is ConversationMessage.Text -> {
                             if (!msg.sender.equals(account, true)) {
-                                playNotification()
+                                notifications.newMessage()
                             }
                             ConversationMessageModel.Message(msg.sender, msg.body)
                         }
                     }
-                    model = model.copy(messages = model.messages + message)
-                    updateUi()
+                    message?.let {
+                        model = model.copy(messages = model.messages + message)
+                        updateUi()
+                    }
                 }
             }
             launch(Dispatchers.IO) {
                 userTyping.consumeAsFlow()
-                    .debounce(5000)
+                    .throttle(5000)
                     .collect { interactor.sendTyping(model.conversation!!) }
             }
         }
@@ -101,6 +104,7 @@ class ConversationPresenter(
     }
 
     override fun onNudgeClicked() {
+        notifications.nudge()
         launch(Dispatchers.IO) {
             interactor.sendNudge(model.conversation!!)
         }
@@ -127,8 +131,15 @@ class ConversationPresenter(
         view.setSendButtonEnabled(model.sendEnabled)
     }
 
-    private fun playNotification() = launch(Dispatchers.JavaFx) {
-        view.playNotification()
+    private fun showTyping() {
+        recipientTypingResetJob?.cancel()
+        launch(Dispatchers.JavaFx){
+            view.setFooterText("User is Typing")
+        }
+        recipientTypingResetJob = launch(Dispatchers.JavaFx) {
+            delay(5000)
+            view.setFooterText("")
+        }
     }
 
 }
