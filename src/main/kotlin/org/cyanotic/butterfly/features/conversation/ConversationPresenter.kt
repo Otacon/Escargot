@@ -25,9 +25,7 @@ class ConversationPresenter(
             account = "",
             conversation = null,
             messages = emptyList(),
-            messageText = "",
-            sendEnabled = false,
-            isOtherTyping = false,
+            messageText = ""
         )
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.Main
@@ -91,16 +89,20 @@ class ConversationPresenter(
     override fun onMessageChanged(message: String) {
         val cappedText = message.take(400)
         userTyping.offer(Unit)
-        model = model.copy(messageText = cappedText, sendEnabled = cappedText.isNotBlank())
+        model = model.copy(messageText = cappedText)
         updateUi()
     }
 
-    override fun onSendClicked() {
-        sendMessage()
-    }
-
     override fun onEnterPressed() {
-        sendMessage()
+        val message = model.messageText
+        if (message.isNotBlank()) {
+            launch(Dispatchers.IO) {
+                interactor.sendMessage(model.conversation!!, message.trim())
+            }
+        }
+        val newMessage = ConversationMessageModel.Message(sender = model.account, message = message.trim())
+        model = model.copy(messageText = "", messages = model.messages + newMessage)
+        updateUi()
     }
 
     override fun onNudgeClicked() {
@@ -113,30 +115,17 @@ class ConversationPresenter(
         updateUi()
     }
 
-    private fun sendMessage() {
-        val message = model.messageText
-        if (message.isNotBlank()) {
-            launch(Dispatchers.IO) {
-                interactor.sendMessage(model.conversation!!, message.trim())
-            }
-        }
-        val newMessage = ConversationMessageModel.Message(sender = model.account, message = message.trim())
-        model = model.copy(messageText = "", messages = model.messages + newMessage)
-        updateUi()
-    }
-
     private fun updateUi() = launch(Dispatchers.JavaFx) {
         view.setWindowTitle("Conversation")
         view.setNickname(model.nickname)
         view.setPersonalMessage(model.personalMessage)
         view.setMessageText(model.messageText)
         view.setHistory(model.messages)
-        view.setSendButtonEnabled(model.sendEnabled)
     }
 
     private fun showTyping() {
         recipientTypingResetJob?.cancel()
-        launch(Dispatchers.JavaFx){
+        launch(Dispatchers.JavaFx) {
             view.setFooterText("User is Typing")
         }
         recipientTypingResetJob = launch(Dispatchers.JavaFx) {

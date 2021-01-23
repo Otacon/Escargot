@@ -9,7 +9,6 @@ interface ConversationContract {
         fun setNickname(nickname: String)
         fun setPersonalMessage(personalMessage: String)
         fun setMessageText(messageText: String)
-        fun setSendButtonEnabled(sendEnabled: Boolean)
         fun setFooterText(text: String)
         fun shake()
     }
@@ -18,7 +17,6 @@ interface ConversationContract {
         fun onCreate(recipient: String)
         fun onDestroy()
         fun onMessageChanged(message: String)
-        fun onSendClicked()
         fun onEnterPressed()
         fun onNudgeClicked()
     }

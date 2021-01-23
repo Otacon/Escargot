@@ -8,7 +8,5 @@ data class ConversationModel(
     val personalMessage: String,
     val conversation: Conversation? = null,
     val messages: List<ConversationMessageModel>,
-    val messageText: String,
-    val sendEnabled: Boolean,
-    val isOtherTyping: Boolean
+    val messageText: String
 )

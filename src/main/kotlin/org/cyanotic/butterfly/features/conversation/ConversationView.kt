@@ -41,9 +41,6 @@ class ConversationView(
     private lateinit var typingTextArea: TextArea
 
     @FXML
-    private lateinit var sendButton: Button
-
-    @FXML
     private lateinit var nudgeButton: Button
 
     private val presenter = ConversationPresenter(
@@ -58,7 +55,6 @@ class ConversationView(
     fun onCreate(recipient: String){
         this.recipient = recipient
         setupListeners()
-        setupButtons()
         presenter.onCreate(recipient)
         window.setOnCloseRequest {
             onWindowClose?.invoke()
@@ -103,10 +99,6 @@ class ConversationView(
         typingTextArea.positionCaret(messageText.length)
     }
 
-    override fun setSendButtonEnabled(sendEnabled: Boolean) {
-        sendButton.isDisable = sendEnabled.not()
-    }
-
     override fun setFooterText(text: String) {
         historyFooter.text = text
     }
@@ -134,17 +126,6 @@ class ConversationView(
         timeline.setOnFinished { window.x = originalX }
     }
 
-    private fun setupButtons() {
-        val sendIcon = ImageView(Image("/images/send.png"))
-        sendIcon.fitWidth = 24.0
-        sendIcon.fitHeight = 24.0
-        sendButton.graphic = sendIcon
-        val nudgeIcon = ImageView(Image("/images/nudge.png"))
-        nudgeIcon.fitWidth = 24.0
-        nudgeIcon.fitHeight = 24.0
-        nudgeButton.graphic = nudgeIcon
-    }
-
     private fun setupListeners() {
         typingTextArea.setOnKeyPressed { key ->
             if (key.code == KeyCode.ENTER) {
@@ -155,9 +136,6 @@ class ConversationView(
             if (old != new) {
                 presenter.onMessageChanged(new)
             }
-        }
-        sendButton.setOnMouseClicked {
-            presenter.onSendClicked()
         }
         nudgeButton.setOnMouseClicked {
             presenter.onNudgeClicked()
