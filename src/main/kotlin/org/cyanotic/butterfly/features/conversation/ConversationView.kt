@@ -1,5 +1,6 @@
 package org.cyanotic.butterfly.features.conversation
 
+import javafx.animation.*
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
@@ -13,6 +14,12 @@ import javafx.scene.input.KeyCode
 import javafx.stage.Stage
 import org.cyanotic.butterfly.core.ButterflyClient
 import org.cyanotic.butterfly.features.notifications.NotificationManager
+import javafx.util.Duration
+import javafx.beans.property.SimpleDoubleProperty
+
+import javafx.beans.property.DoubleProperty
+import javafx.beans.value.ObservableValue
+
 
 class ConversationView(
     private val window: Stage
@@ -102,6 +109,29 @@ class ConversationView(
 
     override fun setFooterText(text: String) {
         historyFooter.text = text
+    }
+
+    override fun shake() {
+        val stageX: DoubleProperty = SimpleDoubleProperty()
+        val originalX = window.x
+        stageX.addListener { _: ObservableValue<out Number?>?, _: Number?, newValue: Number? ->
+            if (newValue != null && !newValue.toDouble().isNaN()) {
+                window.x = originalX + newValue.toDouble()
+            }
+        }
+        val timeline = Timeline(
+            KeyFrame(
+                Duration(100.0),
+                KeyValue(stageX, 15.0, Interpolator.EASE_OUT)
+            ),
+            KeyFrame(
+                Duration(100.0),
+                KeyValue(stageX, -30.0, Interpolator.EASE_OUT)
+            )
+        )
+        timeline.cycleCount = 5
+        timeline.playFromStart()
+        timeline.setOnFinished { window.x = originalX }
     }
 
     private fun setupButtons() {

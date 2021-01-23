@@ -11,6 +11,7 @@ interface ConversationContract {
         fun setMessageText(messageText: String)
         fun setSendButtonEnabled(sendEnabled: Boolean)
         fun setFooterText(text: String)
+        fun shake()
     }
 
     interface Presenter {

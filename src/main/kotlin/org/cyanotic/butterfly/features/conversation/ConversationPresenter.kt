@@ -105,9 +105,12 @@ class ConversationPresenter(
 
     override fun onNudgeClicked() {
         notifications.nudge()
+        view.shake()
         launch(Dispatchers.IO) {
             interactor.sendNudge(model.conversation!!)
         }
+        model = model.copy(messages = model.messages + ConversationMessageModel.Nudge(model.account))
+        updateUi()
     }
 
     private fun sendMessage() {
