@@ -8,7 +8,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
-import okhttp3.internal.checkOffsetAndCount
 import org.cyanotic.butterfly.core.contact_list_fetcher.ContactListFetcher
 import org.cyanotic.butterfly.database.ContactsTable
 import org.cyanotic.butterfly.database.entities.ContactEntity
@@ -88,25 +87,26 @@ class ContactManager(
 
     private fun listenForContactChanges() {
         launch {
-            notification.contactChanged().collect { profileData ->
-                logger.debug { "Contact Changed: $profileData" }
-                if (!profileData.passport.equals(accountManager.account, true)) {
-                    contacts = contacts.map {
-                        if (it.passport.equals(profileData.passport, true)) {
+            notification.contactChanged()
+                .onEach { logger.debug { "Contact Changed: $it" } }
+                .filter { !it.passport.equals(accountManager.account, true) }
+                .onEach { update ->
+                    contacts = contacts.map { contact ->
+                        if (update.passport.equals(contact.passport, true)) {
                             val newContact = Contact(
-                                passport = profileData.passport,
-                                nickname = profileData.nickname ?: it.nickname,
-                                personalMessage = profileData.personalMessage ?: it.personalMessage,
-                                status = profileData.status?.asStatus() ?: it.status
+                                passport = update.passport,
+                                nickname = update.nickname ?: contact.nickname,
+                                personalMessage = update.personalMessage ?: contact.personalMessage,
+                                status = update.status?.asStatus() ?: contact.status
                             )
                             newContact
                         } else {
-                            it
+                            contact
                         }
                     }
-                    contactsUpdateChannel.offer(contacts)
                 }
-            }
+                .onEach { contactsUpdateChannel.offer(contacts) }
+                .collect()
         }
     }
 

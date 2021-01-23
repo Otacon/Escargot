@@ -7,8 +7,8 @@ import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.cyanotic.butterfly.protocol.Status
@@ -100,15 +100,16 @@ class AccountManager(
 
     private fun listenForAccountChanges() {
         launch {
-            notification.contactChanged().collect { profileData ->
-                logger.debug { "Account Changed $profileData" }
-                if (profileData.passport.equals(account, true)) {
-                    status = profileData.status?.asStatus() ?: status
-                    nickname = profileData.nickname ?: nickname
-                    personalMessage = profileData.personalMessage ?: personalMessage
-                    triggerAccountUpdate()
+            notification.contactChanged()
+                .filter { it.passport.equals(account, true) }
+                .onEach { logger.debug { "Account Changed $it" } }
+                .onEach {
+                    status = it.status?.asStatus() ?: status
+                    nickname = it.nickname ?: nickname
+                    personalMessage = it.personalMessage ?: personalMessage
                 }
-            }
+                .onEach { triggerAccountUpdate() }
+                .collect()
         }
     }
 

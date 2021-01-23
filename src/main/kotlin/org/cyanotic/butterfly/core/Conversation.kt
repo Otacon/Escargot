@@ -1,10 +1,10 @@
 package org.cyanotic.butterfly.core
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.actor
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.*
 import mu.KotlinLogging
 import org.cyanotic.butterfly.protocol.notification.NotificationTransport
 import org.cyanotic.butterfly.protocol.notification.SwitchboardInvite
@@ -18,7 +18,6 @@ private val logger = KotlinLogging.logger("Conversation")
 class Conversation(
     private val accountManager: AccountManager,
     private val notification: NotificationTransport,
-    private val conversationManager: ConversationManager,
     val recipient: String
 ) : CoroutineScope {
 
@@ -49,6 +48,7 @@ class Conversation(
                     switchboard?.sendMSGControl(SwitchBoardSendCommand.MSGControl(accountManager.account))
                 }
                 ConversationOperation.Close -> {
+                    job.cancel()
                     switchboard?.disconnect()
                     incomingMessages.close()
                 }
@@ -57,9 +57,8 @@ class Conversation(
         }
     }
 
-    fun incomingMessages() = incomingMessages.receiveAsFlow()
-
-    private val incomingMessages = Channel<ConversationMessage>(Channel.UNLIMITED)
+    private val incomingMessages = BroadcastChannel<ConversationMessage>(Channel.CONFLATED)
+    fun incomingMessages() = incomingMessages.asFlow()
 
     fun inviteReceived(invite: SwitchboardInvite) {
         val command = ConversationOperation.InviteReceived(
@@ -101,17 +100,16 @@ class Conversation(
 
     private fun configureSwitchboard(switchboard: SwitchBoardTransport): SwitchBoardTransport {
         launch {
-            switchboard.messageReceived().collect {
-                val conversationMessage = when (it) {
-                    is MSGBody.Text -> ConversationMessage.Text(it.sender, it.text)
-                    is MSGBody.Nudge -> ConversationMessage.Nudge(it.sender)
-                    is MSGBody.Typing -> ConversationMessage.Typing(it.sender)
+            switchboard.messageReceived()
+                .map {
+                    when (it) {
+                        is MSGBody.Text -> ConversationMessage.Text(it.sender, it.text)
+                        is MSGBody.Nudge -> ConversationMessage.Nudge(it.sender)
+                        is MSGBody.Typing -> ConversationMessage.Typing(it.sender)
+                    }
                 }
-                logger.info { "Notifying allIncomingMessages CR:${conversationManager.allIncomingMessages.isClosedForReceive} CS:${conversationManager.allIncomingMessages.isClosedForSend}" }
-                conversationManager.allIncomingMessages.offer(conversationMessage)
-                logger.info { "Notifying incomingMessages CR:${incomingMessages.isClosedForReceive} CS:${incomingMessages.isClosedForSend}" }
-                incomingMessages.offer(conversationMessage)
-            }
+                .onEach { incomingMessages.offer(it) }
+                .collect()
         }
         return switchboard
     }
