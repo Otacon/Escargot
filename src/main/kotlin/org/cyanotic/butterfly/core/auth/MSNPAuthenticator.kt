@@ -5,7 +5,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.cyanotic.butterfly.protocol.Endpoints
-import org.cyanotic.butterfly.protocol.ProtocolVersion
 import org.cyanotic.butterfly.protocol.authentication.RequestMultipleSecurityTokensRequestFactory
 import org.cyanotic.butterfly.protocol.notification.NotificationTransport
 import org.cyanotic.butterfly.protocol.notification.TransportException
@@ -41,7 +40,7 @@ class MSNPAuthenticator(
                 passport = username
             )
 
-            transport.sendUsrSSOInit(username)
+            transport.sendUsrSsoInit(username)
         } catch (e: TransportException) {
             return AuthenticationResult.InvalidUser
         }

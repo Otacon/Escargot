@@ -1,9 +1,12 @@
 package org.cyanotic.butterfly.protocol.switchboard
 
+import mu.KotlinLogging
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.PrintWriter
 import java.net.Socket
+
+private val logger = KotlinLogging.logger("Switchboard")
 
 class SwitchBoardSocket {
 
@@ -12,26 +15,25 @@ class SwitchBoardSocket {
     private lateinit var reader: BufferedReader
 
     fun connect(endpoint: String, port: Int) {
-        print("SB Connecting to $endpoint:$port...")
+        logger.info { "SB Connecting to $endpoint:$port..." }
         socket = Socket(endpoint, port)
         writer = PrintWriter(socket.outputStream)
         reader = BufferedReader(InputStreamReader(socket.inputStream))
-        println("Done!")
+        logger.info { "Done!" }
     }
 
     fun sendMessage(message: String, sendNewLine: Boolean = true) {
-        val open = if(!socket.isClosed) "O" else "X"
-        val connected = if(socket.isConnected) "C" else "D"
-        print("SB ($open$connected) >> ")
-        val messageToSend = if(sendNewLine) "$message\r\n" else message
-        writer.write(messageToSend)
+        writer.write(message)
+        if (sendNewLine) {
+            writer.write("\r\n")
+        }
         writer.flush()
-        println(messageToSend)
+        logger.debug { ">> $message" }
     }
 
-    fun readMessage(): String {
+    fun readMessage(): String? {
         val response = reader.readLine()
-        println("SB << $response")
+        response?.let { logger.debug { "<< $response" } }
         return response
     }
 
@@ -44,15 +46,15 @@ class SwitchBoardSocket {
             remaining -= reader.read(buffer)
             output += String(buffer)
         }
-        println(output)
+        logger.debug { "<< $output" }
         return output
     }
 
     fun close() {
-        print("SB Closing connection...")
+        logger.info{"Closing connection..."}
         writer.close()
         reader.close()
         socket.close()
-        println("Done!")
+        logger.info{"Done!"}
     }
 }

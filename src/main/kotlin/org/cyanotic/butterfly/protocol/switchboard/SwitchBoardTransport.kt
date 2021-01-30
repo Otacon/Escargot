@@ -4,10 +4,13 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
+import mu.KotlinLogging
 import java.nio.charset.StandardCharsets
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+
+private val logger = KotlinLogging.logger("Switchboard")
 
 class SwitchBoardTransport {
 
@@ -26,15 +29,11 @@ class SwitchBoardTransport {
         GlobalScope.launch {
             var reading = true
             while (reading) {
-                try {
-                    readNext()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    println("SB: Connection closed. Freeing thread.")
-                    socketClosed.offer(Unit)
-                    socketClosed.close()
-                    messages.close()
-                    println("SB: Done.")
+                val message = socket.readMessage()
+                if (message != null) {
+                    processMessage(message)
+                } else {
+                    logger.warn { "Socket closed." }
                     reading = false
                 }
             }
@@ -109,10 +108,9 @@ class SwitchBoardTransport {
         sequence++
     }
 
-    private fun readNext() {
-        val message = socket.readMessage()
+    private fun processMessage(message: String) {
         when (val result = parser.parse(message)) {
-            SwitchBoardParseResult.Failed -> println("UnknownCommand")
+            SwitchBoardParseResult.Failed -> logger.warn { "UnknownCommand" }
             is SwitchBoardParseResult.Success -> {
                 when (val command = result.command) {
                     is SwitchBoardReceiveCommand.Usr -> continuations[command.sequence]!!.resume(command)
@@ -134,7 +132,7 @@ class SwitchBoardTransport {
                             MsgBody.Nudge -> {
                                 messages.offer(MSGBody.Nudge(command.passport))
                             }
-                            MsgBody.Unknown -> println("No idea!")
+                            MsgBody.Unknown -> logger.warn { "Unknown message body" }
                         }
                     }
                     is SwitchBoardReceiveCommand.Bye -> {

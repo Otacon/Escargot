@@ -30,6 +30,7 @@ class NotificationTransport {
 
     private val socket: NotificationSocket = NotificationSocket()
     private val parser = ReceiveCommandParser()
+    private val commandFactory = CommandFactory()
     private val continuations: MutableMap<Int, Continuation<NotificationReceiveCommand>> = mutableMapOf()
     private var continuationMspAuthToken: Continuation<String>? = null
     private var sequence: Int = 1
@@ -46,7 +47,7 @@ class NotificationTransport {
                 if (message != null) {
                     processMessage(message)
                 } else {
-                    logger.warn { "Notification socket closed." }
+                    logger.warn { "Socket closed." }
                     reading = false
                 }
             }
@@ -78,24 +79,14 @@ class NotificationTransport {
         passport: String
     ): NotificationReceiveCommand.CVR =
         suspendCoroutine { cont ->
-            val language = locale.microsoftValue
-            val osTypeStr = when (osType) {
-                OSType.WINNT -> "win"
-                OSType.MACOSX -> "macos"
-                OSType.LINUX -> "linux"
-            }
-            val archStr = when (arch) {
-                Arch.I386 -> "i386"
-                Arch.AMD64 -> "amd64"
-            }
             val message =
-                "CVR $sequence $language $osTypeStr $osVersion $archStr $clientName $clientVersion msmgs $passport"
+                commandFactory.createCvr(sequence, locale, osType, osVersion, arch, clientName, clientVersion, passport)
             sendMessage(message, cont)
         }
 
-    suspend fun sendUsrSSOInit(passport: String): NotificationReceiveCommand.USRSSOStatus =
+    suspend fun sendUsrSsoInit(passport: String): NotificationReceiveCommand.USRSSOStatus =
         suspendCoroutine { cont ->
-            val message = "USR $sequence SSO I $passport"
+            val message = commandFactory.createUsrSsoInit(sequence, passport)
             sendMessage(message, cont)
         }
 
@@ -105,7 +96,7 @@ class NotificationTransport {
         machineGuid: UUID
     ): NotificationReceiveCommand.USRSSOAck =
         suspendCoroutine { cont ->
-            val message = "USR $sequence SSO S t=$nonce $encryptedToken {$machineGuid}"
+            val message = commandFactory.createUsrSsoStatus(sequence, nonce, encryptedToken, machineGuid)
             sendMessage(message, cont)
         }
 
@@ -113,21 +104,20 @@ class NotificationTransport {
         suspendCoroutine { cont ->
             //TODO set the client's capabilities
             val capabilities = 0x90000000
-            val message = "CHG $sequence $status $capabilities 0"
+            val message = commandFactory.createChg(sequence, status, capabilities)
             sendMessage(message, cont)
         }
 
     suspend fun sendXfr(): NotificationReceiveCommand.XFR =
         suspendCoroutine { cont ->
-            val message = "XFR $sequence SB"
+            val message = commandFactory.createXfr(sequence)
             sendMessage(message, cont)
         }
 
-    suspend fun sendUux(text: String): NotificationReceiveCommand.UUX =
+    suspend fun sendUux(psm: String): NotificationReceiveCommand.UUX =
         suspendCoroutine { cont ->
-            val body = "<Data><PSM>$text</PSM><CurrentMedia></CurrentMedia></Data>"
-            val bodyLength = body.toByteArray().size
-            val message = "UUX $sequence ${bodyLength}\r\n$body"
+            //TODO add support to CurrentMedia
+            val message = commandFactory.createUux(sequence, psm, "")
             continuations[sequence] = cont as Continuation<NotificationReceiveCommand>
             socket.sendMessage(message, sendNewLine = false)
             sequence++
@@ -135,21 +125,12 @@ class NotificationTransport {
 
     suspend fun sendAdl(email: String, list: ListType, contact: ContactType): NotificationReceiveCommand.ADL =
         suspendCoroutine { cont ->
-            val listType = when (list) {
-                ListType.ForwardList -> 1
-                ListType.AddList -> 2
-                ListType.BlockList -> 4
-            }
-            val contactType = when (contact) {
-                ContactType.Passport -> 1
-                ContactType.Phone -> 4
-            }
             val emailRegex = Regex("""([a-zA-Z0-9+._-]+)@([a-zA-Z0-9._-]+)""")
             emailRegex.find(email)?.let {
                 val prefix = it.groupValues[1]
                 val domain = it.groupValues[2]
-                val body = """<ml><d n="$domain"><c n="$prefix" l="$listType" t="$contactType"/></d></ml>"""
-                sendMessage("ADL $sequence ${body.length}\r\n$body", cont)
+                val message = commandFactory.createAdl(sequence, prefix, domain, list, contact)
+                sendMessage(message, cont)
             } ?: cont.resumeWithException(IllegalArgumentException("Invalid email: $email"))
         }
 
