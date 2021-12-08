@@ -8,11 +8,11 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%level %msg%n</pattern>
+            <pattern>%logger\t%level\t%msg%n</pattern>
         </encoder>
     </appender>
 
-    <root level="debug">
+    <root level="DEBUG">
         <appender-ref ref="FILE" />
         <appender-ref ref="STDOUT" />
     </root>

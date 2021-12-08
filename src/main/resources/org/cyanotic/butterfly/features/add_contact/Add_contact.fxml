@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.Scene?>
+<?import javafx.scene.text.Font?>
+
+<Scene xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/11.0.1">
+    <StackPane minHeight="240.0" minWidth="320.0">
+        <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+        </padding>
+        <BorderPane fx:id="formLayout">
+            <top>
+                <Label text="Add a new user to your contact list" BorderPane.alignment="CENTER">
+                    <BorderPane.margin>
+                        <Insets bottom="20.0"/>
+                    </BorderPane.margin>
+                    <font>
+                        <Font name="System Bold" size="18.0"/>
+                    </font>
+                </Label>
+            </top>
+            <center>
+                <VBox spacing="10.0" BorderPane.alignment="CENTER">
+                    <Label text="User's email:"/>
+                    <TextField fx:id="passportTextForm" promptText="i.e. user@example.com"/>
+                </VBox>
+            </center>
+            <bottom>
+                <HBox alignment="CENTER_RIGHT" spacing="15.0" BorderPane.alignment="BOTTOM_CENTER">
+                    <Button fx:id="cancelButtonForm" cancelButton="true" minWidth="80.0" mnemonicParsing="false"
+                            text="Cancel"/>
+                    <Button fx:id="okButtonForm" defaultButton="true" minWidth="80.0" mnemonicParsing="false"
+                            text="Add contact"/>
+                </HBox>
+            </bottom>
+        </BorderPane>
+        <BorderPane fx:id="loadingLayout" visible="false">
+            <center>
+                <VBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
+                    <Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Adding Contact..."/>
+                    <ProgressBar maxWidth="1.7976931348623157E308"/>
+                </VBox>
+            </center>
+            <bottom>
+                <HBox alignment="CENTER_RIGHT" spacing="15.0" BorderPane.alignment="BOTTOM_CENTER">
+                    <Button fx:id="cancelButtonLoading" cancelButton="true" minWidth="80.0" mnemonicParsing="false"
+                            text="Cancel"/>
+                </HBox>
+            </bottom>
+        </BorderPane>
+        <BorderPane fx:id="successLayout" visible="false">
+            <center>
+                <VBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
+                    <Label alignment="CENTER" maxWidth="1.7976931348623157E308" text="Contact Added!">
+                        <font>
+                            <Font size="18.0"/>
+                        </font>
+                    </Label>
+                </VBox>
+            </center>
+            <bottom>
+                <HBox alignment="CENTER_RIGHT" spacing="15.0" BorderPane.alignment="BOTTOM_CENTER">
+                    <Button fx:id="okButtonSuccess" defaultButton="true" minWidth="80.0" mnemonicParsing="false" text="Ok"/>
+                </HBox>
+            </bottom>
+        </BorderPane>
+    </StackPane>
+</Scene>

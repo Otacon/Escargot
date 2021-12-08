@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <soap:Header>
+        <ServiceHeader xmlns="http://www.msn.com/webservices/AddressBook">
+            <Version>15.01.1408.0000</Version>
+            <CacheKey>12r1:MZ5nAlMYm3L1t69BsNN-SdcV4nxZXN_xL16aQ7IWGpX7sc7NlTdVT9RRMcvlh8a9Nk_7kbqLtf70zbvBnUPM34ldTEOBBmDphCPY20tDsgaOc4yUSjan1IieOs-NhZ3ZUA11U1PJSjw-9lwLFuL-X50gkmKiJASmcHf0YkQCF6q_838psw00hM6VBkstClkITMoRT6hXNdX7UUDYWs3pSPH7w_oakOntOPJY7A</CacheKey>
+            <CacheKeyChanged>true</CacheKeyChanged>
+            <PreferredHostName>m1.escargot.log1p.xyz</PreferredHostName>
+            <SessionId>df9e1f0f-381b-4c09-98b7-2bf2166926a9</SessionId>
+        </ServiceHeader>
+    </soap:Header>
+    <soap:Body>
+        <ABContactAddResponse xmlns="http://www.msn.com/webservices/AddressBook">
+            <ABContactAddResult>
+                <guid>05995afe-f213-4236-99ae-0c117d5addb9</guid>
+            </ABContactAddResult>
+        </ABContactAddResponse>
+    </soap:Body>
+</soap:Envelope>

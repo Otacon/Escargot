@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.Scene?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+<Scene xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/11.0.1">
+    <BorderPane minHeight="240.0" minWidth="320.0">
+        <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+        </padding>
+        <top>
+            <Label text="New Friend request" BorderPane.alignment="CENTER">
+                <BorderPane.margin>
+                    <Insets bottom="20.0"/>
+                </BorderPane.margin>
+                <font>
+                    <Font name="System Bold" size="18.0"/>
+                </font>
+            </Label>
+        </top>
+        <center>
+            <Label fx:id="descriptionText" text="example@email.com would like to start chatting with you."/>
+        </center>
+        <bottom>
+            <HBox alignment="CENTER_RIGHT" spacing="15.0" BorderPane.alignment="BOTTOM_CENTER">
+                <Button fx:id="ignoreButton" cancelButton="true" minWidth="80.0" mnemonicParsing="false"
+                        text="Not now"/>
+                <Button fx:id="acceptButton" defaultButton="true" minWidth="80.0" mnemonicParsing="false" text="Allow"/>
+            </HBox>
+        </bottom>
+    </BorderPane>
+</Scene>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<Scene xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+    <VBox id="layout_login" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="500.0" prefWidth="350.0">
+        <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="120.0" prefWidth="120.0" style="-fx-border-color: lightgray; -fx-border-radius: 4;">
+            <VBox.margin>
+                <Insets bottom="40.0" />
+            </VBox.margin>
+            <ImageView fitHeight="120.0" fitWidth="120.0" pickOnBounds="true">
+                <Image url="@/images/blank-profile.png" />
+            </ImageView>
+        </Pane>
+        <TextFlow prefHeight="200.0" prefWidth="200.0">
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Sign in with your Escargot account. Don't have one?" wrappingWidth="230.0" />
+            <Hyperlink fx:id="signupHyperlink" text="Sign Up." />
+            <VBox.margin>
+                <Insets bottom="15.0" />
+            </VBox.margin>
+        </TextFlow>
+        <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="E-mail address:" />
+        <ComboBox fx:id="textUsername" editable="true" maxWidth="1.7976931348623157E308" />
+        <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Password:">
+            <VBox.margin>
+                <Insets top="10.0" />
+            </VBox.margin>
+        </Label>
+        <PasswordField fx:id="textPassword" maxWidth="1.7976931348623157E308">
+        </PasswordField>
+        <HBox spacing="5.0">
+            <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Sign in as:" />
+            <ComboBox fx:id="comboStatus" maxWidth="1.7976931348623157E308">
+            </ComboBox>
+            <VBox.margin>
+                <Insets top="15.0" />
+            </VBox.margin>
+        </HBox>
+        <CheckBox fx:id="checkRememberUserProfile" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Remember me">
+            <VBox.margin>
+                <Insets top="40.0" />
+            </VBox.margin>
+        </CheckBox>
+        <CheckBox fx:id="checkRememberPassword" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Remember my password">
+            <VBox.margin>
+                <Insets top="16.0" />
+            </VBox.margin>
+        </CheckBox>
+        <CheckBox fx:id="checkAccessAutomatically" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Sign me in automatically">
+            <VBox.margin>
+                <Insets top="16.0" />
+            </VBox.margin>
+        </CheckBox>
+        <Button fx:id="buttonLogin" defaultButton="true" disable="true" mnemonicParsing="false" text="Sign In">
+            <VBox.margin>
+                <Insets top="32.0" />
+            </VBox.margin>
+        </Button>
+        <padding>
+            <Insets bottom="60.0" left="60.0" right="60.0" top="60.0" />
+        </padding>
+    </VBox>
+</Scene>

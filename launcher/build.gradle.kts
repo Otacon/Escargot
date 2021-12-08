@@ -4,7 +4,7 @@ plugins {
     application
 }
 
-group = "me.orfeo"
+group = "org.cyanotic.butterfly-launcher"
 version = "1.0.0"
 
 repositories {
@@ -72,11 +72,18 @@ runtime {
                     "--icon", "src/main/resources/e-logo.icns"
                 )
             }
+            os.isLinux -> {
+                imageOptions = listOf(
+                    "--icon", "src/main.resources/e-logo.png",
+                    "--type", "deb",
+                    "--vendor", "Cyanotic.dev"
+                )
+            }
         }
     }
 }
 
 application {
     applicationName = "Escargot Launcher"
-    mainClassName = "me.orfeo.MainKt"
+    mainClassName = "org.cyanotic.butterfly_launcher.MainKt"
 }

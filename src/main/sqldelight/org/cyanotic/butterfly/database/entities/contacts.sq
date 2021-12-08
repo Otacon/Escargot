@@ -1,0 +1,28 @@
+CREATE TABLE ContactEntity(
+    passport TEXT PRIMARY KEY,
+    nickname TEXT,
+    personalMessage TEXT
+);
+
+insertOrUpdate:
+INSERT OR REPLACE INTO ContactEntity
+VALUES ?;
+
+remove:
+DELETE FROM ContactEntity
+WHERE passport = ?;
+
+getAll:
+SELECT * FROM ContactEntity;
+
+getAllExceptMe:
+SELECT * FROM ContactEntity
+WHERE passport != ?;
+
+getByPassport:
+SELECT * FROM ContactEntity
+WHERE passport = :passport;
+
+getAllFiltered:
+SELECT * FROM ContactEntity
+WHERE (passport LIKE '%?%' OR nickname LIKE '%?%');

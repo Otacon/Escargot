@@ -1,0 +1,36 @@
+import java.lang.Integer;
+
+CREATE TABLE MessageEntity(
+    id INTEGER as Long PRIMARY KEY AUTOINCREMENT,
+    sender_passport TEXT NOT NULL,
+    sender_nickname TEXT,
+    recipient_passport TEXT NOT NULL,
+    recipient_nickname TEXT,
+    timestamp INTEGER as Long NOT NULL,
+    message_type INTEGER as Integer NOT NULL,
+    text TEXT
+);
+
+getById:
+SELECT * FROM MessageEntity
+WHERE id = ?;
+
+insert:
+INSERT INTO MessageEntity
+VALUES ?;
+
+selectAllByRecipient:
+SELECT * FROM MessageEntity
+WHERE recipient_passport = :recipient OR sender_passport = :recipient
+ORDER BY timestamp ASC;
+
+selectAllBySender:
+SELECT * FROM MessageEntity
+WHERE sender_passport = ?
+ORDER BY timestamp ASC;
+
+selectAllLimit:
+SELECT * FROM MessageEntity
+WHERE recipient_passport = :recipient OR sender_passport = :recipient
+ORDER BY timestamp ASC
+LIMIT :limit;
